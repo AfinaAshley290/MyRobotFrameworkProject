@@ -1,0 +1,4 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***

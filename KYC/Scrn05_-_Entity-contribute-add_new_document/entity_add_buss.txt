@@ -1,0 +1,106 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          entity_add_unit.txt
+
+*** Keywords ***
+Check the list of possible documents to upload for this Category
+    [Arguments]    ${category}
+    Sleep    5s
+    ${folder}=    Get Folder
+    @{list_docs}=    Get documents evidence list for Category    ${category}
+    Log Many    @{list_docs}
+    : FOR    ${doc}    IN    @{list_docs}
+    \    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[text()='${doc}']/ancestor::*[@id='ROW']
+
+Check the list of possible documents to view for this Category
+    [Arguments]    ${category}
+    ${folder}=    Get Folder
+    @{list_docs}=    Get documents evidence list for Category    ${category}
+    Log Many    @{list_docs}
+    : FOR    ${doc}    IN    @{list_docs}
+    \    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[text()['${doc}']]/ancestor::*[@id='ROW']//*[@id='viewDocument']
+
+Upload document
+    [Arguments]    ${doc}    ${language}
+    [Documentation]    Upload document for, specified type.
+    ...    It uploads for English language in case of single or multi instance, with expiration date or not.
+    ...
+    ...    folder = "draft" or "published"
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']
+    Open single or multi instance upload    ${doc}
+    Upload dialog - upload translation document    ${language}
+    #    Upload dialog - upload new document
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    documentDescription
+    Run Keyword If    ${present}    Input Text    documentDescription    Description
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='documentExpirationDate']
+    #    Run Keyword If    ${present}    Input Text    //*[@id='uploadWizardDialog']//*[@id='documentExpirationDate']    01 01 2020
+    Run Keyword If    ${present}    Pick date in the future in frame    documentExpirationDate    uploadWizardDialog
+    #    Wait Until Keyword Succeeds    30 sec    3 sec    Select From List    //*[@id='uploadWizardDialog']//*[text()[contains(.,'document')]]//ancestor::*[@id='ROW']//*[@id='language']    English
+    #
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'translation')]]
+    Run Keyword If    ${present}    Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'preview')]]
+    Upload dialog - finish upload
+
+Upload English translation document
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    #Open translation upload    ${doc}    #OLD_UPLOAD
+    Open English translation upload    ${doc}    #NEW_UPLOAD
+    Upload dialog - upload new document
+    #    Upload dialog - upload translation document    ${language}
+    Upload dialog - move to step upload preview
+    Upload dialog - finish upload
+
+Upload another language document
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    Open Another language upload    ${doc}
+    #Upload dialog - upload new document
+    Upload dialog - upload translation document    ${language}
+    Upload dialog - move to step upload preview
+    Upload dialog - finish upload
+
+Upload document and move to step preview
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']
+    Open single or multi instance upload    ${doc}
+    Upload dialog - upload new document
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    documentDescription
+    Run Keyword If    ${present}    Input Text    documentDescription    Description
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='documentExpirationDate']
+    #    Run Keyword If    ${present}    Input Text    //*[@id='uploadWizardDialog']//*[@id='documentExpirationDate']    01 01 2020
+    Run Keyword If    ${present}    Pick date in the future in frame    documentExpirationDate    uploadWizardDialog
+    Wait Until Keyword Succeeds    20s    5 sec    Selenium2Library.Select From List    //*[@id='uploadWizardDialog']//*[text()[contains(.,'document')]]//ancestor::*[@id='ROW']//*[@id='language']    English
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Wait Until Keyword Succeeds    15s    0.5s    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'preview')]]
+    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'preview')]]
+
+Upload document in language with description
+    [Arguments]    ${doc}    ${language}    ${description}
+    [Documentation]    Upload document for, specified type.
+    ...    It uploads for English language in case of single or multi instance, with expiration date or not.
+    ...
+    ...    folder = "draft" or "published"
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']
+    Open single or multi instance upload    ${doc}
+    Upload dialog - upload translation document    ${language}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    documentDescription
+    Run Keyword If    ${present}    Input Text    documentDescription    ${description}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='documentExpirationDate']
+    Run Keyword If    ${present}    Pick date in the future in frame    documentExpirationDate    uploadWizardDialog
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'translation')]]
+    Run Keyword If    ${present}    Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'preview')]]
+    Upload dialog - finish upload
+
+Cannot upload documents
+    ${folder}=    Get Folder
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='ROW']//*[@id='addADocument']
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='ROW']//*[@id='addThisDocument']
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='AddADocument']

@@ -1,0 +1,314 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          inbox_unit.txt
+
+*** Keywords ***
+Verify can view Replace Document task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    REPLACE_TASK
+
+Verify can view Replace Document event
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view event of given type    ${status}    ${bic}    ${category_title}    DOCUMENT_EXPIRED_ALERT
+
+Count Replace Document event
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${count}
+    Count view event of given type    ${status}    ${bic}    ${category_title}    DOCUMENT_EXPIRED_ALERT    ${count}
+
+Verify can view Replace Document Warning event
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${document}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='DOCUMENT_EXPIRY_WARNING']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,'${document}')]]/ancestor::*[@id='ROW']
+
+Count Replace Document Warning event
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${document}    ${count}
+    Filter entries on BIC    ${bic}
+    Xpath Should Match X Times    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='DOCUMENT_EXPIRY_WARNING']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,'${document}')]]/ancestor::*[@id='ROW']    ${count}
+
+Verify can view Qualification and Publication task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    QUALIFICATION_AND_PUBLICATION_REQUIRED
+
+Verify can view Progress task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    UNPUBLISHED_DRAFT
+
+Verify can view Qualification request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view request of given type    ${status}    ${bic}    ${category_title}    QUALIFICATION_REQUEST
+
+Verify can view Qualification Abort event
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view event of given type    ${status}    ${bic}    ${category_title}    FOLDER_ABORTED
+
+Verify can view Grant task
+    [Arguments]    ${status}    ${bic}    ${requesting_entities}
+    Verify can view task of given type    ${status}    ${bic}    ${requesting_entities}    REQUEST_ACCESS
+
+Verify can view Request Access event
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view event of given type    ${status}    ${bic}    ${category_title}    ACCESS_REQUESTED
+
+Verify can view Request Access request
+    [Arguments]    ${status}    ${bic}
+    Verify can view request of given type    ${status}    ${bic}    data and documents    ACCESS_REQUEST
+
+Verify can view Request Access Abort event
+    [Arguments]    ${status}    ${bic}    ${event_outcome}
+    Verify can view event of given type    ${status}    ${bic}    ${event_outcome}    ACCESS_ABORTED
+
+Verify can view Folder Reconfirmation Warning event
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view event of given type    ${status}    ${bic}    ${category_title}    FOLDER_RECONFIRMATION_WARNING
+
+Verify can view Folder Reconfirmation Alert event
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view event of given type    ${status}    ${bic}    ${category_title}    FOLDER_RECONFIRMATION_ALERT
+
+Count Folder Reconfirmation Warning event
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${count}
+    Count view event of given type    ${status}    ${bic}    ${category_title}    FOLDER_RECONFIRMATION_WARNING    ${count}
+
+Count Folder Reconfirmation Alert event
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${count}
+    Count view task of given type    ${status}    ${bic}    ${category_title}    FOLDER_RECONFIRMATION_ALERT    ${count}
+
+Verify can view Document Query Abort request
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${document}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='DOCUMENT_QUERY_REQUEST']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${document}')]]/ancestor::*[@id='ROW']
+
+Verify can view Document Query Abort event
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${document}
+    Filter entries on BIC    ${bic}
+    ${document}=    Get doc title from code    ${document}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='DOCUMENT_QUERY_ABORTED']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle' and text()[contains(.,'${document}')]]/ancestor::*[@id='ROW']
+    ${count}=    Get Matching Xpath Count    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='DOCUMENT_QUERY_ABORTED']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    ${count}<1    Fail    DOcument query aborted task is not present for ${bic} ${category_title}
+
+Verify can view Document Query Abort task
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${document}
+    Filter entries on BIC    ${bic}
+    ${document}=    Get doc title from code    ${document}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='REPLY_DOCUMENT_QUERY']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,'${document}')]]/ancestor::*[@id='ROW']
+
+Click on Replace task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Click on task of given type    ${status}    ${bic}    ${category_title}    REPLACE_TASK
+
+Verify can view Approve task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    APPROVAL_REQUIRED
+
+Verify can view Rework task from Approve reject
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    DRAFT_NOT_APPROVED
+
+Verify can view Rework task from Qualify reject
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    DRAFT_NOT_QUALIFIED
+
+Verify can view Qualify task 2eyes
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    QUALIFICATION_AND_PUBLICATION_REQUIRED
+
+Verify can view Qualify task 4eyes
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    QUALIFICATION_REQUIRED
+
+Verify can view Publish task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    PUBLICATION_REQUIRED
+
+Verify can view Publication request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view request of given type    ${status}    ${bic}    ${category_title}    PUBLICATION_REQUEST
+
+Verify cannot view Replace Document task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Count view task of given type    ${status}    ${bic}    ${category_title}    REPLACE_TASK    0
+
+Verify can view Review Completeness event
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view event of given type    ${status}    ${bic}    ${category_title}    REVIEW_COMPLETENESS
+
+Verify can view Review Completeness task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    REVIEW_COMPLETENESS_TASK
+
+Verify Review Completeness task is assigned to
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${assigned_to}
+    Verify task of given type is assigned to    ${status}    ${bic}    ${category_title}    REVIEW_COMPLETENESS_TASK    ${assigned_to}
+
+Verify Replace Document task is assigned to
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${assigned_to}
+    Verify task of given type is assigned to    ${status}    ${bic}    ${category_title}    REPLACE_TASK    ${assigned_to}
+
+Validate expired document are highlighted
+    [Arguments]    ${document_type}    ${language}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id="${folder}FolderDocuments" ]//*[@id='${document_type}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='documentExpirationDate']//*[@class="glyphicon glyphicon-warning-sign ng-scope"]
+
+Validate not expired document are not highlighted
+    [Arguments]    ${document_type}    ${language}
+    ${folder}=    Get Folder
+    Element Should Not Be visible    //*[@id="${folder}FolderDocuments" ]//*[@id='${document_type}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='documentExpirationDate']//*[@class="glyphicon glyphicon-warning-sign ng-scope"]
+
+Verify can view Reconfirmation task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_REQUIRED
+
+Verify cannot view Reconfirmation task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Count view task of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_REQUIRED    0
+
+Verify Reconfirmation task is assigned to
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${assigned_to}
+    Verify task of given type is assigned to    ${status}    ${bic}    ${category_title}    RECONFIRM_REQUIRED    ${assigned_to}
+
+Verify can view Approval request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view request of given type    ${status}    ${bic}    ${category_title}    APPROVAL_REQUEST
+
+Verify can view Approval Abort event
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view event of given type    ${status}    ${bic}    ${category_title}    FOLDER_ABORTED
+
+Verify can view Reminder Alert for Task
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskAlert']//*[text()='REMINDER']
+
+Verify can view Timeout event
+    [Arguments]    ${status}    ${bic}    ${event_outcome_or_category}
+    Filter entries on BIC    ${bic}
+    Verify can view event of given type    ${status}    ${bic}    ${event_outcome_or_category}    TASK_LATE
+
+Verify can view only one Qualification request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Xpath Should Match X Times    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='QUALIFICATION_REQUEST']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    1
+
+Verify can view Reconfirmation Qualification request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view request of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_QUALIFICATION_REQUEST
+
+Verify can view Reconfirmation Qualification 2eyes task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_QUALIFICATION_AND_PUBLICATION_REQUIRED
+
+Verify can view Reconfirmation Approval request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view request of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_APPROVAL_REQUEST
+
+Verify can view Reconfirmation Approval task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_APPROVAL_REQUIRED
+
+Verify can view Reconfirmation Publication task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_PUBLICATION_REQUIRED
+
+Verify can view Reconfirmation Publication request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view request of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_PUBLICATION_REQUEST
+
+Verify cannot view Progress task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Count view task of given type    ${status}    ${bic}    ${category_title}    UNPUBLISHED_DRAFT    0
+
+Verify cannot view Qualification request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Count view request of given type    ${status}    ${bic}    ${category_title}    QUALIFICATION_REQUEST    0
+
+Verify cannot view Qualification Abort event
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Count view event of given type    ${status}    ${bic}    ${category_title}    FOLDER_ABORTED    0
+
+Verify can view Publication task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    PUBLICATION_REQUIRED
+
+Verify can view Reconfirmation Qualification 4eyes task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    RECONFIRM_QUALIFICATION_REQUIRED
+
+Verify can view Abort Progress task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    DRAFT_NOT_APPROVED_ABORTED
+
+Verify can view Correct task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    CORRECT_TASK
+
+Verify can view Complete draft task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    UNPUBLISHED_DRAFT
+
+Verify can view Progress predraft task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    UNSUBMITTED_PRE_DRAFT
+
+Verify can view Approve predraft task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    APPROVAL_PRE_DRAFT_REQUIRED
+
+Verify can view Correct predraft task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    CORRECT_TASK
+
+Verify can view Approval predraft request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view request of given type    ${status}    ${bic}    ${category_title}    PRE_DRAFT_APPROVAL_REQUEST
+
+Verify can view Rework predraft task from Approve reject
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Verify can view task of given type    ${status}    ${bic}    ${category_title}    PRE_DRAFT_NOT_APPROVED
+
+Request - Verify link to show users and roles is visible
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    ${xpath_request}=    Set Variable    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    Element Should Be Visible    ${xpath_request}
+    Element Should Be Visible    ${xpath_request}//*[@id='viewRolesAndUsers']
+
+Request - Verify link to show users and roles is not visible
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    ${xpath_request}=    Set Variable    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    Element Should Be Visible    ${xpath_request}
+    Element Should not Be Visible    ${xpath_request}//*[@id='viewRolesAndUsers']
+
+Request - Open link to show list users and roles and verify list shows right users for role
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${role}
+    ${xpath}=    Set Variable    //*[@id='viewRolesAndUsersDialog']
+    #
+    ${dialog}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${xpath}
+    Run Keyword Unless    ${dialog}    Request - Open user and role dialog    ${status}    ${bic}    ${category_title}
+    # check users
+    Verify Group users and roles are correctly shown for this entity    ${bic}    ${role}
+
+Request - Open link to show list users and roles and verify list does not show role
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${role}
+    ${xpath}=    Set Variable    //*[@id='viewRolesAndUsersDialog']
+    #
+    ${dialog}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${xpath}
+    Run Keyword Unless    ${dialog}    Request - Open user and role dialog    ${status}    ${bic}    ${category_title}
+    # check role not visible
+    Element Should Not Be visible    ${xpath}//*[@id='${role}']
+
+Request - Open user and role dialog
+    [Arguments]    ${status}    ${bic}    ${category}
+    Filter entries on BIC    ${bic}
+    ${xpath_request}=    Set Variable    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    Element Should Be Visible    ${xpath_request}
+    Click Element    ${xpath_request}//*[@id='viewRolesAndUsers']
+    #
+    ${xpath}=    Set Variable    //*[@id='viewRolesAndUsersDialog']
+    Element Should Be Visible    ${xpath}
+
+Verify can view SWIFT Profile Approve task
+    [Arguments]    ${status}    ${bic}    ${requesting_group}
+    Comment    Verify can view task of given type    ${status}    ${bic}    ${category_title}    APPROVE_SWIFT_REPORTS
+    Filter entries on BIC    ${bic}
+    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='APPROVE_SWIFT_REPORTS']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_group}')]]

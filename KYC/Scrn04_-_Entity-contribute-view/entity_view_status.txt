@@ -1,0 +1,195 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          entity_view_buss.txt
+Resource          variables.txt
+
+*** Keywords ***
+Verify draft can be created
+    # Id folderData has been changed to folderNoData
+    Element Should Be Visible    //*[@id='folderNoData']//*[@id='createDraft']
+    Element Should Be Visible    //*[text()[contains(.,"No data available")]]
+
+Verify draft cannot be created
+    Element Should Not Be visible    //*[@id='folderNoData']//*[@id='createDraft']
+
+Verify draft is editable
+    Element Should Be Visible    //*[@id='folderActions']//*[@id='editDraft']
+
+Verify draft is not editable
+    Load page infinite scroll
+    Element Should Not Be visible    //*[@id='folderActions']//*[@id='editDraft']
+
+Check draft is already present
+    Element Should Be Visible    //*[@id='folderData']
+    Verify draft cannot be created
+    Verify draft is editable
+
+Verify draft is Submitted
+    Scroll upward
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='folderStatus']//*[@value="SUBMITTED"]
+    Run Keyword Unless    ${present}    Reload Page
+    Element Should Be Visible    //*[@id='folderStatus']//*[@value="SUBMITTED"]
+
+Verify draft is removed
+    Element Should Be Visible    //*[@id='folderNoData']//*[@id='createDraft']
+    Element Should Not Be visible    //*[@id='editDraft']
+
+Verify draft is still present
+    Verify folder is in Draft status
+    Verify draft cannot be created
+    Verify draft is editable
+
+Verify submitted draft can be Rejected
+    Element Should Be Visible    //*[@id='folderStatus']//*[text()[contains(.,'Submitted')]]
+    Element Should Be Visible    //*[@id="folderActions"]//*[@id="reject"]
+
+Verify submitted draft cannot be Rejected
+    Element Should Be Visible    //*[@id='folderStatus']//*[text()[contains(.,'Submitted')]]
+    Element Should Not Be visible    //*[@id="folderActions"]//*[@id="reject"]
+
+Verify submitted draft cannot be Published
+    Scroll upward
+    Element Should Not Be visible    //*[@id="folderActions"]//*[@id="qualifyDraft"]
+
+Verify folder is in Draft status
+    [Documentation]    Precondition: a Category has a Draft.
+    ...    Action: verify the draft exists
+    Scroll upward
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='folderStatus']//*[@value='DRAFT']
+    Capture Page Screenshot
+    Run Keyword Unless    ${present}    Reload Page
+    Element Should Be Visible    //*[@id='folderStatus']//*[@value='DRAFT']
+    Element Should Be Visible    //*[@id='folderData']//*[@id='draft']
+
+Verify draft is proposed for submission
+    Scroll upward
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='folderStatus']//*[@value='PROPOSED']
+    Run Keyword Unless    ${present}    Reload Page
+    Element Should Be Visible    //*[@id='folderStatus']//*[@value='PROPOSED']
+
+Verify draft is proposed for publication
+    Scroll upward
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='folderStatus']//*[@value='QUALIFIED']
+    Run Keyword Unless    ${present}    Reload Page
+    Element Should Be Visible    //*[@id='folderStatus']//*[@value='QUALIFIED']
+
+Verify draft is Published
+    [Documentation]    Precondition: a Category has a Draft.
+    ...    Action: verify the draft exists
+    ...
+    ...    Check modified for KYC-686
+    #published
+    Scroll upward
+    ${present}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='folderData']//*[@id='published']
+    Run Keyword Unless    ${present}    Reload Page
+    Element Should Be Visible    //*[@id='folderData']//*[@id='published']
+    Element Should Not Be visible    //*[@id='folderData']//*[@id='draft']
+
+Verify draft is proposable for submission
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id='folderActions']//*[@id='proposeForSubmissionDraft']
+
+Verify draft is not proposable for submission 4eyes
+    Load page infinite scroll
+    Element Should not Be Visible    //*[@id='folderActions']//*[@id='proposeForSubmissionDraft']
+
+Verify draft is not proposed for submission
+    Scroll upward
+    Element Should Not Be visible    //*[@id='folderStatus']//*[@value='PROPOSED']
+
+Verify draft is submittable
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id='submitDraft']
+
+Verify draft is not submittable
+    Load page infinite scroll
+    Element Should Not Be visible    //*[@id='submitDraft']
+
+Verify draft is approvable 4eyes
+    Load page infinite scroll
+    Element should be visible    //*[@id="approve"]
+
+Verify draft is not approvable 4eyes
+    Load page infinite scroll
+    Element Should Not Be visible    //*[@id="approve"]
+
+Verify draft is qualifiable 4eyes
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id="reject"]
+    Element Should Be Visible    //*[@id="proposeForPublicationQualified"]
+
+Verify draft is not qualifiable 4eyes
+    Load page infinite scroll
+    Element Should not Be Visible    //*[@id="reject"]
+    Element Should not Be Visible    //*[@id="proposeForPublicationQualified"]
+
+Verify draft is publishable 2eyes
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id='folderStatus']//*[text()[contains(.,'Submitted')]]
+    Element Should Be Visible    //*[@id="qualifyDraft"]
+
+Verify draft is not publishable 2eyes
+    Load page infinite scroll
+    Element Should Not Be visible    //*[@id="folderActions"]//*[@id="qualifyDraft"]
+
+Verify draft is publishable 4eyes
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id="reject"]
+    Element Should Be Visible    //*[@id="publishQualified"]
+
+Verify draft is not publishable 4eyes
+    Element Should Not Be visible    //*[@id="reject"]
+    Element Should Not Be visible    //*[@id="publishQualified"]
+
+Verify draft is deletable
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id='deleteDraft']
+
+Verify draft is not deletable
+    Element Should Not Be visible    //*[@id='deleteDraft']
+
+Verify pre-draft is proposed for submission
+    Scroll upward
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='folderStatus']//*[@value='PRE_DRAFT_PROPOSED']
+    Run Keyword Unless    ${present}    Reload Page
+    Element Should Be Visible    //*[@id='folderStatus']//*[@value='PRE_DRAFT_PROPOSED']
+
+Verify pre-draft is approvable 4eyes
+    Verify pre-draft is proposed for submission
+    Element should be visible    //*[@id="approvePreDraft"]
+
+Verify pre-draft is not approvable 4eyes
+    Element should Not be visible    //*[@id="approvePreDraft"]
+
+Verify folder is in Draft created by Swift status
+    Capture Page Screenshot
+    Scroll upward
+    Element Should Be Visible    //*[@id='folderStatus']//*[@value='PRE_DRAFT']
+    Element Should Be Visible    //*[@id='folderData']//*[@id='draft']
+
+Verify folder is in Draft changed by Swift status
+    Scroll upward
+    Element Should Be Visible    //*[@id='folderStatus']//*[@value='TAKEN_OVER_DRAFT']
+    Element Should Be Visible    //*[@id='folderData']//*[@id='draft']
+
+Verify pre-draft is submittable
+    Element Should Be Visible    //*[@id='submitPreDraft' and not(@disable)]
+
+Verify pre-draft is proposable for submission
+    Element Should Be Visible    //*[@id='folderActions']//*[@id='proposeForSubmissionPreDraft' and not(@disable)]
+
+Verify pre-draft is not proposable for submission
+    Element Should Not Be Visible    //*[@id='folderActions']//*[@id='proposeForSubmissionPreDraft']
+
+Verify folder is in Pre-Draft status
+    [Documentation]    Precondition: a Category has a Draft.
+    ...    Action: verify the draft exists
+    Scroll upward
+    Element Should Be Visible    //*[@id='folderStatus']//*[@value='PRE_DRAFT' or @value='TAKEN_OVER_DRAFT']
+    Element Should Be Visible    //*[@id='folderData']//*[@id='draft']
+
+Verify can Takeover draft
+    Element Should Be Visible    //*[@id='folderData']//*[@id='takeOverDraft']
+
+Verify cannot Takeover draft
+    Element Should Not Be Visible    //*[@id='folderData']//*[@id='takeOverDraft']

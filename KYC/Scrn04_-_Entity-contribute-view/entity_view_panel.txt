@@ -1,0 +1,36 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+Verify information panel Working with drafts is visible
+    Element Should Be Visible    //*[@id='helpWorkingWithDrafts']
+
+Verify information panel Draft submitted by Swift is visible
+    Element Should Be Visible    //*[@id='helpDraftSubmittedBySwift']
+
+Verify information panel Draft changed by Swift is visible
+    Element Should Be Visible    //*[@id='helpDraftChangedBySwift']
+
+Verify information panel Working with drafts is not visible
+    Element Should Not Be Visible    //*[@id='helpWorkingWithDrafts']
+
+Verify information panel Draft submitted by Swift is not visible
+    Element Should Not Be Visible    //*[@id='helpDraftSubmittedBySwift']
+
+Verify information panel Draft changed by Swift is not visible
+    Element Should not Be Visible    //*[@id='helpDraftChangedBySwift']
+
+Dismiss information panel Working with drafts
+    Element Should Be Visible    //*[@id='helpWorkingWithDrafts']//*[@id='gotIt']
+    Click Element    //*[@id='helpWorkingWithDrafts']//*[@id='gotIt']
+    Element Should Not Be visible    //*[@id='helpWorkingWithDrafts']//*[@id='gotIt']
+
+Dismiss information panel Draft submitted by Swift
+    Element Should Be Visible    //*[@id='helpDraftSubmittedBySwift']//*[@id='gotIt']
+    Click Element    //*[@id='helpDraftSubmittedBySwift']//*[@id='gotIt']
+    Element Should Not Be visible    //*[@id='helpDraftSubmittedBySwift']//*[@id='gotIt']
+
+Dismiss information panel Draft changed by Swift
+    Element Should Be Visible    //*[@id='helpDraftChangedBySwift']//*[@id='gotIt']
+    Click Element    //*[@id='helpDraftChangedBySwift']//*[@id='gotIt']
+    Element Should Not Be visible    //*[@id='helpDraftChangedBySwift']//*[@id='gotIt']

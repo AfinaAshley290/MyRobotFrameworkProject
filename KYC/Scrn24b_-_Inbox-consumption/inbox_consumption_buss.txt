@@ -1,0 +1,454 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_consumption_unit.txt
+
+*** Keywords ***
+Verify I can view Grant task
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}
+    [Documentation]    requesting_entities can be the name of the group of entities requesting the access, or the number of entitites "x entities"
+    Filter entries on BIC    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='tasks_row_0']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='tasks_row_0']//*[@id="taskTitle"]//*[text()[contains(.,'${group_requesting_entities}')]]
+    ${taskId}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${group_requesting_entities}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    ${taskId}    ${status}
+    Element Should Contain    ${taskId}    ${bic}
+    Element Should Contain    ${taskId}    ${group_requesting_entities}
+
+Verify I cannot view Grant task
+    [Arguments]    ${status}    ${bic}    ${requesting_entities}
+    [Documentation]    requesting_entities can be the name of the group of entities requesting the access, or the number of entitites "x entities"
+    Filter entries on BIC    ${bic}
+    #Selenium2Library.Element Should Not Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_entities}')]]
+    ${taskId}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${requesting_entities}
+    Should Be Equal    ${taskId}    ${None}
+
+Verify Grant task is assigned to
+    [Arguments]    ${status}    ${bic}    ${assignee}
+    Filter entries on BIC    ${bic}
+    #${path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskAssignedTo']
+    #Element Should Be Visible    ${path}
+    #Wait Until Keyword Succeeds    10s    1s    Element Text Should Be    ${path}    ${assignee}
+    ${path}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${path}
+    Wait Until Keyword Succeeds    10s    1s    Element Text Should Be    //*[@id='${path}_taskAssignedTo']    ${assignee}
+
+Verify note for Grant task
+    [Arguments]    ${status}    ${bic}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for grant task    ${status}    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']//*[text()[contains(.,'${note_text}')]]
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskNote']    ${note_text}
+
+Verify feedback for Grant task
+    [Arguments]    ${status}    ${bic}    ${feedback_text}
+    Filter entries on BIC    ${bic}
+    Show comment for grant task    ${status}    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']//*[text()[contains(.,'${feedback_text}')]]
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskFeedback']    ${feedback_text}
+
+Verify I cannot reserve Grant task
+    [Arguments]    ${status}    ${bic}
+    #Selenium2Library.Element Should Not Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Selenium2Library.Element Should Not Be Visible    ${taskId}_taskActionsMenu
+
+Verify I cannot unreserve Grant task
+    [Arguments]    ${status}    ${bic}
+    #Selenium2Library.Element Should Not Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Selenium2Library.Element Should Not Be Visible    ${taskId}_taskActionsMenu
+
+Verify completion date is displayed for Grant task
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='completionDate']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    //*[@id='${taskId}']//*[@id='taskStatus']//*[@id='completionDate']
+
+Verify I can see BIC for Grant task
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    #Element should be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']
+    #Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']    ${bic}
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element should be Visible    ${taskId}
+    Element Should Contain    ${taskId}    ${bic}
+
+Verify I can view Request Access request
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id="requestStatus"]//*[text()="${status}"]/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="requestTitle" and text()[contains(.,"data and documents")]]/ancestor::*[@id="ROW"]//*[@id="entityBic" and text()[contains(.,"${bic}")]]
+
+Verify I cannot view Request Access request
+    [Arguments]    ${status}    ${bic}
+    Selenium2Library.Element Should Not Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]
+
+Verify note for Request Access request
+    [Arguments]    ${status}    ${bic}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for grant request    ${status}    ${bic}
+    Selenium2Library.Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']
+    Element Should Contain    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']    ${note_text}
+
+Verify feedback for Request Access request
+    [Arguments]    ${status}    ${bic}    ${feedback_text}
+    Filter entries on BIC    ${bic}
+    Show comment for grant request    ${status}    ${bic}
+    Selenium2Library.Element Should Be Visible    //*[@id='requestStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']
+    Element Should Contain    //*[@id='requestStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']    ${feedback_text}
+
+Verify completion date is displayed for Request Access request
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='completionDate']
+
+Verify I can see Received date for Grant task
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+    Element Should Be Visible    ${taskId}_taskReceivedDate
+
+Verify I can see Sent date for Request Access request
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='requestSentDate']
+
+Verify I can see requested entity BIC for Request access event
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    #    Wait Until Element Is Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="categories" and text()[contains(.,'${categories}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskSubtitle"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+
+Verify I can see requesting entity BIC for Request access event
+    [Arguments]    ${status}    ${requested_bic}    ${requesting_bic}
+    Filter entries on BIC    ${requested_bic}
+    #    Wait Until Element Is Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${requested_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']
+    #    Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${requested_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']    ${requesting_bic}
+    Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${requested_bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']    ${requesting_bic}
+
+Verify I can see requesting entity BIC for Grant event
+    [Arguments]    ${status}    ${requested_bic}    ${requesting_bic}
+    Filter entries on BIC    ${requested_bic}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${requesting_bic}')] ]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requested_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']
+    Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${requesting_bic}')] ]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requested_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']    ${requesting_bic}
+
+Verify I can see Received date for Request access event
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="categories" and text()[contains(.,'${categories}')]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskSubtitle"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+    Element Should Be Visible    ${taskId}_taskReceivedDate
+
+Verify note for Grant event
+    [Arguments]    ${status}    ${bic}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for grant task    ${status}    ${bic}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']
+    Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']    ${note_text}
+
+Verify feedback for Grant event
+    [Arguments]    ${status}    ${bic}    ${feedback_text}
+    Filter entries on BIC    ${bic}
+    Show comment for grant task    ${status}    ${bic}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']
+    Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']    ${feedback_text}
+
+Verify I can see requested entity BIC for Grant event
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    #    Wait Until Element Is Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="categories" and text()[contains(.,'${categories}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    ${taskId}    ${bic}
+
+Verify I can see Received date for Grant event
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="categories" and text()[contains(.,'${categories}')]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    ${taskId}    ${bic}
+    Element Should Be Visible    ${taskId}_taskReceivedDate
+
+Verify note for Request access event
+    [Arguments]    ${status}    ${bic}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']
+    Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']    ${note_text}
+
+Reserve Grant task
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='assignTaskToMe']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    ${status}=    Run Keyword And Return Status    Click Element    ${taskId}_taskActions
+    Run Keyword If    ${status} == True    Element Should Be Visible    ${taskId}_taskActionsMenu
+    Run Keyword If    ${status} == True    Click Element    //*[@id='${taskId}_taskActionsMenu']//*[@id='assignTaskToMe']
+    #Reload Page
+    #Load whole page
+
+Unreserve Grant task
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    # Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='unreserveTask']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    ${status}=    Run Keyword And Return Status    Click Element    ${taskId}_taskActions
+    Run Keyword If    ${status} == True    Element Should Be Visible    ${taskId}_taskActionsMenu
+    Run Keyword If    ${status} == True    Click Element    //*[@id='${taskId}_taskActionsMenu']//*[@id='unreserveTask']
+    Reload Page
+    Load whole page
+
+Verify I can view Grant event
+    [Arguments]    ${status}    ${bic}    ${event_outcome}
+    Filter entries on BIC    ${bic}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="categories" and text()[contains(.,'${categories}')]]
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskSubtitle"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${event_outcome}')]]
+    #Added By Hassan
+    ${taskId}=    Return Id of Task By Status,Bic and EventOutcome    ${status}    ${bic}    ${event_outcome}
+    Element Should Contain    ${taskId}    ${status}
+    Element Should Contain    ${taskId}    ${bic}
+    Element Should Contain    ${taskId}    ${event_outcome}
+
+Verify I can view Request access event
+    [Arguments]    ${status}    ${bic}    ${requesting_entities}
+    Filter entries on BIC    ${bic}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="categories" and text()[contains(.,'${categories}')]]
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    ${taskId}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${requesting_entities}
+    Element Should Be Visible    ${taskId}
+
+Grant access request from task
+    [Arguments]    ${status}    ${bic}    ${requesting_entities}    ${comment}
+    Filter entries on BIC    ${bic}
+    Grant access to data and documents for all requesting entities    ${requesting_entities}    ${bic}    ${comment}
+
+Reject access request from task
+    [Arguments]    ${status}    ${bic}    ${requesting_entities}    ${comment}
+    Filter entries on BIC    ${bic}
+    Reject access to data and documents for all requesting entities    ${requesting_entities}    ${bic}    ${comment}
+
+Verify I can view Surrend access event
+    [Arguments]    ${status}    ${bic}    ${event_outcome}
+    Filter entries on BIC    ${bic}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskTitle" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="categories" and text()[contains(.,'${categories}')]]
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskSubtitle"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${event_outcome}')]]
+    ${taskId}=    Return Id of Task By Status,Bic and EventOutcome    ${status}    ${bic}    ${event_outcome}
+    Element Should Be Visible    ${taskId}
+
+Verify I can view Request SWP Access request
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id="requestStatus"]//*[text()="${status}"]/ancestor::*[@id="ROW" and @type="SWIFT_PROFILE_ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,"${bic}")]]
+
+Verify I can view SWP Grant task
+    [Arguments]    ${status}    ${bic}    ${requesting_group}
+    [Documentation]    requesting_entities can be the name of the group of entities requesting the access, or the number of entitites "x entities"
+    Filter entries on BIC    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='SWIFT_PROFILE_GRANT_ACCESS']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_group}')]]
+    ${taskId}=    Return Id of Task By Type,Status,Bic and GroupHead    ${status}    ${bic}    ${requesting_group}    SWIFT_PROFILE_GRANT_ACCESS
+    Element Should Be Visible    ${taskId}
+
+Click on SWP Grant task
+    [Arguments]    ${status}    ${bic}    ${requesting_group}
+    [Documentation]    requesting_entities can be the name of the group of entities requesting the access, or the number of entitites "x entities"
+    Filter entries on BIC    ${bic}
+    comment    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='SWIFT_PROFILE_GRANT_ACCESS']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_group}')]]
+    ${taskId}=    Return Id of Task By Type,Status,Bic and GroupHead    ${status}    ${bic}    ${requesting_group}    SWIFT_PROFILE_GRANT_ACCESS
+    Element Should Be Visible    ${taskId}
+    Click Element    ${taskId}
+    Element Should Be Visible    //*[@id='grantAccessManagementDialog']
+
+Verify I cannot view SWP Grant task
+    [Arguments]    ${status}    ${bic}    ${requesting_group}
+    [Documentation]    requesting_entities can be the name of the group of entities requesting the access, or the number of entitites "x entities"
+    Filter entries on BIC    ${bic}
+    Comment    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='SWIFT_PROFILE_GRANT_ACCESS']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_group}')]]
+
+Click on Grant task
+    [Arguments]    ${status}    ${bic}    ${requesting_group}
+    [Documentation]    requesting_entities can be the name of the group of entities requesting the access, or the number of entitites "x entities"
+    Filter entries on BIC    ${bic}
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='tasks_row_0' and @type='REQUEST_ACCESS']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='tasks_row_0']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_group}')]]
+    ${taskId}=    Return Id of Task By Type,Status,Bic and GroupHead    ${status}    ${bic}    ${requesting_group}    REQUEST_ACCESS
+    Click Element    ${taskId}
+
+Grant partial access request from task
+    [Arguments]    ${status}    ${bic}    ${entity_group}    ${entities_to_be_granted}    ${comment}
+    Filter entries on BIC    ${bic}
+    Grant access to data and documents for given requesting entities    ${entity_group}    ${bic}    ${entities_to_be_granted}    ${comment}
+
+Verify note for SWP Request Access request
+    [Arguments]    ${status}    ${bic}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for SWP grant request    ${status}    ${bic}
+    Selenium2Library.Element Should Be Visible    //*[@id="requestStatus"]//*[text()="${status}"]/ancestor::*[@id="ROW" and @type="SWIFT_PROFILE_ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,"${bic}")]]/ancestor::*[@id='ROW']//*[@id='requestNote']
+    Element Should Contain    //*[@id="requestStatus"]//*[text()="${status}"]/ancestor::*[@id="ROW" and @type="SWIFT_PROFILE_ACCESS_REQUEST"]//*[@id="entityBic" and text()[contains(.,"${bic}")]]/ancestor::*[@id='ROW']//*[@id='requestNote']    ${note_text}
+
+Verify note for SWP Grant task
+    [Arguments]    ${status}    ${bic}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for SWP grant task    ${status}    ${bic}
+    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='SWIFT_PROFILE_ACCESS_REQUEST']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']
+    Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='SWIFT_PROFILE_ACCESS_REQUEST']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']    ${note_text}
+
+Assign grant task to user
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}    ${user}
+    Filter entries on BIC    ${bic}
+    #
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${group_requesting_entities}')]]/ancestor::*[@id='ROW']
+    #Assign task to user    ${basic_path}    ${user}
+    #
+    ${taskId}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${group_requesting_entities}
+    Assign task to user    ${taskId}    ${user}
+    Reload Page
+    Load whole page
+
+Verify grant task shows assigner
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}    ${assigner}
+    Filter entries on BIC    ${bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${group_requesting_entities}')]]/ancestor::*[@id='ROW']
+    ${basic_path}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${group_requesting_entities}
+    Verify task shows assigner    ${basic_path}    ${assigner}
+
+Verify grant task does not show assigner
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}    ${user}
+    Filter entries on BIC    ${bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${group_requesting_entities}')]]/ancestor::*[@id='ROW']
+    ${basic_path}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${group_requesting_entities}
+    Verify task does not show assigner    ${basic_path}
+
+Verify grant task can be unreserved
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}
+    Filter entries on BIC    ${bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${group_requesting_entities}')]]/ancestor::*[@id='ROW']
+    ${basic_path}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${group_requesting_entities}
+    Verify task can be unreserved    ${basic_path}
+
+Verify grant task cannot be unreserved
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}
+    Filter entries on BIC    ${bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${group_requesting_entities}')]]/ancestor::*[@id='ROW']
+    ${basic_path}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${group_requesting_entities}
+    Verify task cannot be unreserved    ${basic_path}
+
+Verify grant task is assignable to all users entity role
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}    ${role}    ${current_user}
+    Filter entries on BIC    ${bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${group_requesting_entities}')]]/ancestor::*[@id='ROW']
+    #Verify task is assignable to all users entity role    ${bic}    ${role}    ${current_user}    ${basic_path}
+    ${taskId}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${group_requesting_entities}
+    Verify task is assignable to all users entity role    ${bic}    ${role}    ${current_user}    ${taskId}
+
+Verify grant task is assignable to all users entity role except user
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}    ${role}    ${assignee}    ${current_user}
+    Filter entries on BIC    ${bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${group_requesting_entities}')]]/ancestor::*[@id='ROW']
+    #Verify task is assignable to all users entity role except user    ${bic}    ${role}    ${assignee}    ${current_user}    ${basic_path}
+    ${basic_path}=    Return Id of Task By Status,Bic and GroupHead    ${status}    ${bic}    ${group_requesting_entities}
+    Verify task is assignable to all users entity role except user    ${bic}    ${role}    ${assignee}    ${current_user}    ${basic_path}
+
+Take over grant task
+    [Arguments]    ${status}    ${bic}    ${group_requesting_entities}
+    #changes By Hassan Mollah
+    Reserve Grant task    Awaiting action    ${bic}
+    Confirm Takeover
+    Open Grant task    ${status}    ${bic}    ${group_requesting_entities}
+    Element Should Be Visible    //*[@id='grantAccessManagementDialog']
+    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='cancelDialog']
+    Element Should Not Be visible    //*[@id='grantAccessManagementDialog']
+
+Assign task to user
+    [Arguments]    ${main_path}    ${user}
+    execute Javascript    $('#${main_path}_taskActions').trigger('click');
+    Element Should Be Visible    //*[@id='${main_path}_taskActionsMenu']
+    Execute Javascript    $('#${main_path}_taskActionsMenu').find('li.ng-scope > a:contains("${${user}_name}")').trigger('click');
+    Click Element    //*[@id='takeover']
+    Reload Page
+    Load whole page
+
+Verify task shows assigner
+    [Arguments]    ${main_path}    ${assigner}
+    Click Element    //*[@id='${main_path}_taskActions']
+    Element Should Be Visible    //*[@id='${main_path}_taskActionsMenu']
+    Element Should Be Visible    //*[@id='${main_path}_taskActionsMenu']//*[@id='assigner' and text()='${${assigner}_name}']
+
+Verify task does not show assigner
+    [Arguments]    ${main_path}
+    Comment    Click Element    ${main_path}//*[@id='taskActions']
+    Comment    Element Should Be Visible    ${main_path}//*[@id='taskActionsMenu']
+    Comment    Element Should Not Be visible    ${main_path}//*[@id='taskActionsMenu']//*[@id='assigner']
+    Click Element    //*[@id='${main_path}_taskActions']
+    Element Should Be Visible    //*[@id='${main_path}_taskActionsMenu']
+    Element Should Not Be visible    //*[@id='${main_path}_taskActionsMenu']//*[@id='assigner']
+
+Verify task can be unreserved
+    [Arguments]    ${main_path}
+    Comment    Click Element    ${main_path}//*[@id='taskActions']
+    Comment    Element Should Be Visible    ${main_path}//*[@id='taskActionsMenu']
+    Comment    Element Should Be Visible    ${main_path}//*[@id='taskActionsMenu']//*[@id='unreserveTask']
+    Click Element    //*[@id='${main_path}_taskActions']
+    Element Should Be Visible    //*[@id='${main_path}_taskActionsMenu']
+    Element Should Be Visible    //*[@id='${main_path}_taskActionsMenu']//*[@id='unreserveTask']
+
+Verify task cannot be unreserved
+    [Arguments]    ${main_path}
+    Click Element    //*[@id='${main_path}_taskActions']
+    Element Should Be Visible    //*[@id='${main_path}_taskActionsMenu']
+    Element Should Not Be Visible    //*[@id='${main_path}_taskActionsMenu']//*[@id='unreserveTask']
+
+Verify task is assignable to all users entity role
+    [Arguments]    ${bic}    ${role}    ${assignee_user}    ${main_path}
+    @{list_users}=    SQL - Get Users for Role and Entity    ${role}    ${bic}
+    log many    @{list_users}
+    ${size}=    Get Length    ${list_users}
+    @{name_users}=    Create List
+    : FOR    ${idx}    IN RANGE    ${size}
+    \    Append To List    ${name_users}    ${list_users[${idx}][0]} ${list_users[${idx}][1]}
+    log many    @{name_users}
+    #
+    #
+    List Should Contain Value    ${name_users}    ${${assignee_user}_name}
+    Remove Values From List    ${name_users}    ${${assignee_user}_name}
+    #
+    Open task assign list and verify list users    ${name_users}    ${main_path}
+    #
+    #verify I can assign to myself
+    Comment    Element Should Be Visible    ${main_path}//*[@id='taskActionsMenu']//*[@id='assignTaskToMe']
+    Element Should Be Visible    //*[@id='${main_path}_taskActionsMenu']//*[@id='assignTaskToMe']
+
+Verify task is assignable to all users entity role except user
+    [Arguments]    ${bic}    ${role}    ${assignee}    ${current_user}    ${main_path}
+    @{list_users}=    SQL - Get Users for Role and Entity    ${role}    ${bic}
+    log many    @{list_users}
+    ${size}=    Get Length    ${list_users}
+    @{name_users}=    Create List
+    : FOR    ${idx}    IN RANGE    ${size}
+    \    Append To List    ${name_users}    ${list_users[${idx}][0]} ${list_users[${idx}][1]}
+    log many    @{name_users}
+    #
+    List Should Contain Value    ${name_users}    ${${assignee}_name}
+    Remove Values From List    ${name_users}    ${${assignee}_name}
+    Remove Values From List    ${name_users}    ${${current_user}_name}
+    log many    @{name_users}
+    #
+    Open task assign list and verify list users    ${name_users}    ${main_path}
+    #verify I cannot assign to myself
+    Run Keyword If    '${current_user}' == '${assignee}'    Element Should Not Be Visible    //*[@id='${main_path}_taskActionsMenu']//*[@id='assignTaskToMe']

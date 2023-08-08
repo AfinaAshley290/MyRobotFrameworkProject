@@ -1,0 +1,113 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          manage_access_to_data_doc_SWP_entity_unit.txt
+Resource          manage_access_to_data_doc_SWP_dialog_unit.txt
+
+*** Keywords ***
+Verify user has access granted to SWIFT Profile
+    Element Should Not Be visible    //*[@id='swiftProfileNoAccess']
+
+Verify user do not have access granted to SWIFT Profile
+    Element Should Be Visible    //*[@id='swiftProfileNoAccess']
+
+Verify user cannot manage access to SWIFT Profile
+    ${manage_access_button_visible}=    Run Keyword And Return Status    Entity - Validate View and Manage Access Button is visible
+    Run Keyword If    ${manage_access_button_visible}=='True'    Entity - Open Access Management Dialog
+    ${manage_access_link_visible}=    Run Keyword And Return Status    Entity - Validate View and Manage access link is visible
+    Run Keyword If    ${manage_access_link_visible}=='True'    Entity - Open Access Management Dialog from Action Menu
+    ${AMD_is_opened}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id="manageAccessManagementDialog"]
+    Run Keyword If    ${AMD_is_opened}=='True'    Access Management Dialog - user cannot manage access to SWIFT Profile
+
+Request access to SWP reports for all entities
+    [Arguments]    ${comment}
+    Entity - Open Access Management Dialog
+    Access Management Dialog - Request SWP Payment access for all
+    Access Management Dialog - Request SWP Trade and Finance access for all
+    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - 2 X Confirm
+    Element Should Not Be visible    //*[@id='manageAccessManagementConfirmationDialog']
+
+Request access to SWP reports for given entities
+    [Arguments]    ${entity_list}    ${comment}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity access to SWP Payment can be requested    ${entity}
+    \    Access Management Dialog - Request SWP Payment access for a given entity    ${entity}
+    \    Access Management Dialog - Validate entity access to SWP Payment is requested    ${entity}
+    \    Access Management Dialog - Validate entity access to SWP Trade and Finance can be requested    ${entity}
+    \    Access Management Dialog - Request SWP Trade and Finance access for a given entity    ${entity}
+    \    Access Management Dialog - Validate entity access to SWP Trade and Finance is requested    ${entity}
+    Run Keyword If    '${comment}'!=''    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - 2 X Confirm
+    Element Should Not Be visible    //*[@id='manageAccessManagementConfirmationDialog']
+
+Surrend access to SWP reports for all entities
+    [Arguments]    ${comment}
+    Open Request access to SWP reports dialog
+    Request SWP Access dialog Select all Entities
+    Input Comment in SWP Request Access dialog    ${comment}
+    SWP Request Access dialog click Send
+
+Surrend access to SWP reports for given entities
+    [Arguments]    ${comment}    ${bic}
+    Open Request access to SWP reports dialog
+    Request SWP Access dialog Deselect all Entities
+    SWP Request Access dialog select the entity with BIC    ${bic}
+    Input Comment in SWP Request Access dialog    ${comment}
+    SWP Request Access dialog click Send
+
+Verify access request to SWP cannot be requested for given entities
+    [Arguments]    ${entity_list}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity access to SWP Payment cannot be requested    ${entity}
+    \    Access Management Dialog - Validate entity access to SWP Trade and Finance cannot be requested    ${entity}
+    Access Management Dialog - Click Cancel
+
+Verify access request to SWP can be requested for given entities
+    [Arguments]    ${entity_list}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity access to SWP Payment can be requested    ${entity}
+    \    Access Management Dialog - Validate entity access to SWP Trade and Finance can be requested    ${entity}
+    Access Management Dialog - Click Cancel
+
+Request access to SWP Payment level 2 reports for given entities
+    [Arguments]    ${entity_list}    ${comment}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity access to SWP Payment level 2 can be requested    ${entity}
+    \    Access Management Dialog - Request SWP Payment level 2 access for a given entity    ${entity}
+    \    Access Management Dialog - Validate entity access to SWP Payment level 2 is requested    ${entity}
+    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm
+
+Request access to SWP Payment reports for given entities
+    [Arguments]    ${entity_list}    ${comment}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity access to SWP Payment can be requested    ${entity}
+    \    Access Management Dialog - Request SWP Payment access for a given entity    ${entity}
+    \    Access Management Dialog - Validate entity access to SWP Payment is requested    ${entity}
+    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm
+
+Request access to SWP Trade and Finance reports for given entities
+    [Arguments]    ${entity_list}    ${comment}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity access to SWP Trade and Finance can be requested    ${entity}
+    \    Access Management Dialog - Request SWP Trade and Finance access for a given entity    ${entity}
+    \    Access Management Dialog - Validate entity access to SWP Trade and Finance is requested    ${entity}
+    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm

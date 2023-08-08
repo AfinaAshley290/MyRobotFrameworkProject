@@ -1,0 +1,643 @@
+*** Settings ***
+Resource          rpc_unit.txt
+Resource          ../apps_res.txt
+
+*** Keywords ***
+RPC Create Empty Draft
+    [Arguments]    ${user}    ${bic}    ${category}
+    BuiltIn.Log    "RPC Create Empty Draft"
+    BuiltIn.Log    ${bic}
+    RPC.Create Draft    ${${user}_user}    ${bic}    ${category}    {}
+
+RPC Create Basic Draft IOC
+    [Arguments]    ${user}    ${bic}
+    BuiltIn.Log    "RPC Create Basic Draft IOC"
+    BuiltIn.Log    ${bic}
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    # structure do not work anymore
+    ${json}=    Set Variable    {"institution-status":{"value":"BANK","notApplicable":false,"notDisclosed":false},"legal-form-anglicised":{"value":"ASSOCIATION"},"legal-form-anglicised-which-other":{},"legal-name-local":{"value":"legal naming"},"trading-name-local":{"value":"trading"},"legal-name-previous":{"value":"previous naming"},"legal-name-lastchanged":{},"phone":{"value":"02987654321"},"fax":{"value":"02987654123"},"website":{"value":"swifties.com"},"registration-number":{"value":"09876543210"},"registration-authority":{},"registration-authority-which-other":{},"registration-authority-country":{},"incorporation-date":{},"ho-legal-form-anglicised":{},"ho-legal-form-anglicised-which-other":{},"regulatory-status":{"value":"FULL"},"regulatory-status-which-other":{},"regulatory-status-details":{},"regulator":{},"regulator-which-other":{},"regulator-website":{},"regulator-country":{},"second-regulator":{},"second-regulator-which-other":{},"second-regulator-website":{},"second-regulator-country":{},"supervising-authority-country":{},"license-type":{},"license-number":{"value":"09876543210"},"license-authority":{"value":"Xavier"},"license-authority-country":{"value":"AF"}}
+    RPC.Create draft    ${${user}_user}    ${bic}    IOC    ${json}
+
+RPC Create Basic Draft OMS
+    [Arguments]    ${user}    ${bic}
+    BuiltIn.Log    "RPC Create Basic Draft OMS"
+    BuiltIn.Log    ${bic}
+    #need to split in 2 because of limit in variable declaration
+    ${json1}=    Set Variable    {"form-of-organisation":{"compoundContent":{},"multiContent":[{"value":"PUBLIC"}],"notApplicable":false,"notDisclosed":false},"auditor":{"compoundContent":{},"multiContent":[{"value":"DELOITTE"}],"notApplicable":false,"notDisclosed":false},"stock-exchange-website":{"value":"sole24ore.it","notApplicable":false,"notDisclosed":false},"bearer-shares-possible":{"value":true,"notApplicable":false,"notDisclosed":false},"ubo-statement":{"value":"UBO_AS_FOLLOWS","notApplicable":false,"notDisclosed":false},"stock-exchange-country":{"value":"AI","notApplicable":false,"notDisclosed":false},"shareholder":{"compoundContent":{},"multiContent":[{"compoundContent":{"address-of-residence":{"compoundContent":{"pobox":{"compoundContent":{},"multiContent":[],"value":"1100","notApplicable":false,"notDisclosed":false},"street-address":{"compoundContent":{},"multiContent":[],"value":"rue Ernest Solvay","notApplicable":false,"notDisclosed":false},"city":{"compoundContent":{},"multiContent":[],"value":"SwiftCity","notApplicable":false,"notDisclosed":false},"country":{"compoundContent":{},"multiContent":[],"value":"BE","notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"shares-percentage":{"compoundContent":{},"multiContent":[],"value":21,"notApplicable":false,"notDisclosed":false},"nationality":{"compoundContent":{},"multiContent":[{"compoundContent":{},"multiContent":[],"value":"FR","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"GB","notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"date-of-birth":{"compoundContent":{},"multiContent":[],"value":"1988-05-03T00:00:00.000Z","notApplicable":false,"notDisclosed":false},"name":{"compoundContent":{"lastname":{"compoundContent":{},"multiContent":[],"value":"Benny","notApplicable":false,"notDisclosed":false},"lastname-local":{"compoundContent":{},"multiContent":[],"value":"Matthias","notApplicable":false,"notDisclosed":false},"firstname":{"compoundContent":{},"multiContent":[],"value":"Wim","notApplicable":false,"notDisclosed":false},"firstname-local":{"compoundContent":{},"multiContent":[],"value":"Milanco","notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"gender":{"compoundContent":{},"multiContent":[],"value":"Male","notApplicable":false,"notDisclosed":false},"country-of-birth":{"compoundContent":{},"multiContent":[],"value":"GR","notApplicable":false,"notDisclosed":false},"job-title":{"compoundContent":{},"multiContent":[],"value":"Developer","notApplicable":false,"notDisclosed":false},"ubo-level-of-ownership":{"compoundContent":{},"multiContent":[],"value":"DIRECT","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"bearer-shares-issued":{"value":true,"notApplicable":false,"notDisclosed":false},
+    ${json2}=    Set Variable    "shareholding-company":{"compoundContent":{},"multiContent":[{"compoundContent":{"operating-country":{"compoundContent":{},"multiContent":[],"value":"BE","notApplicable":false,"notDisclosed":false},"shares-percentage":{"compoundContent":{},"multiContent":[],"value":25,"notApplicable":false,"notDisclosed":false},"registered-country":{"compoundContent":{},"multiContent":[],"value":"BE","notApplicable":false,"notDisclosed":false},"comp-level-of-ownership":{"compoundContent":{},"multiContent":[],"value":"DIRECT","notApplicable":false,"notDisclosed":false},"company-legal-name":{"compoundContent":{},"multiContent":[],"value":"Company","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"key-controller":{"compoundContent":{},"multiContent":[{"compoundContent":{"address-of-residence":{"compoundContent":{"pobox":{"compoundContent":{},"multiContent":[],"value":"1100","notApplicable":false,"notDisclosed":false},"street-address":{"compoundContent":{},"multiContent":[],"value":"rue Ernest Solvay","notApplicable":false,"notDisclosed":false},"city":{"compoundContent":{},"multiContent":[],"value":"La Hulpe","notApplicable":false,"notDisclosed":false},"country":{"compoundContent":{},"multiContent":[],"value":"BE","notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"nationality":{"compoundContent":{},"multiContent":[{"compoundContent":{},"multiContent":[],"value":"CK","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"FJ","notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"date-of-birth":{"compoundContent":{},"multiContent":[],"value":"1988-04-28T00:00:00.000Z","notApplicable":false,"notDisclosed":false},"name":{"compoundContent":{"lastname":{"compoundContent":{},"multiContent":[],"value":"Glasby","notApplicable":false,"notDisclosed":false},"lastname-local":{"compoundContent":{},"multiContent":[],"value":"Gruwier","notApplicable":false,"notDisclosed":false},"firstname":{"compoundContent":{},"multiContent":[],"value":"Howard","notApplicable":false,"notDisclosed":false},"firstname-local":{"compoundContent":{},"multiContent":[],"value":"Chris","notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"member-of":{"compoundContent":{"membership":{"compoundContent":{},"multiContent":[{"compoundContent":{},"multiContent":[],"value":"BOARD_OF_DIRECTORS","notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"gender":{"compoundContent":{},"multiContent":[],"value":"Male","notApplicable":false,"notDisclosed":false},"country-of-birth":{"compoundContent":{},"multiContent":[],"value":"AI","notApplicable":false,"notDisclosed":false},"job-title":{"compoundContent":{},"multiContent":[{"compoundContent":{},"multiContent":[],"value":"NOMINEE","notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"stock-exchange-code":{"value":"16PB","notApplicable":false,"notDisclosed":false},"bearer-shares-percentage":{"value":51,"notApplicable":false,"notDisclosed":false},"stock-exchange-name":{"value":"ABU_DHABI_SECURITIES_MARKET","notApplicable":false,"notDisclosed":false},"stock-exchange-name-which-other":{},"auditor-which-other":{}}
+    RPC.Create draft    ${${user}_user}    ${bic}    OMS    ${json1}${json2}
+
+RPC Create Basic Draft TOB
+    [Arguments]    ${user}    ${bic}
+    BuiltIn.Log    "RPC Create Basic Draft TOB"
+    BuiltIn.Log    ${bic}
+    ${TOBData}    Create Dictionary
+    #Get date
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #
+    # structure do not work anymore
+    ${json}=    Set Variable    {"has-offshore-clients":{"value":false,"notApplicable":false,"notDisclosed":false},"trade-service":{"compoundContent":{},"multiContent":[{"value":"DOCUMENT_COLLECTION"},{"value":"GUARANTEES"}],"notApplicable":false,"notDisclosed":false},"offers-anonymous-accounts":{"value":false,"notApplicable":false,"notDisclosed":false},"sanctioned-countries-presence":{"compoundContent":{},"multiContent":[{"value":"EU_SANCTIONED"}],"notApplicable":false,"notDisclosed":false},"geo-presence":{"compoundContent":{},"multiContent":[{"value":"NORTH_AMERICA"},{"value":"EUROPE"}],"notApplicable":false,"notDisclosed":false},"offers-to-internet-gambling-companies":{"value":true,"notApplicable":false,"notDisclosed":false},"top-country":{"compoundContent":{},"multiContent":[{"value":"BN"},{"value":"CO"}],"notApplicable":false,"notDisclosed":false},"offers-correspondent-clearing":{"value":false,"notApplicable":false,"notDisclosed":false},"cash-service":{"compoundContent":{},"multiContent":[{"value":"MANAGEMENT"},{"value":"CLEARING"},{"value":"TRANSFERS"}],"notApplicable":false,"notDisclosed":false},"has-walk-in-clients":{"value":true,"notApplicable":false,"notDisclosed":false},"market-product":{"compoundContent":{},"multiContent":[{"value":"SWEEPS"},{"value":"INVESTMENT"},{"value":"INSURANCE"}],"notApplicable":false,"notDisclosed":false},"top-industries-presence":{"value":true,"notApplicable":false,"notDisclosed":false},"has-msb-clients":{"value":false,"notApplicable":false,"notDisclosed":false},"top-countries-presence":{"value":true,"notApplicable":false,"notDisclosed":false},"offers-payable-through-accounts":{"value":true,"notApplicable":false,"notDisclosed":false},"banned-industry":{"compoundContent":{},"multiContent":[{"value":"GAMBLING"},{"value":"ARMS"},{"value":"DIAMONDS"}],"notApplicable":false,"notDisclosed":false},"top-industry":{"compoundContent":{},"multiContent":[{"value":"A"},{"value":"D"},{"value":"G"},{"value":"J"},{"value":"M"},{"value":"P"},{"value":"Q"},{"value":"R"},{"value":"S"}],"notApplicable":false,"notDisclosed":false},"customers-others-text":{"value":"banking","notApplicable":false,"notDisclosed":false},"pure-internet-bank":{"value":true,"notApplicable":false,"notDisclosed":false},"banking-services":{"compoundContent":{},"multiContent":[{"value":"PRIVATE"},{"value":"MOBILE"}],"notApplicable":false,"notDisclosed":false},"banking-product":{"compoundContent":{},"multiContent":[{"value":"MONEY_MARKET"},{"value":"BONDS"},{"value":"CARDS"}],"notApplicable":false,"notDisclosed":false},"customers-governments":{"compoundContent":{"revenue-percentage":{"value":"51_75"},"client-base-percentage":{"value":"1_25"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"services-shell-banks":{"value":false,"notApplicable":false,"notDisclosed":false},"offers-to-fictitious-names":{"value":true,"notApplicable":false,"notDisclosed":false},"offers-banknotes-services":{"value":false,"notApplicable":false,"notDisclosed":false},"customers-others":{"compoundContent":{"client-base-percentage":{"value":"51_75"},"revenue-percentage":{"value":"1_25"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"offers-msb-services":{"value":true,"notApplicable":false,"notDisclosed":false},"classification":{"compoundContent":{},"multiContent":[{"value":"A"},{"value":"B"},{"value":"E"},{"value":"H"},{"value":"I"},{"value":"L"},{"value":"M"},{"value":"P"},{"value":"Q"},{"value":"T"},{"value":"U"}],"notApplicable":false,"notDisclosed":false},"customers-corporations":{"compoundContent":{"revenue-percentage":{"value":"51_75"},"client-base-percentage":{"value":"0"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"customers-retail":{"compoundContent":{"revenue-percentage":{"value":"26_50"},"client-base-percentage":{"value":"1_25"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"customers-institutional":{"compoundContent":{"revenue-percentage":{"value":"51_75"},"client-base-percentage":{"value":"76_100"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"customer-base-retail":{"value":"26_50"},"customer-base-corporations":{"value":"1_25"},"customer-base-institutional":{"value":"1_25"},"customer-base-governments":{"value":"1_25"},"customer-base-others-text":{},"customer-base-others":{},"banned-industry-which-other":{}}
+    RPC.Create Draft    ${${user}_user}    ${bic}    TOB    ${json}
+
+RPC Create Basic Draft COM
+    [Arguments]    ${user}    ${bic}
+    BuiltIn.Log    "RPC Create Basic Draft COM"
+    BuiltIn.Log    ${bic}
+    ${json1}=    Set Variable    {"number-of-aml-staff":{"value":50,"notApplicable":false,"notDisclosed":false},"money-laundering-contact":{"value":"DEPARTMENT","notApplicable":false,"notDisclosed":false},"wolfsberg-applicable":{"value":true,"notApplicable":false,"notDisclosed":false},"customer-relations-process":{"compoundContent":{},"multiContent":[{"value":"OWNERSHIP_STRUCTURE"},{"value":"EXECUTIVE_MANAGEMENT"},{"value":"EXPECTED_TURNOVER"},{"value":"AML_RISK_RATING"}],"notApplicable":false,"notDisclosed":false},"money-laundering-department":{"compoundContent":{"name":{},"email":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"aml-contactperson":{"compoundContent":{},"multiContent":[{"compoundContent":{"phone":{"compoundContent":{},"multiContent":[],"value":"02059505489496","notApplicable":false,"notDisclosed":false},"email":{"compoundContent":{},"multiContent":[],"value":"gp@gp.com","notApplicable":false,"notDisclosed":false},"lastname":{"compoundContent":{},"multiContent":[],"value":"Polet","notApplicable":false,"notDisclosed":false},"job-title":{"compoundContent":{},"multiContent":[],"value":"gp","notApplicable":false,"notDisclosed":false},"firstname":{"compoundContent":{},"multiContent":[],"value":"Guillaume","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false},{"compoundContent":{"phone":{"compoundContent":{},"multiContent":[],"value":"0950955656","notApplicable":false,"notDisclosed":false},"email":{"compoundContent":{},"multiContent":[],"value":"mv@mv.com","notApplicable":false,"notDisclosed":false},"lastname":{"compoundContent":{},"multiContent":[],"value":"Verbert","notApplicable":false,"notDisclosed":false},"job-title":{"compoundContent":{},"multiContent":[],"value":"mv","notApplicable":false,"notDisclosed":false},"firstname":{"compoundContent":{},"multiContent":[],"value":"Matthias","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":1,"notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"compliance-officer":{"compoundContent":{"firstname":{},"lastname":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"pep-screening-process":{"compoundContent":{},"multiContent":[{"value":"MANUAL"}],"notApplicable":false,"notDisclosed":false},"aml-transaction-monitoring-process":{"compoundContent":{},"multiContent":[{"value":"MANUAL"}],"notApplicable":false,"notDisclosed":false},
+    ${json2}=    Set Variable    "wolfsberg-part3":{"compoundContent":{"wolfsberg-3-12":{"value":true},"wolfsberg-3-14-how":{"value":"STANDARD_WOLFSBERG"},"wolfsberg-3-16":{"value":false},"wolfsberg-3-14":{"value":true},"wolfsberg-3-12-wn":{},"wolfsberg-3-13":{},"wolfsberg-3-13-wn":{},"wolfsberg-3-14-wn":{},"wolfsberg-3-15":{},"wolfsberg-3-15-wn":{},"wolfsberg-3-16-wn":{},"wolfsberg-3-17":{},"wolfsberg-3-17-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"mifid-applicable":{"value":true,"notApplicable":false,"notDisclosed":false},"wolfsberg-part4":{"compoundContent":{"wolfsberg-4-18":{"value":true},"wolfsberg-4-20":{"value":false},"wolfsberg-4-18-wn":{},"wolfsberg-4-19":{},"wolfsberg-4-19-wn":{},"wolfsberg-4-20-wn":{},"wolfsberg-4-21":{},"wolfsberg-4-21-wn":{},"wolfsberg-4-22":{},"wolfsberg-4-22-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"aml-auditor":{"compoundContent":{},"multiContent":[{"value":"DELOITTE"}],"notApplicable":false,"notDisclosed":false},"wolfsberg-part5":{"compoundContent":{"wolfsberg-5-23-wn":{"value":"whatever reason"},"wolfsberg-5-23":{"value":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"sanctions-screening-process":{"compoundContent":{},"multiContent":[{"value":"AUTOMATED"}],"notApplicable":false,"notDisclosed":false},"number-of-employees":{"value":120,"notApplicable":false,"notDisclosed":false},"investigated-or-fined-last-3-years":{"value":false,"notApplicable":false,"notDisclosed":false},"wolfsberg-part6":{"compoundContent":{"wolfsberg-6-27":{"value":true},"wolfsberg-6-28":{"value":false},"wolfsberg-6-24":{"value":true},"wolfsberg-6-24-wn":{},"wolfsberg-6-25":{},"wolfsberg-6-25-wn":{},"wolfsberg-6-26":{},"wolfsberg-6-26-wn":{},"wolfsberg-6-27-wn":{},"wolfsberg-6-28-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"us-relations":{"value":true,"notApplicable":false,"notDisclosed":false},"wolfsberg-part1":{"compoundContent":{"wolfsberg-1-7-wn":{"value":"whatever reason"},"wolfsberg-1-7":{"value":false},"wolfsberg-1-2-wn":{"value":"whatever reason"},"wolfsberg-1-5":{"value":true},"wolfsberg-1-2":{"value":false},"wolfsberg-1-1":{"value":true},"wolfsberg-1-1-wn":{},"wolfsberg-1-3":{},"wolfsberg-1-3-wn":{},"wolfsberg-1-4":{},"wolfsberg-1-4-wn":{},"wolfsberg-1-5-wn":{},"wolfsberg-1-6":{},"wolfsberg-1-6-wn":{},"wolfsberg-1-8":{},"wolfsberg-1-8-wn":{},"wolfsberg-1-9":{},"wolfsberg-1-9-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"wolfsberg-part2":{"compoundContent":{"wolfsberg-2-11-wn":{"value":"whatever reason"},"wolfsberg-2-11":{"value":false},"wolfsberg-2-10":{"value":true},"wolfsberg-2-10-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"money-laundering-reporting-officer":{},"wolfsberg-linked":{"value":false,"notApplicable":false,"notDisclosed":false},"aml-auditor-which-other":{},"sanctions-list":{},"sanctions-list-which-other":{},"pep-screening-process-which-other":{},"sanctions-screening-process-which-other":{},"aml-transaction-monitoring-process-which-other":{},"investigation-clarification":{},"wolfsberg-applicable-clarification":{}}
+    RPC.Create draft    ${${user}_user}    ${bic}    COM    ${json1}${json2}
+
+RPC Create Basic Draft TAX
+    [Arguments]    ${user}    ${bic}
+    BuiltIn.Log    "RPC Create Basic Draft TAX"
+    BuiltIn.Log    ${bic}
+    #Get date
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #
+    # structure do not work anymore
+    ${json}=    Set Variable    {"fatca-status":{"value":"NON_EXEMPT"},"fatca-exempt-status-reason":{},"fatca-exempt-status-reason-which-other":{},"fatca-in-scope-entities":{"value":"PARTICIPATING_FFI"},"giin":{"value":"0000000000000000"},"specific-fatca-contact":{"value":true},"fatca-contact":{"compoundContent":{"firstname":{"value":"Milanco"},"lastname":{"value":"Bikov"},"phone":{"value":"0256987530"},"job-title":{"value":"Developer"},"email":{"value":"milanco@bikov.com"}}},"tax-number":{"value":"25062014018"},"tax-country":{"multiContent":[{"value":"BO"},{"value":"DK"}]},"stock-exchanges-country":{},"stock-exchange-market":{},"text-field-w-def-value":{"value":"CITIBANK KOREA INC"},"number-field-w-def-value":{"value":39},"sub-text-field-w-def-value":{"value":"CITIUS33XXX"},"sub-b-text-field-w-def-value":{"value":"CITI_GROUP"},"stock-exchange-product":{}}
+    RPC.Create draft    ${${user}_user}    ${bic}    TAX    ${json}
+
+RPC Create Full Draft IOC
+    [Arguments]    ${user}    ${bic}    ${textFieldPrefix}
+    BuiltIn.Log    "RPC Create Full Draft IOC"
+    BuiltIn.Log    ${bic}
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    # json structure has changed
+    #${json}=    Set Variable    {"trading-name-local":{"value":"${textFieldPrefix}Trading_Name_In_Local","notApplicable":false,"notDisclosed":false},"legal-name-previous":{"value":"${textFieldPrefix}Immediate_Previous_Legal_Name","notApplicable":false,"notDisclosed":false},"phone":{"value":"02987654321","notApplicable":false,"notDisclosed":false},"fax":{"value":"02987654123","notApplicable":false,"notDisclosed":false},"legal-form-anglicised":{"value":"OTHER","notApplicable":false,"notDisclosed":false},"website":{"value":"${textFieldPrefix}Entity_Website.com","notApplicable":false,"notDisclosed":false},"regulatory-status":{"value":"OTHER","notApplicable":false,"notDisclosed":false},"license-authority":{},"institution-status":{"value":"BANK","notApplicable":false,"notDisclosed":false},"legal-name-local":{"value":"${textFieldPrefix}Legal_Name_In_Local","notApplicable":false,"notDisclosed":false},"registration-number":{"value":"${textFieldPrefix}Registration_Number","notApplicable":false,"notDisclosed":false},"license-number":{},"legal-form-anglicised-which-other":{"value":"${textFieldPrefix}Other_Anglicised_Legal_Form"},"legal-name-lastchanged":{"value":"1984"},"registration-authority":{"value":"OTHER"},"registration-authority-which-other":{"value":"${textFieldPrefix}Other_Registration_Authority"},"registration-authority-country":{"value":"BB"},"incorporation-date":{"value":"2023-08-10T00:00:00.000Z"},"ho-legal-form-anglicised":{},"ho-legal-form-anglicised-which-other":{},"regulatory-status-which-other":{"value":"${textFieldPrefix}Other_Regulatory_Status"},"regulatory-status-details":{},"regulator":{},"regulator-which-other":{},"regulator-website":{},"regulator-country":{},"second-regulator":{},"second-regulator-which-other":{},"second-regulator-website":{},"second-regulator-country":{},"supervising-authority-country":{},"license-type":{},"license-authority-country":{}}
+    ${json}=    Set Variable    {"legal-name-previous":{"value":"${textFieldPrefix}Immediate_Previous_Legal_Name","notApplicable":false,"notDisclosed":false},"phone":{"value":"02987654321","notApplicable":false,"notDisclosed":false},"fax":{"value":"02987654123","notApplicable":false,"notDisclosed":false},"legal-form-anglicised":{"value":"OTHER","notApplicable":false,"notDisclosed":false},"regulatory-status":{"value":"OTHER","notApplicable":false,"notDisclosed":false},"website":{"value":"${textFieldPrefix}Entity_Website.com","notApplicable":false,"notDisclosed":false},"legal-name-lastchanged":{"value":"1984","notApplicable":false,"notDisclosed":false},"registration-authority":{"value":"OTHER","notApplicable":false,"notDisclosed":false},"registration-authority-country":{"value":"BB","notApplicable":false,"notDisclosed":false},"registration-number":{"value":"${textFieldPrefix}Registration_Number","notApplicable":false,"notDisclosed":false},"regulatory-status-which-other":{"value":"${textFieldPrefix}Other_Regulatory_Status","notApplicable":false,"notDisclosed":false},"trading-name-local":{"value":"${textFieldPrefix}Trading_Name_In_Local","notApplicable":false,"notDisclosed":false},"incorporation-date":{"value":"2023-08-10T00:00:00.000Z","notApplicable":false,"notDisclosed":false},"registration-authority-which-other":{"value":"${textFieldPrefix}Other_Registration_Authority","notApplicable":false,"notDisclosed":false},"institution-status":{"value":"BANK","notApplicable":false,"notDisclosed":false},"legal-form-anglicised-which-other":{"value":"${textFieldPrefix}Other_Anglicised_Legal_Form","notApplicable":false,"notDisclosed":false},"legal-name-local":{"value":"${textFieldPrefix}Legal_Name_In_Local","notApplicable":false,"notDisclosed":false},"br-legal-form-anglicised":{"value":"ASSOCIATION"},"br-legal-form-anglicised-which-other":{},"regulatory-status-details":{},"regulator":{},"regulator-which-other":{},"regulator-website":{},"regulator-country":{},"second-regulator":{},"second-regulator-which-other":{},"second-regulator-website":{},"second-regulator-country":{},"supervising-authority-country":{},"license-type":{},"license-number":{},"license-authority":{},"license-authority-country":{}}
+    RPC.Create Draft    ${${user}_user}    ${bic}    IOC    ${json}
+
+RPC Create Full Draft OMS
+    [Arguments]    ${user}    ${bic}    ${textFieldPrefix}
+    [Documentation]    Create a draft with most of the fields filled up.
+    ...    The type is used as a prefix for all text fields. It should be 'HO', 'GH', 'DB', 'FB' or 'SF' but can be any single word.
+    BuiltIn.Log    "RPC Create Full Draft OMS"
+    BuiltIn.Log    ${bic}
+    ${nbrOfShareholdingCompanies}=    Set Variable    2
+    ${nbrOfShareholders}=    Set Variable    2
+    ${nbrOfKeyControllers}=    Set Variable    2
+    ${json}=    REST.Get Full OMS Json    ${textFieldPrefix}    ${nbrOfShareholdingCompanies}    ${nbrOfShareholders}    ${nbrOfKeyControllers}
+    BuiltIn.Log    ${json}
+    # json structure has changed
+    RPC.Create draft    ${${user}_user}    ${bic}    OMS    ${json}
+
+RPC Create Full Draft COM
+    [Arguments]    ${user}    ${bic}    ${textFieldPrefix}
+    BuiltIn.Log    "RPC Create Full Draft COM"
+    BuiltIn.Log    ${bic}
+    # json structure has changed
+    #split due to variable limit
+    ${json1}=    Set Variable    {"number-of-aml-staff":{"value":50,"notApplicable":false,"notDisclosed":false},"money-laundering-contact":{"value":"DEPARTMENT","notApplicable":false,"notDisclosed":false},"wolfsberg-applicable":{"value":true,"notApplicable":false,"notDisclosed":false},"customer-relations-process":{"compoundContent":{},"multiContent":[{"value":"OWNERSHIP_STRUCTURE"},{"value":"EXECUTIVE_MANAGEMENT"},{"value":"EXPECTED_TURNOVER"},{"value":"AML_RISK_RATING"}],"notApplicable":false,"notDisclosed":false},"money-laundering-department":{"compoundContent":{"name":{"value":"money_name"},"email":{"value":"money@email.com"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"aml-contactperson":{"compoundContent":{},"multiContent":[{"compoundContent":{"phone":{"compoundContent":{},"multiContent":[],"value":"02059505489496","notApplicable":false,"notDisclosed":false},"email":{"compoundContent":{},"multiContent":[],"value":"gp@gp.com","notApplicable":false,"notDisclosed":false},"lastname":{"compoundContent":{},"multiContent":[],"value":"Polet","notApplicable":false,"notDisclosed":false},"job-title":{"compoundContent":{},"multiContent":[],"value":"gp","notApplicable":false,"notDisclosed":false},"firstname":{"compoundContent":{},"multiContent":[],"value":"Guillaume","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false},{"compoundContent":{"phone":{"compoundContent":{},"multiContent":[],"value":"0950955656","notApplicable":false,"notDisclosed":false},"email":{"compoundContent":{},"multiContent":[],"value":"mv@mv.com","notApplicable":false,"notDisclosed":false},"lastname":{"compoundContent":{},"multiContent":[],"value":"Verbert","notApplicable":false,"notDisclosed":false},"job-title":{"compoundContent":{},"multiContent":[],"value":"mv","notApplicable":false,"notDisclosed":false},"firstname":{"compoundContent":{},"multiContent":[],"value":"Matthias","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":1,"notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"compliance-officer":{"compoundContent":{"firstname":{"value":"chief_name"},"lastname":{"value":"chief@email.com"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"pep-screening-process":{"compoundContent":{},"multiContent":[{"value":"MANUAL"}],"notApplicable":false,"notDisclosed":false},"aml-transaction-monitoring-process":{"compoundContent":{},"multiContent":[{"value":"MANUAL"}],"notApplicable":false,"notDisclosed":false},
+    ${json2}=    Set Variable    "wolfsberg-part3":{"compoundContent":{"wolfsberg-3-12":{"value":true},"wolfsberg-3-14-how":{"value":"STANDARD_WOLFSBERG"},"wolfsberg-3-16":{"value":false},"wolfsberg-3-14":{"value":true},"wolfsberg-3-13":{"value":true},"wolfsberg-3-15":{"value":true},"wolfsberg-3-16-wn":{"value":"reason 16"},"wolfsberg-3-17":{"value":true},"wolfsberg-3-12-wn":{},"wolfsberg-3-13-wn":{},"wolfsberg-3-14-wn":{},"wolfsberg-3-15-wn":{},"wolfsberg-3-17-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"mifid-applicable":{"value":true,"notApplicable":false,"notDisclosed":false},"wolfsberg-part4":{"compoundContent":{"wolfsberg-4-18":{"value":true},"wolfsberg-4-20":{"value":false},"wolfsberg-4-19":{"value":true},"wolfsberg-4-20-wn":{"value":"reason 20"},"wolfsberg-4-21":{"value":true},"wolfsberg-4-22":{"value":true},"wolfsberg-4-18-wn":{},"wolfsberg-4-19-wn":{},"wolfsberg-4-21-wn":{},"wolfsberg-4-22-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"aml-auditor":{"compoundContent":{},"multiContent":[{"value":"DELOITTE"}],"notApplicable":false,"notDisclosed":false},"wolfsberg-part5":{"compoundContent":{"wolfsberg-5-23-wn":{"value":"reason 23"},"wolfsberg-5-23":{"value":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"sanctions-screening-process":{"compoundContent":{},"multiContent":[{"value":"AUTOMATED"}],"notApplicable":false,"notDisclosed":false},"number-of-employees":{"value":120,"notApplicable":false,"notDisclosed":false},"investigated-or-fined-last-3-years":{"value":false,"notApplicable":false,"notDisclosed":false},"wolfsberg-part6":{"compoundContent":{"wolfsberg-6-27":{"value":true},"wolfsberg-6-28":{"value":false},"wolfsberg-6-24":{"value":true},"wolfsberg-6-25":{"value":true},"wolfsberg-6-26":{"value":true},"wolfsberg-6-28-wn":{"value":"reason 28"},"wolfsberg-6-24-wn":{},"wolfsberg-6-25-wn":{},"wolfsberg-6-26-wn":{},"wolfsberg-6-27-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"us-relations":{"value":true,"notApplicable":false,"notDisclosed":false},"wolfsberg-part1":{"compoundContent":{"wolfsberg-1-7-wn":{"value":"reason 7"},"wolfsberg-1-7":{"value":false},"wolfsberg-1-2-wn":{"value":"reason 2"},"wolfsberg-1-5":{"value":true},"wolfsberg-1-2":{"value":false},"wolfsberg-1-1":{"value":true},"wolfsberg-1-3":{"value":true},"wolfsberg-1-4":{"value":true},"wolfsberg-1-6":{"value":true},"wolfsberg-1-8":{"value":true},"wolfsberg-1-9":{"value":true},"wolfsberg-1-1-wn":{},"wolfsberg-1-3-wn":{},"wolfsberg-1-4-wn":{},"wolfsberg-1-5-wn":{},"wolfsberg-1-6-wn":{},"wolfsberg-1-8-wn":{},"wolfsberg-1-9-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"wolfsberg-part2":{"compoundContent":{"wolfsberg-2-11-wn":{"value":"reason 11"},"wolfsberg-2-11":{"value":false},"wolfsberg-2-10":{"value":true},"wolfsberg-2-10-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"money-laundering-reporting-officer":{},"wolfsberg-linked":{"value":false,"notApplicable":false,"notDisclosed":false},"aml-auditor-which-other":{},"sanctions-list":{},"sanctions-list-which-other":{},"pep-screening-process-which-other":{},"sanctions-screening-process-which-other":{},"aml-transaction-monitoring-process-which-other":{},"investigation-clarification":{},"wolfsberg-applicable-clarification":{}}
+    RPC.Create draft    ${${user}_user}    ${bic}    COM    ${json1}${json2}
+
+RPC Create Full Draft TAX
+    [Arguments]    ${user}    ${bic}    ${textFieldPrefix}
+    BuiltIn.Log    "RPC Create Full Draft TAX"
+    BuiltIn.Log    ${bic}
+    #split due to variable limit
+    ${json}=    Set Variable    {"fatca-status":{"value":"EXEMPT"},"fatca-exempt-status-reason":{"value":"INTERNATIONAL_ORGANISATION"},"fatca-exempt-status-reason-which-other":{},"fatca-in-scope-entities":{},"giin":{},"specific-fatca-contact":{"value":true},"fatca-contact":{"compoundContent":{"phone":{"value":"0256987530"},"email":{"value":"${textFieldPrefix}_FACTA_Email@TAX.com"},"lastname":{"value":"${textFieldPrefix}_FACTA_LN"},"job-title":{"value":"${textFieldPrefix}_FACTA_JOB"},"firstname":{"value":"${textFieldPrefix}_FACTA_FN"}}},"tax-number":{"value":"${textFieldPrefix}_TAX_ID_NO"},"tax-country":{"multiContent":[{"value":"BO"}]},"stock-exchanges-country":{},"stock-exchange-market":{},"text-field-w-def-value":{"value":"CITIBANK COLOMBIA"},"number-field-w-def-value":{"value":288},"sub-text-field-w-def-value":{"value":"CITIUS33XXX"},"sub-b-text-field-w-def-value":{"value":"CITI_GROUP"},"stock-exchange-product":{}}
+    RPC.Create draft    ${${user}_user}    ${bic}    TAX    ${json}
+
+RPC Create Version Tagged Draft IOC
+    [Arguments]    ${user}    ${bic}    ${version_number}
+    BuiltIn.Log    "RPC Create Version Tagged Draft IOC"
+    BuiltIn.Log    ${bic}
+    #${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #    ${IOCData}=    Create Dictionary
+    #    Set To Dictionary    ${IOCData}    registration-number    ${version_number}
+    #    ${json}=    KYC_RF_Utils.Get JSON From Dictionary    ${IOCData}
+    ${json}=    Set Variable    {"institution-status":{},"legal-form-anglicised":{},"legal-form-anglicised-which-other":{},"legal-name-local":{},"trading-name-local":{},"legal-name-previous":{},"legal-name-lastchanged":{},"phone":{},"fax":{},"website":{},"registration-number":{"value":"${version_number}"},"registration-authority":{},"registration-authority-which-other":{},"registration-authority-country":{},"incorporation-date":{},"ho-legal-form-anglicised":{},"ho-legal-form-anglicised-which-other":{},"regulatory-status":{},"regulatory-status-which-other":{},"regulatory-status-details":{},"regulator":{},"regulator-which-other":{},"regulator-website":{},"regulator-country":{},"second-regulator":{},"second-regulator-which-other":{},"second-regulator-website":{},"second-regulator-country":{},"supervising-authority-country":{},"license-type":{},"license-number":{},"license-authority":{},"license-authority-country":{}}
+    RPC.Create draft    ${${user}_user}    ${bic}    IOC    ${json}
+
+RPC Upload All Document Type For IOC
+    [Arguments]    ${user}    ${bic}    ${prefix}
+    BuiltIn.Log    "RPC Upload All Document Type For IOC"
+    BuiltIn.Log    ${bic}
+    ${category}=    Set Variable    IOC
+    #    Proof of regulation (POR)    Single Instance
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    POR    English    ${prefix}_POR_Doc1
+    #    Banking license (BAL)    Single Instance
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    BAL    English    ${prefix}_BAL_Doc1
+    #    Charter of law or local decree (COL)    Single Instance
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    COL    English    ${prefix}_COL_Doc1
+    #    Extract from registers (EFR)    Single Instance
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    EFR    English    ${prefix}_EFR_Doc1
+    #    Certificate of incorporation (COI)    Single Instance
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    COI    English    ${prefix}_COI_Doc1
+    #    Statutes or by-laws (STA)    Single Instance
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    STA    English    ${prefix}_STA_Doc1
+    #    Other Identification of Customer document (IOC)    Multi Instance    Translation not allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    IOC    English    ${prefix}_IOC_Doc1
+
+RPC Upload All Document Type For OMS
+    [Arguments]    ${user}    ${bic}    ${prefix}
+    BuiltIn.Log    "RPC Upload All Document Type For OMS"
+    BuiltIn.Log    ${bic}
+    ${category}=    Set Variable    OMS
+    #    Memorandum and Articles of association (MAA)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    MAA    English    ${prefix}_MAA_Doc1
+    RPC Upload Document Type Add Another Language    ${user}    ${bic}    ${category}    MAA    Italian    ${prefix}_MAA_Doc1
+    #    Ownership structure (OWS)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    OWS    English    ${prefix}_OWS_Doc1
+    RPC Upload Document Type Add Another Language    ${user}    ${bic}    ${category}    OWS    Italian    ${prefix}_OWS_Doc1
+    #    Documentary proof of shareholders companies (DPSC)    Multi instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    English    ${prefix}_DPSC_Doc1
+    RPC Upload Document Type Add Another Language    ${user}    ${bic}    ${category}    DPSC    German    ${prefix}_DPSC_Doc1
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    English    ${prefix}_DPSC_Doc2
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    French    ${prefix}_DPSC_DocVF1
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    French    ${prefix}_DPSC_DocVF2
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    German    ${prefix}_DPSC_DocVD1
+    #    List of shareholders (LSH)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    LSH    English    ${prefix}_LSH_Doc1
+    #    Board of Directors (BOD)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    BOD    English    ${prefix}_BOD_Doc1
+    #    List of senior/executive management including their function (LEX)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    LEX    English    ${prefix}_LEX_Doc1
+    #    Supervisory/non-executive Board (SVB)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    SVB    English    ${prefix}_SVB_Doc1
+    #    Shariah Board (SHB)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    SHB    English    ${prefix}_SHB_Doc1
+    #    Functional organisational chart (ORG)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    ORG    English    ${prefix}_ORG_Doc1
+    #    Latest audited annual report (ARE)    Single Instance    Translation allowed    Expires
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    ARE    English    ${prefix}_ARE_Doc1
+    #    Proof of identity of Ultimate Beneficial Owners and Key controllers (POI)    Multi Instance    Translation not allowed    Expires
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    POI    English    ${prefix}_POI_Doc1
+    #    Proof of residence of Ultimate Beneficial Owners and Key controllers (RES)    Multi Instance    Translation not allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    RES    English    ${prefix}_RES_Doc1
+    #    Other Ownership and Management Structure document (OMS)    Multi Instance    Translation not allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    OMS    English    ${prefix}_OMS_Doc1
+
+RPC Upload All Document Type For COM
+    [Arguments]    ${user}    ${bic}    ${prefix}
+    BuiltIn.Log    "RPC Upload All Document Type For COM"
+    BuiltIn.Log    ${bic}
+    ${category}=    Set Variable    COM
+    #    Wolfsberg AML Questionnaire completed \ (WBQ)    Single Instance    Translation not allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    WBQ    English    ${prefix}_WBQ_Doc1
+    #    Summary of AML policies and procedures or AML laws (SPP)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    SPP    English    ${prefix}_SPP_Doc1
+    RPC Upload Document Type Add Another Language    ${user}    ${bic}    ${category}    SPP    Italian    ${prefix}_SPP_Doc1
+    #    Detailed AML policies and procedures (DPP)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPP    English    ${prefix}_DPP_Doc1
+    #    AML questionnaire of the entity (template) (QUE)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    QUE    English    ${prefix}_QUE_Doc1
+    #    USA Patriot Act Certification completed (UPA)    Multi Instance    Translation Not allowed    Expires
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    UPA    English    ${prefix}_UPA_Doc1
+    #    MiFID questionnaire of the bank (template) (MFI)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    MFI    English    ${prefix}_MFI_Doc1
+    #    Organisational chart of the Compliance department (ORC)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    ORC    English    ${prefix}_ORC_Doc1
+    #    Response to negative statement from the press (PRS)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    PRS    English    ${prefix}_PRS_Doc1
+    #    Other Compliance document (COM)    Multi Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    COM    English    ${prefix}_COM_Doc1
+
+RPC Propose Draft for Submission
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    @{notApplicable}=    Create List    ${EMPTY}
+    ${notApplicableArg}=    Create List    @{notApplicable}
+    RPC.Propose Draft For Submission    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Propose Draft for Publication
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    @{notApplicable}=    Create List    ${EMPTY}
+    ${notApplicableArg}=    Create List    @{notApplicable}
+    RPC.Propose Draft For Publication    ${${user}_user}    ${bic}    ${category}    ${comment}    ${EMPTY}
+
+RPC Approve Draft
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    @{notApplicable}=    Create List    ${EMPTY}
+    ${notApplicableArg}=    Create List    @{notApplicable}
+    RPC.Approve Draft    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Submit Draft
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    @{notApplicable}=    Create List    ${EMPTY}
+    ${notApplicableArg}=    Create List    @{notApplicable}
+    RPC.Submit Draft    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Qualify Draft
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    RPC.Qualify Draft    ${${user}_user}    ${bic}    ${category}    ${EMPTY}
+
+RPC Qualify Draft with Checklist
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}    ${checklist}
+    [Documentation]    checklist accepts
+    ...    TRUE or FALSE with syntax
+    ...
+    ...    TRUE|TRUE|TRUE|TRUE
+    BuiltIn.Log    ${bic}
+    @{checklistarray}=    Get Checklist From String    ${checklist}
+    ${checklistArg}=    Create List    @{checklistarray}
+    RPC.Qualify Draft    ${${user}_user}    ${bic}    ${category}    ${checklistArg}
+
+RPC Publish Draft
+    [Arguments]    ${user}    ${bic}    ${category}    ${message}
+    BuiltIn.Log    ${bic}
+    RPC.Publish Draft    ${${user}_user}    ${bic}    ${category}    ${message}
+
+RPC Propose Draft for Publication with Checklist
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}    ${checklist}
+    [Documentation]    checklist accepts
+    ...    TRUE or FALSE with syntax
+    ...
+    ...    TRUE|TRUE|TRUE|TRUE
+    BuiltIn.Log    ${bic}
+    @{checklistarray}=    Get Checklist From String    ${checklist}
+    ${checklistArg}=    Create List    @{checklistarray}
+    RPC.Propose Draft For Publication    ${${user}_user}    ${bic}    ${category}    ${comment}    ${checklistArg}
+
+RPC Delete Draft
+    [Arguments]    ${user}    ${bic}    ${category}
+    BuiltIn.Log    ${bic}
+    RPC.Delete Draft    ${${user}_user}    ${bic}    ${category}
+
+RPC Reject Draft Qualification
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    RPC.Reject Draft Qualification    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Reject Draft Publication
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    RPC.Reject Draft Publication    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Reserve Task
+    [Arguments]    ${user}    ${taskType}    ${bic}    ${category}
+    [Documentation]    Approve SWIFT Profile
+    ...
+    ...    Approve folder
+    ...
+    ...    Approve pre-draft
+    ...
+    ...    Correct folder
+    ...
+    ...    Grant SWIFT Profile access
+    ...
+    ...    Grant access
+    ...
+    ...    Progress folder
+    ...
+    ...    Progress pre-draft
+    ...
+    ...    Publish SWIFT Profile
+    ...
+    ...    Publish folder
+    ...
+    ...    Publish group name change
+    ...
+    ...    Qualify and publish folder
+    ...
+    ...    Qualify and publish group name change
+    ...
+    ...    Qualify folder
+    ...
+    ...    Qualify group name change
+    ...
+    ...    Reconfirm folder
+    ...
+    ...    Replace expired document
+    ...
+    ...    Reply to document query
+    ...
+    ...    Reply to query
+    ...
+    ...    Rework folder
+    BuiltIn.Log    ${bic}
+    RPC.Reserve Task    ${${user}_user}    ${taskType}    ${bic}    ${category}
+
+RPC Reserve Task by Note
+    [Arguments]    ${user}    ${taskType}    ${bic}    ${note_text}
+    BuiltIn.Log    ${bic}
+    RPC.Reserve Task Free Text    ${${user}_user}    ${taskType}    ${bic}    ${note_text}
+
+RPC Unreserve Task
+    [Arguments]    ${user}    ${taskType}    ${bic}    ${category}
+    [Documentation]    Approve SWIFT Profile
+    ...
+    ...    Approve folder
+    ...
+    ...    Approve pre-draft
+    ...
+    ...    Correct folder
+    ...
+    ...    Grant SWIFT Profile access
+    ...
+    ...    Grant access
+    ...
+    ...    Progress folder
+    ...
+    ...    Progress pre-draft
+    ...
+    ...    Publish SWIFT Profile
+    ...
+    ...    Publish folder
+    ...
+    ...    Publish group name change
+    ...
+    ...    Qualify and publish folder
+    ...
+    ...    Qualify and publish group name change
+    ...
+    ...    Qualify folder
+    ...
+    ...    Qualify group name change
+    ...
+    ...    Reconfirm folder
+    ...
+    ...    Replace expired document
+    ...
+    ...    Reply to document query
+    ...
+    ...    Reply to query
+    ...
+    ...    Rework folder
+    BuiltIn.Log    ${bic}
+    RPC.Unreserve Task    ${${user}_user}    ${taskType}    ${bic}    ${category}
+
+RPC Send User2Swift query
+    [Arguments]    ${user}    ${bic}    ${category}    ${note}
+    BuiltIn.Log    ${bic}
+    Send Message Query    ${${user}_user}    SWHQBEBBXXX    ${category}    REWORK_QUERY    ${bic}    ${note}
+
+RPC Send Swift2User query
+    [Arguments]    ${user}    ${bic}    ${category_acronym}    ${msg_code}    ${note}
+    BuiltIn.Log    ${bic}
+    Send Message Query    ${${user}_user}    ${bic}    ${category_acronym}    ${msg_code}    SWHQBEBBXXX    ${note}
+
+RPC Send User2User query
+    [Arguments]    ${user}    ${target_bic}    ${msg_code}    ${requesting_bic}    ${note}
+    BuiltIn.Log    ${target_bic}
+    RPC.Send Message Query    ${${user}_user}    ${target_bic}    ${EMPTY}    ${msg_code}    ${requesting_bic}    ${note}
+
+RPC Send Document Query
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${doc_language}    ${doc_desc}
+    ...    ${doc_query_type}    ${requesting_bic}    ${note_text}
+    BuiltIn.Log    ${bic}
+    RPC.Send Document Query    ${${user}_user}    ${bic}    ${category}    ${doc_type}    ${doc_language}    ${doc_desc}
+    ...    ${doc_query_type}    ${requesting_bic}    ${note_text}
+
+RPC Reply Document Query
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${doc_language}    ${doc_query_type}
+    ...    ${requesting_bic}    ${note_text}
+    BuiltIn.Log    ${bic}
+    Run Keyword If    '${doc_language}'=='English'    RPC.Reply To Document Query    ${${user}_user}    ${bic}    ${category}    ${doc_type}
+    ...    ${EMPTY}    ${doc_query_type}    ${requesting_bic}    ${note_text}
+    Run Keyword Unless    '${doc_language}'=='English'    RPC.Reply To Document Query    ${${user}_user}    ${bic}    ${category}    ${doc_type}
+    ...    ${doc_language}    ${doc_query_type}    ${requesting_bic}    ${note_text}
+
+RPC Reply User2User query
+    [Arguments]    ${user}    ${target_bic}    ${msg_code}    ${requesting_bic}    ${note}
+    BuiltIn.Log    ${target_bic}
+    RPC.Reply To Message Query    ${${user}_user}    ${target_bic}    ${EMPTY}    ${msg_code}    ${requesting_bic}    ${note}
+
+RPC Takeover Task
+    [Arguments]    ${user}    ${bic}    ${taskType}    ${category}
+    BuiltIn.Log    ${bic}
+    RPC.Takeover Task    ${${user}_user}    ${taskType}    ${bic}    ${category}
+
+RPC Request Access for all Entities
+    [Arguments]    ${user}    ${granting_bic}    ${comment}
+    BuiltIn.Log    "RPC Request Access For All Entities"
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${granting_bic}
+    RPC.Request Access    ${${user}_user}    ${EMPTY}    ${granting_bic}    ${comment}
+
+RPC Request Access for given Entities
+    [Arguments]    ${user}    ${granting_bic}    ${requesting_entities}    ${comment}
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${granting_bic}
+    BuiltIn.Log    ${requesting_entities}
+    @{entitiesToAssign}=    Split String    ${requesting_entities}    ,
+    ${entitiesArg}=    Create List    @{entitiesToAssign}
+    RPC.Request Access    ${${user}_user}    ${entitiesArg}    ${granting_bic}    ${comment}
+
+RPC Grant Access
+    [Arguments]    ${user}    ${granting_bic}    ${group_head_requesting_access}    ${comment}
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${granting_bic}
+    BuiltIn.Log    ${group_head_requesting_access}
+    RPC.Grant Access    ${${user}_user}    ${group_head_requesting_access}    ${granting_bic}    ${comment}
+
+RPC Surrend Access for all Entities
+    [Arguments]    ${user}    ${granting_bic}    ${comment}
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${granting_bic}
+    RPC.Surrender Access    ${${user}_user}    ${EMPTY}    ${EMPTY}    ${granting_bic}    ${comment}
+
+RPC Deny Access
+    [Arguments]    ${user}    ${bic}    ${entity_group}    ${comment}
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${bic}
+    BuiltIn.Log    ${entity_group}
+    RPC.Deny Access    ${${user}_user}    ${entity_group}    ${bic}    ${comment}
+
+RPC Generate New SWP
+    [Arguments]    ${user}    ${bic}
+    BuiltIn.Log    ${bic}
+    BuiltIn.Log    ${${user}_user}
+    RPC.Generate New SWP    ${${user}_user}    ${bic}
+
+RPC Reconfirm Folder
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    RPC.Reconfirm Folder    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Reject Draft Submission
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    RPC.Reject Draft Submission    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Upload All Document Type For IOC GH
+    [Arguments]    ${user}    ${bic}    ${prefix}
+    [Documentation]    Normally only HO linkable docs can be uploaded in GH
+    BuiltIn.Log    "RPC Upload All Document Type For IOC"
+    BuiltIn.Log    ${bic}
+    ${category}=    Set Variable    IOC
+    #    Other Identification of Customer document (IOC)    Multi Instance    Translation not allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    IOC    English    ${prefix}_IOC_Doc1
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    IOC    Italian    ${prefix}_IOC_Doc2
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    IOC    French    ${prefix}_IOC_Doc3
+    RPC Upload Document Type Add English Translation    ${user}    ${bic}    ${category}    IOC    ${prefix}_IOC_Doc3
+
+RPC Upload All Document Type For OMS GH
+    [Arguments]    ${user}    ${bic}    ${prefix}
+    BuiltIn.Log    "RPC Upload All Document Type For OMS"
+    BuiltIn.Log    ${bic}
+    ${category}=    Set Variable    OMS
+    #    Ownership structure (OWS)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    OWS    English    ${prefix}_OWS_Doc1
+    RPC Upload Document Type Add Another Language    ${user}    ${bic}    ${category}    OWS    Italian    ${prefix}_OWS_Doc1
+    #    Documentary proof of shareholders companies (DPSC)    Multi instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    English    ${prefix}_DPSC_Doc1
+    RPC Upload Document Type Add Another Language    ${user}    ${bic}    ${category}    DPSC    German    ${prefix}_DPSC_Doc1
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    English    ${prefix}_DPSC_Doc2
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    French    ${prefix}_DPSC_DocVF1
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    French    ${prefix}_DPSC_DocVF2
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    DPSC    German    ${prefix}_DPSC_DocVD1
+    #    Functional organisational chart (ORG)    Single Instance    Translation allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    ORG    English    ${prefix}_ORG_Doc1
+    #    Latest audited annual report (ARE)    Single Instance    Translation allowed    Expires
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    ARE    English    ${prefix}_ARE_Doc1
+    #    Proof of identity of Ultimate Beneficial Owners and Key controllers (POI)    Multi Instance    Translation not allowed    Expires
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    POI    English    ${prefix}_POI_Doc1
+    #    Proof of residence of Ultimate Beneficial Owners and Key controllers (RES)    Multi Instance    Translation not allowed
+    RPC Upload Document Type    ${user}    ${bic}    ${category}    RES    English    ${prefix}_RES_Doc1
+    #    Other Ownership and Management Structure document (OMS)    Multi Instance    Translation not allowed
+    #RPC Upload Document Type    ${user}    ${bic}    ${category}    OMS    English    ${prefix}_OMS_Doc1
+
+RPC Enable Swift takeover CITI
+    RPC.Update Enable Disable Swift Takeover    ${GROUP_HEAD_A}    true
+
+RPC Disable Swift takeover CITI
+    RPC.Update Enable Disable Swift Takeover    ${GROUP_HEAD_A}    false
+
+RPC Revoke Access
+    [Arguments]    ${user}    ${granting_bic}    ${entities_to_be_Revoked}    ${comment}
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${granting_bic}
+    BuiltIn.Log    ${entities_to_be_Revoked}
+    @{entitiesToRevoke}=    Split String    ${entities_to_be_Revoked}    ,
+    ${entitiesToRevokeArg}=    Create List    @{entitiesToRevoke}
+    RPC.Revoke Access    ${${user}_user}    ${entitiesToRevokeArg}    ${granting_bic}    ${comment}
+
+RPC Approve SWP
+    [Arguments]    ${user}    ${bic}
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${bic}
+    RPC.Approve SWP    ${${user}_user}    ${bic}
+
+RPC Publish SWP
+    [Arguments]    ${user}    ${bic}    ${swp_category}
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${bic}
+    RPC.Publish SWP    ${${user}_user}    ${bic}    ${swp_category}
+
+RPC Propose PreDraft for Submission
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    @{notApplicable}=    Create List    ${EMPTY}
+    ${notApplicableArg}=    Create List    @{notApplicable}
+    RPC.Propose Pre Draft For Submission    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Surrend Access for Given Entities
+    [Arguments]    ${user}    ${granting_bic}    ${entities_to_surrender}    ${comment}
+    BuiltIn.Log    ${${user}_user}
+    BuiltIn.Log    ${granting_bic}
+    BuiltIn.Log    ${entities_to_surrender}
+    @{entitiesToSurrend}=    Split String    ${entities_to_surrender}    ,
+    ${entitiesArg}=    Create List    @{entitiesToSurrend}
+    RPC.Surrender Access    ${${user}_user}    ${entitiesArg}    ${EMPTY}    ${granting_bic}    ${comment}
+
+RPC Get Access for given Entities
+    [Arguments]    ${granting_entity}    ${requesting_entities}    ${granter}    ${requester}    ${req_group}
+    RPC Request Access for given Entities    ${requester}    ${granting_entity}    ${requesting_entities}    any comment
+    RPC Grant Access    ${granter}    ${granting_entity}    ${req_group}    any comment
+
+RPC Create Full Draft COM for doc link
+    [Arguments]    ${user}    ${bic}    ${textFieldPrefix}
+    BuiltIn.Log    "RPC Create Full Draft COM"
+    BuiltIn.Log    ${bic}
+    #split due to variable limit
+    ${json1}=    Set Variable    {"number-of-aml-staff":{"value":68,"notApplicable":false,"notDisclosed":false},"money-laundering-contact":{"value":"DEPARTMENT","notApplicable":false,"notDisclosed":false},"wolfsberg-applicable":{"value":true,"notApplicable":false,"notDisclosed":false},"customer-relations-process":{"compoundContent":{},"multiContent":[{"value":"CUSTOMER_IDENTIFICATION"},{"value":"BENEFICIAL_OWNERS"},{"value":"OWNERSHIP_STRUCTURE"},{"value":"EXECUTIVE_MANAGEMENT"},{"value":"EXPECTED_TURNOVER"}],"notApplicable":false,"notDisclosed":false},"money-laundering-department":{"compoundContent":{"email":{"value":"${textFieldPrefix}_Money_laundering_dept_email@aaa.com"},"name":{"value":"${textFieldPrefix}_Money_laundering_dept_name"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"aml-contactperson":{"compoundContent":{},"multiContent":[{"compoundContent":{"phone":{"value":"02059505489496","notApplicable":false,"notDisclosed":false},"email":{"value":"${textFieldPrefix}_AML_Contact_email@aaa.com","notApplicable":false,"notDisclosed":false},"lastname":{"value":"${textFieldPrefix}_AML_Contact_Lastname","notApplicable":false,"notDisclosed":false},"job-title":{"value":"${textFieldPrefix}_AML_Contact_Job_Title","notApplicable":false,"notDisclosed":false},"firstname":{"value":"${textFieldPrefix}_AML_Contact_Firstname","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false}]},"compliance-officer":{"compoundContent":{"lastname":{"value":"${textFieldPrefix}_Chief_compl_off_name_last"},"firstname":{"value":"${textFieldPrefix}_Chief_compl_off_name_first"}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"pep-screening-process":{"compoundContent":{},"multiContent":[{"value":"AUTOMATED"},{"value":"MANUAL"}],"notApplicable":false,"notDisclosed":false},"aml-transaction-monitoring-process":{"compoundContent":{},"multiContent":[{"value":"AUTOMATED"},{"value":"MANUAL"},{"value":"OTHER"}],"notApplicable":false,"notDisclosed":false},"wolfsberg-part3":{"compoundContent":{"wolfsberg-3-16-wn":{},"wolfsberg-3-12":{"value":true},"wolfsberg-3-14-how":{"value":"STANDARD_WOLFSBERG"},"wolfsberg-3-16":{"value":true},"wolfsberg-3-15":{"value":true},"wolfsberg-3-14":{"value":true},"wolfsberg-3-13":{"value":true},"wolfsberg-3-17":{"value":true},"wolfsberg-3-12-wn":{},"wolfsberg-3-13-wn":{},"wolfsberg-3-14-wn":{},"wolfsberg-3-15-wn":{},"wolfsberg-3-17-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"mifid-applicable":{"value":true,"notApplicable":false,"notDisclosed":false},"wolfsberg-part4":{"compoundContent":{"wolfsberg-4-19":{"value":false},"wolfsberg-4-18":{"value":true},"wolfsberg-4-21":{"value":true},"wolfsberg-4-22":{"value":true},"wolfsberg-4-20":{"value":true},"wolfsberg-4-20-wn":{},"wolfsberg-4-19-wn":{"value":"wolfsberg-4-19"},"wolfsberg-4-18-wn":{},"wolfsberg-4-21-wn":{},"wolfsberg-4-22-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},
+    ${json2}=    Set Variable    "aml-auditor":{"compoundContent":{},"multiContent":[{"value":"DELOITTE"},{"value":"KPMG"},{"value":"OTHER"}],"notApplicable":false,"notDisclosed":false},"wolfsberg-part5":{"compoundContent":{"wolfsberg-5-23-wn":{"value":"${textFieldPrefix}_WQ_explanation_23"},"wolfsberg-5-23":{"value":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"sanctions-screening-process":{"compoundContent":{},"multiContent":[{"value":"AUTOMATED"}],"notApplicable":false,"notDisclosed":false},"number-of-employees":{"value":69,"notApplicable":false,"notDisclosed":false},"investigated-or-fined-last-3-years":{"value":true,"notApplicable":false,"notDisclosed":false},"wolfsberg-part6":{"compoundContent":{"wolfsberg-6-28-wn":{},"wolfsberg-6-27":{"value":true},"wolfsberg-6-28":{"value":true},"wolfsberg-6-26":{"value":false},"wolfsberg-6-25":{"value":true},"wolfsberg-6-24":{"value":true},"wolfsberg-6-26-wn":{"value":"${textFieldPrefix}_WQ_explanation_26"},"wolfsberg-6-24-wn":{},"wolfsberg-6-25-wn":{},"wolfsberg-6-27-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"us-relations":{"value":true,"notApplicable":false,"notDisclosed":false},"wolfsberg-part1":{"compoundContent":{"wolfsberg-1-7-wn":{"value":"${textFieldPrefix}_WQ_explanation_7"},"wolfsberg-1-9":{"value":true},"wolfsberg-1-8":{"value":true},"wolfsberg-1-7":{"value":false},"wolfsberg-1-2-wn":{"value":"${textFieldPrefix}_WQ_explanation_2"},"wolfsberg-1-6":{"value":true},"wolfsberg-1-5":{"value":true},"wolfsberg-1-4":{"value":true},"wolfsberg-1-3":{"value":false},"wolfsberg-1-2":{"value":false},"wolfsberg-1-1":{"value":true},"wolfsberg-1-3-wn":{"value":"${textFieldPrefix}_WQ_explanation_3"},"wolfsberg-1-1-wn":{},"wolfsberg-1-4-wn":{},"wolfsberg-1-5-wn":{},"wolfsberg-1-6-wn":{},"wolfsberg-1-8-wn":{},"wolfsberg-1-9-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"wolfsberg-part2":{"compoundContent":{"wolfsberg-2-11-wn":{"value":"${textFieldPrefix}_WQ_explanation_11"},"wolfsberg-2-11":{"value":false},"wolfsberg-2-10":{"value":true},"wolfsberg-2-10-wn":{}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"money-laundering-reporting-officer":{},"wolfsberg-linked":{"value":false,"notApplicable":false,"notDisclosed":false},"aml-auditor-which-other":{"value":"${textFieldPrefix}_Name_AML_Audit_other"},"sanctions-list":{"multiContent":[{"value":"EU"},{"value":"NONE"}]},"sanctions-list-which-other":{},"pep-screening-process-which-other":{},"sanctions-screening-process-which-other":{},"aml-transaction-monitoring-process-which-other":{"value":"${textFieldPrefix}_cur_AML_Txn_Monit_other"},"investigation-clarification":{"value":"${textFieldPrefix}_Opt_explanation"},"wolfsberg-applicable-clarification":{}}
+    RPC.Create draft    ${${user}_user}    ${bic}    COM    ${json1}${json2}
+
+RPC Create Full Draft OMS for doc link
+    [Arguments]    ${user}    ${bic}    ${textFieldPrefix}
+    [Documentation]    Create a draft with most of the fields filled up.
+    ...    The type is used as a prefix for all text fields. It should be 'HO', 'GH', 'DB', 'FB' or 'SF' but can be any single word.
+    BuiltIn.Log    "RPC Create Full Draft OMS"
+    BuiltIn.Log    ${bic}
+    #split due to variable limit
+    ${json1}=    Set Variable    {"form-of-organisation":{"compoundContent":{},"multiContent":[{"value":"PRIVATE"},{"value":"PUBLIC"},{"value":"STATE_OWNED"}],"notApplicable":false,"notDisclosed":false},"auditor":{"compoundContent":{},"multiContent":[{"value":"DELOITTE"},{"value":"ERNST_YOUNG"},{"value":"KPMG"},{"value":"OTHER"}],"notApplicable":false,"notDisclosed":false},"ubo-statement":{"value":"UBO_AS_FOLLOWS","notApplicable":false,"notDisclosed":false},"stock-exchange-website":{"value":"website_1.it","notApplicable":false,"notDisclosed":false},"shareholder":{"compoundContent":{},"multiContent":[{"compoundContent":{"address-of-residence":{"compoundContent":{"pobox":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_POBox","notApplicable":false,"notDisclosed":false},"street-address":{"compoundContent":{},"multiContent":[],"value":"rue Ernest Solvay","notApplicable":false,"notDisclosed":false},"city":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_City","notApplicable":false,"notDisclosed":false},"country":{"compoundContent":{},"multiContent":[],"value":"BE","notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"shares-percentage":{"compoundContent":{},"multiContent":[],"value":21,"notApplicable":false,"notDisclosed":false},"nationality":{"compoundContent":{},"multiContent":[{"compoundContent":{},"multiContent":[],"value":"FR","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"GB","notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"date-of-birth":{"compoundContent":{},"multiContent":[],"value":"1988-05-03T00:00:00.000Z","notApplicable":false,"notDisclosed":false},"name":{"compoundContent":{"middlename":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_MN","notApplicable":false,"notDisclosed":false},"lastname":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_LN","notApplicable":false,"notDisclosed":false},"lastname-local":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_LNLoc","notApplicable":false,"notDisclosed":false},"firstname":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_FN","notApplicable":false,"notDisclosed":false},"firstname-local":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_FNLoc","notApplicable":false,"notDisclosed":false},"middlename-local":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_MNLoc","notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"gender":{"compoundContent":{},"multiContent":[],"value":"Male","notApplicable":false,"notDisclosed":false},"country-of-birth":{"compoundContent":{},"multiContent":[],"value":"GR","notApplicable":false,"notDisclosed":false},"job-title":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_UltBen_Function","notApplicable":false,"notDisclosed":false},"ubo-level-of-ownership":{"compoundContent":{},"multiContent":[],"value":"DIRECT","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"stock-exchange-country":{"value":"CA","notApplicable":false,"notDisclosed":false},"shareholding-company":{"compoundContent":{},"multiContent":[{"compoundContent":{"operating-country":{"compoundContent":{},"multiContent":[],"value":"BE","notApplicable":false,"notDisclosed":false},"stock-exchange":{"compoundContent":{},"multiContent":[],"value":"AFGHANISTAN_STOCK_EXCHANGE","notApplicable":false,"notDisclosed":false},"shares-percentage":{"compoundContent":{},"multiContent":[],"value":25,"notApplicable":false,"notDisclosed":false},"registered-country":{"compoundContent":{},"multiContent":[],"value":"BE","notApplicable":false,"notDisclosed":false},"comp-level-of-ownership":{"compoundContent":{},"multiContent":[],"value":"DIRECT","notApplicable":false,"notDisclosed":false},"company-legal-name":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_Cpny_Legal_Name","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false},{"compoundContent":{"operating-country":{"compoundContent":{},"multiContent":[],"value":"BZ","notApplicable":false,"notDisclosed":false},"stock-exchange":{"compoundContent":{},"multiContent":[],"value":"AUSTRALIAN_SECURITIES_EXCHANGE","notApplicable":false,"notDisclosed":false},"shares-percentage":{"compoundContent":{},"multiContent":[],"value":30,"notApplicable":false,"notDisclosed":false},"registered-country":{"compoundContent":{},"multiContent":[],"value":"CV","notApplicable":false,"notDisclosed":false},"comp-level-of-ownership":{"compoundContent":{},"multiContent":[],"value":"INDIRECT","notApplicable":false,"notDisclosed":false},"company-legal-name":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_Cpny_Legal_Name2","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":1,"notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"bearer-shares-issued":{"value":true,"notApplicable":false,"notDisclosed":false},"s-stock-exchange-name":{"value":"BOLSA_DE_COMERCIO_DE_CORDOBA","notApplicable":false,"notDisclosed":false},"bearer-shares-percentage":{"value":51,"notApplicable":false,"notDisclosed":false},"s-stock-exchange-website":{"value":"website_2.it","notApplicable":false,"notDisclosed":false},"bearer-shares-possible":{"value":true,"notApplicable":false,"notDisclosed":false},"s-stock-exchange-code":{"value":"${textFieldPrefix}_code_02","notApplicable":false,"notDisclosed":false},
+    ${json2}=    Set Variable    "key-controller":{"compoundContent":{},"multiContent":[{"compoundContent":{"address-of-residence":{"compoundContent":{"pobox":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_POBx","notApplicable":false,"notDisclosed":false},"street-address":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_Addr","notApplicable":false,"notDisclosed":false},"city":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_City","notApplicable":false,"notDisclosed":false},"country":{"compoundContent":{},"multiContent":[],"value":"BE","notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"nationality":{"compoundContent":{},"multiContent":[{"compoundContent":{},"multiContent":[],"value":"CK","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"FJ","notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"date-of-birth":{"compoundContent":{},"multiContent":[],"value":"1988-04-28T00:00:00.000Z","notApplicable":false,"notDisclosed":false},"name":{"compoundContent":{"middlename":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_MN","notApplicable":false,"notDisclosed":false},"lastname":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_LN","notApplicable":false,"notDisclosed":false},"lastname-local":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_LNLoc","notApplicable":false,"notDisclosed":false},"firstname":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_FN","notApplicable":false,"notDisclosed":false},"firstname-local":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_FNLoc","notApplicable":false,"notDisclosed":false},"middlename-local":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_MNLoc","notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"member-of":{"compoundContent":{"membership-which-other":{"compoundContent":{},"multiContent":[],"value":"${textFieldPrefix}_KeyCtrl_OtherMembership","notApplicable":false,"notDisclosed":false},"membership":{"compoundContent":{},"multiContent":[{"compoundContent":{},"multiContent":[],"value":"BOARD_OF_DIRECTORS","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"EXECUTIVE_MANAGEMENT","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"SUPERVISORY_BOARD","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"OTHER","notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false}},"multiContent":[],"notApplicable":false,"notDisclosed":false},"gender":{"compoundContent":{},"multiContent":[],"value":"Female","notApplicable":false,"notDisclosed":false},"country-of-birth":{"compoundContent":{},"multiContent":[],"value":"AI","notApplicable":false,"notDisclosed":false},"job-title":{"compoundContent":{},"multiContent":[{"compoundContent":{},"multiContent":[],"value":"CHAIRMAN","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"CHIEF_RISK_OFFICER","notApplicable":false,"notDisclosed":false},{"compoundContent":{},"multiContent":[],"value":"POWER_OF_ATTORNEY","notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"appointment-date":{"compoundContent":{},"multiContent":[],"value":"2024-06-08T00:00:00.000Z","notApplicable":false,"notDisclosed":false}},"multiContent":[],"nodeId":0,"notApplicable":false,"notDisclosed":false}],"notApplicable":false,"notDisclosed":false},"list-percentage":{"value":21,"notApplicable":false,"notDisclosed":false},"stock-exchange-code":{"value":"${textFieldPrefix}_code_01","notApplicable":false,"notDisclosed":false},"auditor-which-other":{"value":"${textFieldPrefix}_Auditor_Other","notApplicable":false,"notDisclosed":false},"s-stock-exchange-country":{"value":"CF","notApplicable":false,"notDisclosed":false},"stock-exchange-name":{"value":"BOLSA_DE_VALORES_DE_CARACAS","notApplicable":false,"notDisclosed":false},"stock-exchange-name-which-other":{},"s-stock-exchange-name-which-other":{},"ho-auditor":{},"ho-auditor-which-other":{}}
+    BuiltIn.Log    ${json1}${json2}
+    RPC.Create draft    ${${user}_user}    ${bic}    OMS    ${json1}${json2}
+
+RPC Reject Pre Draft Submission
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    RPC.Reject Pre Draft Submission    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Submit Pre Draft
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    RPC.Submit Pre Draft    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC Approve Pre Draft
+    [Arguments]    ${user}    ${bic}    ${category}    ${comment}
+    BuiltIn.Log    ${bic}
+    RPC.Approve Pre Draft    ${${user}_user}    ${bic}    ${category}    ${comment}
+
+RPC add subscription to SWP and publish SWP
+    [Arguments]    ${bic}    ${publisher}
+    Add SWP For Entity    ${bic}
+    RPC Generate New SWP    submitter_SW1    ${bic}
+    RPC Approve SWP    approver_SW1    ${bic}
+    RPC Publish SWP    ${publisher}    ${bic}    PAY
+    RPC Publish SWP    ${publisher}    ${bic}    TAF
+
+RPC Invite User Assign Roles to all Entities
+    [Arguments]    ${entity_group}    ${user}    ${roles}
+    Log    invite ${${user}_user}
+    Log    ${entity_group}
+    @{notApplicable}=    Create List    ${EMPTY}
+    @{roles}=    Split String    ${roles}    ,
+    ${rolesArg}=    Create List    @{roles}
+    BuiltIn.Log Many    ${rolesArg}
+    RPC.Invite User    ${entity_group}    ${${user}_user}    ${rolesArg}    ${EMPTY}    ${EMPTY}
+    RPC.Clean Server Caches
+
+RPC Invite User Assign Roles to given Entities
+    [Arguments]    ${entity_group}    ${user}    ${roles}    ${entities}
+    BuiltIn.Log    invite ${${user}_user}
+    @{entitiesToAssign}=    Split String    ${entities}    ,
+    ${entitiesArg}=    Create List    @{entitiesToAssign}
+    @{roles}=    Split String    ${roles}    ,
+    ${rolesArg}=    Create List    @{roles}
+    RPC.Invite User    ${entity_group}    ${${user}_user}    ${rolesArg}    ${entitiesArg}
+    RPC.Clean Server Caches
+
+RPC Invite User Assign Roles with Default entities scope
+    [Arguments]    ${entity_group}    ${user}    ${roles}
+    Log    invite ${${user}_user}
+    @{notApplicable}=    Create List    ${EMPTY}
+    @{roles}=    Split String    ${roles}    ,
+    ${rolesArg}=    Create List    @{roles}
+    BuiltIn.Log Many    ${rolesArg}
+    RPC.Invite User    ${entity_group}    ${${user}_user}    ${rolesArg}    ${EMPTY}    true
+    RPC.Clean Server Caches
+
+RPC Invite User Multiprofile Assign Roles to all Entities
+    [Arguments]    ${entity_group}    ${user}    ${roles}    ${userBic8}
+    BuiltIn.Log    invite ${${user}_user}
+    BuiltIn.Log    ${userBic8}
+    @{notApplicable}=    Create List    ${EMPTY}
+    @{roles}=    Split String    ${roles}    ,
+    ${rolesArg}=    Create List    @{roles}
+    BuiltIn.Log Many    ${rolesArg}
+    RPC.Invite Multi Profile User    ${entity_group}    ${${user}_user}    ${userBic8}    ${rolesArg}    ${EMPTY}
+
+RPC Invite User Multiprofile Assign Roles to all Entities - for additional profile
+    [Arguments]    ${entity_group}    ${user}    ${roles}    ${userBic8}
+    BuiltIn.Log    invite ${${user}_user}
+    BuiltIn.Log    ${userBic8}
+    @{notApplicable}=    Create List    ${EMPTY}
+    @{roles}=    Split String    ${roles}    ,
+    ${rolesArg}=    Create List    @{roles}
+    BuiltIn.Log Many    ${rolesArg}
+    RPC.InviteMultiProfileUserSkipEmailLookup    ${entity_group}    ${${user}_user}    ${userBic8}    ${rolesArg}    ${EMPTY}
+
+RPC Delete User
+    [Arguments]    ${entity_group}    ${user}
+    BuiltIn.Log    delete ${${user}_user}
+    RPC.Delete User    ${entity_group}    ${${user}_user}

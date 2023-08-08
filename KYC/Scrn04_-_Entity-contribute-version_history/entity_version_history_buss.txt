@@ -1,0 +1,58 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+View version history
+    [Arguments]    ${number}
+    #Click Element    //*[@id='previousVersions']//*[@id='number']//*[text()[contains(.,'${number}')]]/ancestor::*[@id='ROW']//*[@id="view"]
+    Click Element    //*[@id='previousVersions']//*[@version='${number}']//*[@id="view"]
+
+Verify version history field value
+    [Arguments]    ${number}    ${field}    ${text_field}
+    View version history    ${number}
+    Element Should Be Visible    //*[@id='previousVersions']//*[@id='${field}']//*[text()[contains(.,'${text_field}')]]
+    Click Back to version list
+
+Verify version history Published date is visible
+    [Arguments]    ${number}
+    #Element Should Be Visible    //*[@id='previousVersions']//*[@id='number']//*[text()[contains(.,'${number}')]]/ancestor::*[@id='ROW']//*[@id='publishedDate']//*[text()[contains(.," - ")]]
+    Element Should Be Visible    //*[@id='previousVersions']//*[@version='${number}']//*[@id='publishedDate']//*[text()[contains(.," - ")]]
+
+Verify version history Issued By is
+    [Arguments]    ${number}    ${issued_by}
+    #Element Should Be Visible    //*[@id='previousVersions']//*[@id='number']//*[text()[contains(.,'${number}')]]/ancestor::*[@id='ROW']//*[@id="issuedBy"]//*[text()[contains(.,'${issued_by}')]]
+    Element Should Be Visible    //*[@id='previousVersions']//*[@version='${number}']//*[@id="issuedBy"]//*[text()[contains(.,'${issued_by}')]]
+
+Verify version history Issued By is not visible
+    [Arguments]    ${number}
+    Element Should Not Be visible    //*[@id='previousVersions']//*[@id='number']//*[text()[contains(.,'${number}')]]/ancestor::*[@id='ROW']//*[@id="issuedBy"]
+
+Verify version history has been Reconfirmed by
+    [Arguments]    ${number}    ${reconfirmed_by}
+    #Element Should Be Visible    //*[@id='previousVersions']//*[@id='number']//*[text()[contains(.,'${number}')]]/ancestor::*[@id='ROW']//*[@id="reconfirmedBy"]//*[text()[contains(.,'${reconfirmed_by}')]]
+    Element Should Be Visible    //*[@id='previousVersions']//*[@version='${number}']//*[@id="reconfirmedBy"]//*[text()[contains(.,'${reconfirmed_by}')]]
+
+Verify version history Reconfirmed by is not visible
+    [Arguments]    ${number}
+    Element Should Not Be visible    //*[@id='previousVersions']//*[@id='number']//*[text()[contains(.,'${number}')]]/ancestor::*[@id='ROW']//*[@id="reconfirmedBy"]
+
+Verify version history Reconfirmed date is visible
+    [Arguments]    ${number}
+    #Element Should Be Visible    //*[@id='previousVersions']//*[@id='number']//*[text()[contains(.,'${number}')]]/ancestor::*[@id='ROW']//*[@id='reconfirmed']//*[text()[contains(.,"Reconfirmed on")]]
+    Element Should Be Visible    //*[@id='previousVersions']//*[@version='${number}']//*[@id='reconfirmed']//*[text()[contains(.,"Reconfirmed on")]]
+
+Verify version history is listed
+    [Arguments]    ${version_number}
+    Page Should Contain Element    //*[@id='previousVersions']//*[@version='${version_number}']
+
+Verify version history is not listed
+    [Arguments]    ${version_number}
+    Page Should Not Contain Element    //*[@id='previousVersions']//*[@version='${version_number}']
+
+Verify version history count versions
+    [Arguments]    ${number_of_version}
+    Xpath Should Match X Times    //*[@id='previousVersions']//*[@id='ROW']    ${number_of_version}
+
+Click Back to version list
+    #Click Element    //*[@id='previousVersions']//*[@id='backToVersionList']
+    Execute Javascript    $('#previousVersions #backToVersionList').click()

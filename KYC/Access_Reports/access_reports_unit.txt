@@ -1,0 +1,43 @@
+*** Settings ***
+Resource          ../../../resources_res.txt
+
+*** Keywords ***
+REST Download Access Given Report For User
+    [Arguments]    ${user}
+    ${report}=    REST.Download Access Given Report For User    ${${user}_user}
+    [Return]    ${report}
+
+REST Download Access Received Report For User
+    [Arguments]    ${user}
+    ${report}=    REST.Download Access Received Report For User    ${${user}_user}
+    [Return]    ${report}
+
+REST Download SWP Access Given Report For User
+    [Arguments]    ${user}
+    ${report}=    REST.Download SWP Access Given Report For User    ${${user}_user}
+    [Return]    ${report}
+
+REST Download SWP Access Received Report For User
+    [Arguments]    ${user}
+    ${report}=    REST.Download SWP Access Received Report For User    ${${user}_user}
+    [Return]    ${report}
+
+REST Download Data Consumption For User
+    [Arguments]    ${user}
+    ${report}=    REST.Download Data Consumption For User    ${${user}_user}
+    [Return]    ${report}
+
+REST Download Missing Reports for User
+    [Arguments]    ${user}
+    ${report}=    REST.Download Missing Roles For User    ${${user}_user}
+    [Return]    ${report}
+
+REST Download User Roles Assignment For User
+    [Arguments]    ${user}
+    ${report}=    REST.Download User Roles Assignment For User    ${${user}_user}
+    [Return]    ${report}
+
+REST Download Data Contribution Activities For User
+    [Arguments]    ${user}
+    ${report}=    REST.Download Data Contribution Activities For User    ${${user}_user}
+    [Return]    ${report}

@@ -1,0 +1,24 @@
+*** Variables ***
+${IOC}            Identification of Customer
+${OMS}            Ownership and Management Structure
+${TOB}            Type of Business and Client Base
+${COM}            Compliance
+${TAX}            Tax
+${SP}             SWIFT Profile
+@{IOC_fields_readonly}    institution-status
+@{docs_titles}    Proof of regulation    Banking license    Charter of law or local decree    Extract from registers    Certificate of incorporation    Statutes or by-laws    Other Identification of Customer document
+...               Memorandum and Articles of association    Ownership structure    Documentary proof of shareholders companies    List of shareholders    Board of Directors    List of senior/executive management including their function    Supervisory/non-executive Board
+...               Shariah Board    Functional organisational chart    Latest audited annual report    Proof of identity of Ultimate Beneficial Owners and Key controllers    Proof of residence of Ultimate Beneficial Owners and Key controllers    Other Ownership and Management Structure document    Other Type Of Business document
+...               Wolfsberg AML Questionnaire completed    Summary of AML policies and procedures or AML laws    Detailed AML policies and procedures    AML questionnaire of the entity (template)    USA Patriot Act Certification completed    MiFID questionnaire of the bank (template)    Organisational chart of the Compliance department
+...               Response to negative statement from the press    Other Compliance document    FATCA form W-8 BEN-E or W-9, W-ECI, W-8IMY or W-8EXP    Other Compliance And Tax document
+@{docs_codes}     POR    BAL    COL    EFR    COI    STA    IOC
+...               MAA    OWS    DPSC    LSH    BOD    LEX    SVB
+...               SHB    ORG    ARE    POI    RES    OMS    TOB
+...               WBQ    SPP    DPP    QUE    UPA    MFI    ORC
+...               PRS    COM    FAT    CAT
+@{COM_list_docs}    Wolfsberg AML Questionnaire completed    Summary of AML policies and procedures or AML laws    Detailed AML policies and procedures    AML questionnaire of the entity (template)    USA Patriot Act Certification completed    MiFID questionnaire of the bank (template)    Organisational chart of the Compliance money-laundering-contact_DEPARTMENT
+...               Response to negative statement from the press    Other Compliance document
+@{IOC_fields_viewfullentitydata}    anglicisedLegalName    tradingName    city    zipCode    countryName    countryIsoCode    headOffice_anglicisedLegalName
+...               headOffice_countryName    headOffice_bic11
+@{IOC_Field_Parent_Headoffice}    anglicisedLegalName    tradingName    city    zipCode    countryName    countryIsoCode
+@{ENTITIES_VIEW_ENTITY_DATA}    ARABFRPPXXX    ARABGB2LXXX    ARABJOAXXXX    CITIUS33XXX    HSBCHKHIXXX    CITCCWCUXXX    VRBAVNVXXXX

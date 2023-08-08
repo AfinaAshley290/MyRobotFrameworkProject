@@ -1,0 +1,56 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+With only one child
+    [Arguments]    ${Text}    ${Index}
+    ${Value}=    Get Text    //*[@id='counterpartySelectionLeft']/div[${Index}]/div/div[3]/div/div/div[2]/label/small
+    Run Keyword If    '${Text}'=='${Value}'    Click Element    //*[@id='counterpartySelectionLeft']/div[${Index}]/div/div[3]/div/div/div[2]/label/input
+
+Children Entities
+    [Arguments]    ${Text}    ${Parent_Index}
+    ${LENGTH}=    Execute Javascript    return $('#counterpartySelectionLeft').find('> .gui-nc-item-container > .gui-nc-item').eq('${Parent_Index}').find('> div > .gui-nc-item-container > .gui-nc-item > .gui-nc-content > .checkbox-inline > .gui-nc-label').length;
+    #${LENGTH}=    Execute Javascript    $('#counterpartySelectionLeft').find('> .gui-nc-item-container > .gui-nc-item > div > .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Run Keyword If    '${Length}'== '0'    With only one child    ${Text}    ${Parent_Index}
+    \    Run Keyword If    '${Length}'!='0'    With more then one child    ${Text}    ${Parent_Index}    ${INDEX}
+
+With more then one child
+    [Arguments]    ${Text}    ${Parent}    ${Index}
+    ${Value}=    Get Text    //*[@id='counterpartySelectionLeft']/div[${Parent}]/div/div[3]/div[${Index}]/div/div[2]/label/small
+    Run Keyword If    '${Text}'=='${Value}'    Click Element    //*[@id='counterpartySelectionLeft']/div[${Parent}]/div/div[3]/div[${Index}]/div/div[2]/label/input
+
+Checkbox Should Be Selected
+    [Arguments]    ${label}
+    ${Status}=    Execute Javascript    return \ $("label[class='checkbox-inline']").children("span:contains('${label}')").siblings("input[type='checkbox']").prop('checked')
+    Run Keyword If    '${Status}'=='true'    Log    The checkbox is selected
+
+Unselect Checkbox
+    [Arguments]    ${Label}
+    Comment    Execute Javascript    $("label[class='checkbox-inline']").children("span:contains('${label}')").siblings("input[type='checkbox']").prop('checked',false)
+    ${status}=    Run Keyword And Return Status    Click Element    //*[@class='checkbox-inline']/span[@class='gui-nc-label ng-binding' and text()[contains(.,'${Label}')]]
+    Run Keyword If    ${status} == False    Click Element    ${Label}
+    #Click Element    ${Label}
+
+Unselect Checkbox By ID
+    [Arguments]    ${id}
+    ${status}=    Run Keyword And Return Status    Click Element    ${id}
+    Run Keyword If    ${status} == True    Click Element    ${id}
+
+Select Checkbox
+    [Arguments]    ${Label}
+    Comment    Execute Javascript    $("label[class='checkbox-inline']").children("span:contains('${label}')").siblings("input[type='checkbox']").prop('checked',true)
+    ${status}=    Run Keyword And Return Status    Click Element    //*[@class='checkbox-inline']/span[@class='gui-nc-label ng-binding' and text()[contains(.,'${Label}')]]
+    Run Keyword If    ${status} == False    Click Element    ${Label}
+    #changes by Hassan Mollah-- Click Element    //*[@class='checkbox-inline']/span[@class='gui-nc-label ng-binding' and text()[contains(.,'${Label}')]] making error. while tester using ID to select checkbox
+    #Click Element    ${Label}
+
+Checkbox Should Not Be Selected
+    [Arguments]    ${label}
+    ${Status}=    Execute Javascript    return \ $("label[class='checkbox-inline']").children("span:contains('${label}')").siblings("input[type='checkbox']").prop('checked')
+    Run Keyword if    '${Status}'=='False'    Log    The checkbox is selected
+
+Radio Button Should Be Set To
+    [Arguments]    ${ID}
+    ${Status}=    Execute Javascript    return $('${ID}').prop('checked');
+    Run Keyword If    '${Status}'=='True'    Log    The Enable invitation non-subscribed entity to join is default value

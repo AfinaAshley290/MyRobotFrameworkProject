@@ -1,0 +1,78 @@
+*** Settings ***
+Library           Selenium2Library
+Library           SudsLibrary
+Library           String
+Resource          ../apps_res.txt
+Library           SudsLibraryExtensions
+
+*** VAriables ***
+${WebServices}    https://bewast01.swift.com:30900/iws/identity/usermanager?wsdl
+${WebServicesPassword}    sap1234-    #for PAC it is sap1234-
+${WebServicesSI}    https://bewasi02.swift.com:30900/iws/identity/usermanager?wsdl
+${WebServicesPasswordSI}    sap1234+    #for PAC it is sap1234-
+
+*** Keywords ***
+WS_CreateUserWBICPAC
+    [Arguments]    ${Mail}    ${SoldTo}    ${FirstName}    ${LastName}    ${BIC}    ${PhoneCountry}
+    ...    ${PhoneLocal}    ${InstitutionName}
+    LOG    INFO
+    Load Client Using Basic Authentication    ${WebServices}    sap    ${WebServicesPassword}
+    Set Http Authentication    sap    ${WebServicesPassword}    ALWAYS_SEND
+    ${res}=    Call Soap Method    createUserWBIC    ${Mail}    ${SoldTo}    ${FirstName}    ${LastName}
+    ...    ${BIC}    ${PhoneCountry}    ${PhoneLocal}    ${InstitutionName}
+    ${message}=    Get Wsdl Object Attribute    ${res}    message
+    Should Not Contain    ${message}    User don't need to be updated
+    Should Not Contain    ${message}    is not allowed for customer
+    Should Not Contain    ${message}    Cannot create identity for user
+    Should Not Contain    ${message}    can not create
+    Should Not Contain    ${message}    Error
+    #Should Contain    ${message}    has been created successfully under
+    Should Not Contain    ${message}    SoldTo is missing
+
+WS_CreateUserWBICSI
+    [Arguments]    ${Mail}    ${SoldTo}    ${FirstName}    ${LastName}    ${BIC}    ${PhoneCountry}
+    ...    ${PhoneLocal}    ${InstitutionName}
+    LOG    INFO
+    Load Client Using Basic Authentication    ${WebServicesSI}    sap    ${WebServicesPasswordSI}
+    Set Http Authentication    sap    ${WebServicesPasswordSI}    ALWAYS_SEND
+    ${res}=    Call Soap Method    createUserWBIC    ${Mail}    ${SoldTo}    ${FirstName}    ${LastName}
+    ...    ${BIC}    ${PhoneCountry}    ${PhoneLocal}    ${InstitutionName}
+    ${message}=    Get Wsdl Object Attribute    ${res}    message
+    Should Not Contain    ${message}    User don't need to be updated
+    Should Not Contain    ${message}    is not allowed for customer
+    Should Not Contain    ${message}    Cannot create identity for user
+    Should Not Contain    ${message}    can not create
+    Should Not Contain    ${message}    Error
+    #Should Contain    ${message}    has been created successfully under
+    Should Not Contain    ${message}    SoldTo is missing
+
+WS_CreateEmployeeSFDCSI
+    [Arguments]    ${mail}
+    #LOG    INFO
+    ${unique}=    Get time    epoch
+    Load Client Using Basic Authentication    http://watto.si.swift.com:8880/CRMWatto/watto?wsdl    sap    ${WebServicesPasswordSI}
+    ${message}=    Create Raw Soap Message    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wat="http://watto.crm.swift.com/"> \ \ \ <soapenv:Header/> \ \ \ <soapenv:Body> \ \ \ \ \ \ <wat:createEmployees> \ \ \ \ \ \ \ \ \ <!--Zero or more repetitions:--> \ \ \ \ \ \ \ \ \ <list> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <department>Test Coordination &amp; Improvement</department> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <division>Information Technology</division> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <email>${mail}</email> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <employeeId>${unique}</employeeId> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <enddate>4000-12-31T00:00:00Z</enddate> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <firstname>T</firstname> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <lastname>WATTO</lastname> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <mobilePhone>+32483389044</mobilePhone> \ \ \ \ \ \ \ \ \ \ \ \ <planningUnit>Technology Management &amp; Assurance</planningUnit> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <startdate>2012-01-04T00:00:00Z</startdate> \ \ \ \ \ \ \ \ \ </list> \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ <requestor>WINDU</requestor> \ \ \ \ \ \ </wat:createEmployees> \ \ \ </soapenv:Body> </soapenv:Envelope>
+    ${res}=    Call Soap Method    createEmployees    ${message}
+    #Should Contain    ${res}    True
+    Should Not Contain    ${res}    User don't need to be updated
+    Should Not Contain    ${res}    is not allowed for customer
+    Should Not Contain    ${res}    Cannot create identity for user
+    Should Not Contain    ${res}    can not create
+    Should Not Contain    ${res}    Error
+    #Should Contain    ${message}    has been created successfully under
+
+WS_CreateEmployeeSFDCPAC
+    [Arguments]    ${mail}
+    #LOG    INFO
+    ${unique}=    Get time    epoch
+    Load Client Using Basic Authentication    http://watto.test.swift.com:8880/CRMWatto/watto?wsdl    sap    ${WebServicesPassword}
+    ${message}=    Create Raw Soap Message    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wat="http://watto.crm.swift.com/"> \ \ \ <soapenv:Header/> \ \ \ <soapenv:Body> \ \ \ \ \ \ <wat:createEmployees> \ \ \ \ \ \ \ \ \ <!--Zero or more repetitions:--> \ \ \ \ \ \ \ \ \ <list> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <department>Test Coordination &amp; Improvement</department> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <division>Information Technology</division> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <email>${mail}</email> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <employeeId>${unique}</employeeId> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <enddate>4000-12-31T00:00:00Z</enddate> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <firstname>TEST</firstname> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <lastname>WATTO</lastname> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <mobilePhone>+32483389044</mobilePhone> \ \ \ \ \ \ \ \ \ \ \ \ <planningUnit>Technology Management &amp; Assurance</planningUnit> \ \ \ \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ \ \ \ <startdate>2012-01-04T00:00:00Z</startdate> \ \ \ \ \ \ \ \ \ </list> \ \ \ \ \ \ \ \ \ <!--Optional:--> \ \ \ \ \ \ \ \ \ <requestor>WINDU</requestor> \ \ \ \ \ \ </wat:createEmployees> \ \ \ </soapenv:Body> </soapenv:Envelope>
+    ${res}=    Call Soap Method    createEmployees    ${message}
+    #Should Contain    ${res}    True
+    Should Not Contain    ${res}    User don't need to be updated
+    Should Not Contain    ${res}    is not allowed for customer
+    Should Not Contain    ${res}    Cannot create identity for user
+    Should Not Contain    ${res}    can not create
+    Should Not Contain    ${res}    Error
+    Should Not Contain    ${res}    Inconsistent
+    #Should Contain    ${message}    has been created successfully under

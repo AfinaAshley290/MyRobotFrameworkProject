@@ -1,0 +1,698 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          entity_edit_buss.txt
+
+*** Keywords ***
+Check that I can enter only readwrite Category data fields
+    [Documentation]    Action: Verify that I can enter values only in the readwrite data fields
+    ${category}=    Check and Assign Category
+    ${category_fields_readwrite}=    Set Variable    ${category}_fields_readwrite
+    ${category_fields_readonly}=    Set Variable    ${category}_fields_readonly
+    ${category_checkboxes_readwrite}=    Set Variable    ${category}_checkboxes_readwrite
+    ${category_tables_names_readwrite}=    Set Variable    ${category}_tables_names_readwrite
+    ${category_tables_IDs_readwrite}=    Set Variable    ${category}_tables_IDs_readwrite
+    #Check fields
+    : FOR    ${field}    IN    @{${category_fields_readwrite}}
+    \    ${passed} =    Selenium2Library.Element Should Not Be Visible    ${field}
+    \    Run Keyword If    ${passed}    Verify field is readwrite    ${field}
+    : FOR    ${field}    IN    @{${category_fields_readonly}}
+    \    Element Should Not Be visible    ${field}
+    #Check checkboxes
+    : FOR    ${field}    IN    @{${category_checkboxes_readwrite}}
+    \    ${passed} =    Selenium2Library.Element Should Not Be Visible    //*[@value="${field}"]
+    \    Run Keyword If    ${passed}    Verify checkbox is readwrite    ${field}
+    #Check Tables - Add new
+    : FOR    ${table}    IN    @{${category_tables_names_readwrite}}
+    \    ${passed} =    Selenium2Library.Element Should Not Be Visible    //*[@value="${table}"]
+    \    Run Keyword If    ${passed}    Verify table Add New is readwrite    ${table}
+    #Check Tables - Update row
+    : FOR    ${table_ID}    IN    @{${category_tables_IDs_readwrite}}
+    \    ${passed} =    Selenium2Library.Element Should Not Be Visible    //*[@id[starts-with(.,"${table_ID}")] and @ng-repeat="row in rows"]
+    \    Run Keyword If    ${passed}    Verify table Update row is readwrite    ${table_ID}
+
+Compare with Category Edit draft fields values
+    [Documentation]    Precondition: Open to Edit draft page. This keyword is to be used after the "Extract values from other version" keyword.
+    ...    Action: This keyword verifies the proposed fields data in Edit draft page match the data from the source.
+    ...
+    ...    Uncomplete keyword
+    ...    -Missing for checkboxes as it is a bit tricky (checkboxes not displayed in view page as in edit page)
+    ${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category_fields_readwrite}=    Set Variable    ${category}_fields_readwrite
+    ${category_fields_readonly}=    Set Variable    ${category}_fields_readonly
+    ${category_checkboxes_readwrite}=    Set Variable    ${category}_checkboxes_readwrite
+    ${category_checkboxes_readonly}=    Set Variable    ${category}_checkboxes_readonly
+    ${category_tables_IDs_readwrite}=    Set Variable    ${category}_tables_IDs_readwrite
+    ${category_tables_IDs_readonly}=    Set Variable    ${category}_tables_IDs_readonly
+    ${category_fields}=    Combine Lists    ${${category_fields_readwrite}}    ${${category_fields_readonly}}
+    ${category_checkboxes}=    Combine Lists    ${${category_checkboxes_readwrite}}    ${${category_checkboxes_readonly}}
+    ${category_tables}=    Combine Lists    ${${category_tables_IDs_readwrite}}    ${${category_tables_IDs_readonly}}
+    #Create/reset lists to be used for data comparison
+    Set Suite Variable    @{table_fields_values}    @{EMPTY}
+    #Extract draft fields data and verify fields data are matching btw draft and other version
+    ${index}=    Set Variable    0
+    : FOR    ${field}    IN    @{category_fields}
+    \    ${field_value}=    Get Value    css=#${field}
+    \    ${other_field_value}=    Get From List    ${other_fields_values}    ${index}
+    \    Should Be Equal As Strings    ${field_value}    ${other_field_value}
+    \    ${index}=    Evaluate    ${index}+1
+    # to be done for checkboxes
+    #Extract draft tables data and verify tables data are matching btw draft and other \ version
+    : FOR    ${table}    IN    @{category_tables}
+    \    Extract 1st column from table    ${table}
+    Lists Should Be Equal    ${other_table_fields_values}    ${table_fields_values}
+
+Verify Category Edit draft fields values are empty
+    [Documentation]    Precondition: Open to Edit draft page
+    ...    Action: Verify that all data fields in Edit draft page of the document are empty
+    ${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category_fields_readwrite}=    Set Variable    ${category}_fields_readwrite
+    ${category_checkboxes_readwrite}=    Set Variable    ${category}_checkboxes_readwrite
+    ${category_tables_IDs_readwrite}=    Set Variable    ${category}_tables_IDs_readwrite
+    #fields
+    : FOR    ${field}    IN    @{${category_fields_readwrite}}
+    \    ${field_value}=    Get Value    css=#${field}
+    \    Should Be Equal As Strings    ${field_value}    ${EMPTY}
+    #checkboxes
+    : FOR    ${field}    IN    @{${category_checkboxes_readwrite}}
+    \    Checkbox Should Not Be Selected    ${field}
+    \    Run Keyword And Expect Error    *    Checkbox Should Be Selected    ${field}
+    #tables
+    : FOR    ${table_ID}    IN    @{${category_tables_IDs_readwrite}}
+    \    Xpath Should Match X Times    //*[@id[starts-with(.,"${table_ID}")] and @ng-repeat="row in rows"]    0
+
+Add New to Table
+    [Arguments]    ${table}
+    Click Element    //*[text()[contains(.,"${table}")]]/ancestor::div/*[@id='addRow']
+    Wait Until Keyword Succeeds    10s    1s    Page Should Contain    Add - ${table}
+
+Insert Text Value in Field of Frame
+    [Arguments]    ${text_value}    ${field}    ${frame}
+    Input Text    //*[@id='${frame}']//*[@id='${field}' and @type='text']    ${text_value}
+
+Insert Text Value in Field of Compound of Frame
+    [Arguments]    ${text_value}    ${field}    ${compound}    ${frame}
+    Input Text    //*[@id='${frame}']//*[@id='${compound}']//*[@id='${field}']    ${text_value}
+
+Click OK in Frame
+    [Arguments]    ${frame}
+    #Click Element    //*[@id='${frame}']//*[@id='ok']
+    Execute Javascript    $('#${frame} #ok').click()
+    Element Should Not Be visible    //*[@id='${frame}']
+
+Verify field is readwrite
+    [Arguments]    ${field}
+    [Documentation]    Action: Verify the field is readwrite
+    Element Should Be Enabled    ${field}
+    Run Keyword And Expect Error    *    Element Should Be Disabled    ${field}
+
+Verify field is readonly
+    [Arguments]    ${field}
+    [Documentation]    Action: Verify the field is readonly
+    Element Should Be Visible    ${field}
+    ${input_field}=    Run Keyword And Return Status    Element Should Be Disabled    ${field}
+    Run Keyword If    ${input_field}    Element Should Be Disabled    ${field}
+    Run Keyword And Expect Error    *    Element Should Be Enabled    ${field}
+
+Verify checkbox is readwrite
+    [Arguments]    ${field}
+    [Documentation]    Action: Verify the checkbox is readwrite
+    Element Should Be Enabled    ${field}
+    Run Keyword And Expect Error    *    Element Should Be Disabled    ${field}
+
+Verify checkbox is readonly
+    [Arguments]    ${field}
+    [Documentation]    Action: Verify the field is readonly
+    Element Should Be Disabled    ${field}
+    Run Keyword And Expect Error    *    Element Should Be Enabled    ${field}
+
+Verify table Add New is readwrite
+    [Arguments]    ${table}
+    [Documentation]    Action: Verify the access rights to the table to add a new row: user should be allowed.
+    Element Should Be Visible    //*[text()[contains(.,"${table}")]]/ancestor::div/*[@id='addRow']
+    #Element Should Be Visible    //*[@id='${table}']//*[@id='addRow']
+
+Verify table Add New is readonly
+    [Arguments]    ${table}
+    [Documentation]    Action: Verify the access rights to the table to add a new row: user should not be allowed.
+    Element Should Not Be visible    //*[@id='${table}']//*[@id='addRow']
+
+Verify table Update row is readwrite
+    [Arguments]    ${table}
+    [Documentation]    Action: Verify the access rights to the table to update a row: user should be allowed.
+    ${#_entries}=    Get Matching Xpath Count    .//*[@id='${table}']//*[@id='ROW']
+    Xpath Should Match X Times    //*[@id='${table}']//*[@id='updateRow']    ${#_entries}
+
+Verify table Update row is readonly
+    [Arguments]    ${table}
+    [Documentation]    Action: Verify the access rights to the table to update a row: user should not be allowed.
+    Xpath Should Match X Times    //*[@id='${table}']//*[@id=''updateRow']    0
+
+Click Save Draft
+    [Documentation]    Action: from Edit draft page, it clicks the Save Draft button and saves the draft
+    Element Should Be Visible    //*[@id='saveDraft']
+    #Click Element    //*[@id='saveDraft']
+    Execute Javascript    $('#saveDraft').click()
+    # add check Save was executed
+    Element Should Not Be visible    //*[@id='saveDraft']
+    Element Should Be Visible    //*[@id='folderData']//*[@id='draft']
+
+Click Cancel draft
+    Element Should Be Visible    //*[@id='cancelDraft']
+    #Click Element    //*[@id='cancelDraft']
+    Execute Javascript    $('#cancelDraft').click()
+    #
+    Element Should Be Visible    //*[@id[contains(.,'folder')]]
+    ${no_folder_is_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='folderNoData']
+    Run Keyword If    ${no_folder_is_present}    Selenium2Library.Element Should Be Visible    //*[@id='folderNoData']
+    Run Keyword Unless    ${no_folder_is_present}    Selenium2Library.Element Should Be Visible    //*[@id='folderData']//*[@id='draft']
+
+Fullfill draft page with basic data for Category IOC
+    [Documentation]    Precondition: Edit draft page for Category IOC is opened.
+    ...    Action: fullfill the fields of the Edit draft page with example data.
+    Page Should Contain Element    legal-form-anglicised
+    # details
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    Select From List By Index    legal-form-anglicised    1
+    Input Text    legal-name-local    legal naming
+    Input Text    trading-name-local    trading
+    Input Text    legal-name-previous    previous naming
+    #    Pick date in the past    legal-name-lastchanged
+    Input Text    phone    0226359875023659848
+    Input Text    fax    0226359875023659849
+    Input Text    website    swifties.com
+    Input Text    registration-number    09876543210
+    #    Pick date in the past    incorporation-date
+    Select From List By Index    regulatory-status    1
+    Element Should Be Visible    regulator-website
+    Input Text    regulator-website    swifties.com
+    Input Text    license-number    09876543210
+    Input Text    license-authority    Xavier
+
+Fullfill draft page with basic data for Category OMS
+    [Documentation]    Precondition: Edit draft page for Category OMS is opened.
+    ...    Action: fullfill the fields of the Edit draft page with example data.
+    Page Should Contain Element    form-of-organisation_PUBLIC
+    #Get date
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #Ownership
+    Click Element    form-of-organisation_PUBLIC
+    Input Text    stock-exchange-website    sole24ore.it
+    Input Text    stock-exchange-code    ${dd}PB
+    Click Element    bearer-shares-possible_YES
+    Click Element    bearer-shares-issued_YES
+    Input Text    bearer-shares-percentage    51
+    Click Element    ubo-statement_UBO_AS_FOLLOWS
+    #Add new for table Shareholding companies
+    Add entry for table Shareholding companies
+    #Add new for table Ultimate beneficial owners
+    Add entry for table Ultimate Beneficial Owners
+    #Add entry for table Key controllers
+    Add entry for table Key controllers
+    #
+
+Fullfill draft page with basic data for Category TOB
+    [Documentation]    Precondition: Edit draft page for Category TOB is opened.
+    ...    Action: fullfill the fields of the Edit draft page with example data.
+    Page Should Contain Element    customer-base-others-text
+    Page Should Contain Element    cash-service_MANAGEMENT
+    #Checkboxes Cash services
+    Selenium2Library.Select Checkbox    cash-service_MANAGEMENT
+    Selenium2Library.Select Checkbox    cash-service_CLEARING
+    Selenium2Library.Select Checkbox    cash-service_TRANSFERS
+    Selenium2Library.Unselect Checkbox    cash-service_BULK_CASH
+    #Banking products
+    Selenium2Library.Select Checkbox    banking-product_MONEY_MARKET
+    Selenium2Library.Unselect Checkbox    banking-product_LOANS
+    Selenium2Library.Unselect Checkbox    banking-product_SYNDICATED_LOANS
+    Selenium2Library.Select Checkbox    banking-product_BONDS
+    Selenium2Library.Select Checkbox    banking-product_CARDS
+    #Checkboxes Market products
+    Selenium2Library.Select Checkbox    market-product_SWEEPS
+    Selenium2Library.Select Checkbox    market-product_FOREIGN_EXCHANGE
+    Selenium2Library.Unselect Checkbox    market-product_SPOTS_SWAPS_OPTIONS
+    Selenium2Library.Unselect Checkbox    market-product_INVESTMENT
+    Selenium2Library.Select Checkbox    market-product_INSURANCE
+    Selenium2Library.Select Checkbox    market-product_ISLAMIC_BANKING
+    #Checkboxes Trade services
+    Selenium2Library.Select Checkbox    trade-service_DOCUMENT_COLLECTION
+    Selenium2Library.Select Checkbox    trade-service_GUARANTEES
+    Selenium2Library.Unselect Checkbox    trade-service_LETTERS_OF_CREDIT
+    Selenium2Library.Select Checkbox    trade-service_STANDBY_LC
+    # Banking services
+    Selenium2Library.Select Checkbox    banking-services_PRIVATE
+    Selenium2Library.Select Checkbox    banking-services_INTERNET
+    Selenium2Library.Unselect Checkbox    banking-services_MOBILE
+    #
+    #Client Base
+    #
+    Click Element    offers-correspondent-clearing_YES
+    Click Element    offers-payable-through-accounts_YES
+    Click Element    offers-anonymous-accounts_NO
+    Click Element    offers-msb-services_NO
+    Click Element    offers-banknotes-services_NO
+    Click Element    offers-to-fictitious-names_YES
+    Click Element    offers-to-internet-gambling-companies_NO
+    Click Element    pure-internet-bank_YES
+    #Click Element    CORR_SERVICES_TO_THIRD_BANKS_NO
+    #
+    Select From List By Index    customer-base-retail    1
+    Select From List By Index    customer-base-corporations    1
+    Select From List By Index    customer-base-governments    1
+    Select From List By Index    customer-base-institutional    1
+    #
+    Input Text    customer-base-others-text    banking
+    Select From List By Index    customer-base-others    1
+    #
+    Click Element    has-walk-in-clients_YES
+    Click Element    services-shell-banks_NO
+    Click Element    has-offshore-clients_NO
+    Click Element    has-msb-clients_NO
+    # GEOGRAPHICAL PRESENCE and REACH
+    Select a checkbox    geo-presence_NORTH_AMERICA
+    Select a checkbox    geo-presence_SOUTH_AMERICA
+    Select a checkbox    geo-presence_BI_E_N
+    Selenium2Library.Unselect Checkbox    geo-presence_EUROPE
+    Selenium2Library.Unselect Checkbox    geo-presence_CEE
+    Select a checkbox    geo-presence_AFRICA
+    Select a checkbox    geo-presence_MIDDLE_EAST
+    Select a checkbox    geo-presence_NORTH_ASIA
+    Selenium2Library.Unselect Checkbox    geo-presence_SOUTH_ASIA
+    #Countries in North America
+    Select a checkbox    geo-presence-north-america_AI
+    Select a checkbox    geo-presence-north-america_BB
+    Select a checkbox    geo-presence-north-america_CA
+    Select a checkbox    geo-presence-north-america_HT
+    Select a checkbox    geo-presence-south-america_BZ
+    Select a checkbox    geo-presence-bi-e-n_GL
+    Select a checkbox    geo-presence-africa_EG
+    Select a checkbox    geo-presence-middle-east_JO
+    Select a checkbox    geo-presence-north-asia_JP
+    # SANCTIONED COUNTRIES
+    Wait Until Keyword Succeeds    20    0.5    Click Element    id=sanctioned-countries-presence_FATF_HIGH_RISK
+    #    Click Element    sanctioned-countries-presence_YES
+    #    Wait Until Element Is Visible    SANCTIONED_COUNTRY
+    #    Select From List By Value    SANCTIONED_COUNTRY    IR
+    #    Select From List By Value    SANCTIONED_COUNTRY    KW
+    # top-countries_PRESENCE_YES
+    Click Element    top-countries-presence_YES
+    Element Should Be Visible    s2id_top-country
+    Select From List By Value    top-country    BR
+    Select From List By Value    top-country    CO
+    Comment    #
+    # INDUSTRIES classification
+    Select a checkbox    classification_A
+    Select a checkbox    classification_B
+    Selenium2Library.Unselect Checkbox    classification_C
+    Selenium2Library.Unselect Checkbox    classification_D
+    Select a checkbox    classification_E
+    Select a checkbox    classification_F
+    Select a checkbox    classification_G
+    Select a checkbox    classification_H
+    Selenium2Library.Unselect Checkbox    classification_I
+    Selenium2Library.Unselect Checkbox    classification_J
+    Select a checkbox    classification_K
+    Select a checkbox    classification_L
+    Selenium2Library.Unselect Checkbox    classification_M
+    Selenium2Library.Unselect Checkbox    classification_N
+    Select a checkbox    classification_O
+    Select a checkbox    classification_P
+    Selenium2Library.Unselect Checkbox    classification_Q
+    Selenium2Library.Unselect Checkbox    classification_R
+    Select a checkbox    classification_S
+    Select a checkbox    classification_T
+    Select a checkbox    classification_U
+    #
+    # top-industries-presence
+    Click Element    top-industries-presence_YES
+    #
+    Select a checkbox    top-industry_A
+    Select a checkbox    top-industry_B
+    Selenium2Library.Unselect Checkbox    top-industry_C
+    Selenium2Library.Unselect Checkbox    top-industry_D
+    Select a checkbox    top-industry_E
+    Select a checkbox    top-industry_F
+    Select a checkbox    top-industry_G
+    Select a checkbox    top-industry_H
+    Selenium2Library.Unselect Checkbox    top-industry_J
+    Selenium2Library.Unselect Checkbox    top-industry_K
+    Select a checkbox    top-industry_L
+    Select a checkbox    top-industry_M
+    Selenium2Library.Unselect Checkbox    top-industry_N
+    Selenium2Library.Unselect Checkbox    top-industry_O
+    Click Element    top-industry_P    #use overwritten click element instead of select checkbox in order to have the scrolldown capability
+    Click Element    top-industry_Q    #use overwritten click element instead of select checkbox in order to have the scrolldown capability
+    Selenium2Library.Unselect Checkbox    top-industry_A
+    Selenium2Library.Unselect Checkbox    top-industry_A
+    Select a checkbox    top-industry_A
+    Select a checkbox    top-industry_A
+    Select a checkbox    top-industry_A
+    Select a checkbox    top-industry_A
+    Selenium2Library.Unselect Checkbox    top-industry_A
+    Selenium2Library.Unselect Checkbox    top-industry_A
+    #
+    # BUSINESS
+    Click Element    banned-industry_GAMBLING    #use overwritten click element instead of select checkbox in order to have the scrolldown capability
+    Select a checkbox    banned-industry_ARMS
+    Selenium2Library.Unselect Checkbox    banned-industry_MONEY_SERVICE
+    Selenium2Library.Unselect Checkbox    banned-industry_ATOMIC_POWER
+    Select a checkbox    banned-industry_DIAMONDS
+    Selenium2Library.Unselect Checkbox    banned-industry_OTHER
+
+Fullfill draft page with basic data for Category COM
+    [Documentation]    Precondition: Edit draft page for Category COM is opened.
+    ...    Action: fullfill the fields of the Edit draft page with example data.
+    Page Should Contain Element    aml-auditor
+    #Get date
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #other fields
+    #    Input Text    MONEY_LAUNDERING_REPORTING_DETAILS    Xavier, xavier@swift.com
+    Input Text    compliance-officer_firstname    Milanco
+    Input Text    compliance-officer_lastname    Bikov
+    #    Input Text    AML_DETAILS_FIRSTNAME    Guillaume
+    #    Input Text    AML_DETAILS_LASTNAME    Polet
+    #    Input Text    AML_DETAILS_JOB_TITLE    gp
+    #    Input Text    AML_DETAILS_PHONE    0201591561
+    #    Input Text    AML_DETAILS_EMAIL    g.p@gp.com
+    Add entry for table AML person contact
+    #
+    Input Text    number-of-employees    120
+    Input Text    number-of-aml-staff    50
+    #Select From List By Value    aml-auditor    1
+    Click Element    aml-auditor_KPMG    #Fixed Br Ravi
+    #
+    Click Element    pep-screening-process_MANUAL
+    Click Element    sanctions-screening-process_AUTOMATED
+    Click Element    aml-transaction-monitoring-process_MANUAL
+    # CUSTOMER RELATIONSHIP
+    Selenium2Library.Select Checkbox    customer-relations-process_CUSTOMER_IDENTIFICATION
+    Selenium2Library.Unselect Checkbox    customer-relations-process_BUSINESS_ACTIVITIES
+    Selenium2Library.Select Checkbox    customer-relations-process_BENEFICIAL_OWNERS
+    Selenium2Library.Unselect Checkbox    customer-relations-process_OWNERSHIP_STRUCTURE
+    Selenium2Library.Select Checkbox    customer-relations-process_EXECUTIVE_MANAGEMENT
+    Selenium2Library.Unselect Checkbox    customer-relations-process_BUSINESS_PARTNERS
+    Selenium2Library.Select Checkbox    customer-relations-process_INFORMATION_ABOUT_SIGNATORIES
+    Selenium2Library.Unselect Checkbox    customer-relations-process_EXPECTED_TURNOVER
+    Selenium2Library.Select Checkbox    customer-relations-process_AML_RISK_RATING
+    Selenium2Library.Unselect Checkbox    customer-relations-process_PLASIBILITY_CHECK
+    Selenium2Library.Select Checkbox    customer-relations-process_COMPLIANCE_APPROVAL
+    Selenium2Library.Unselect Checkbox    customer-relations-process_SANCTION_SCREENING
+    Selenium2Library.Select Checkbox    customer-relations-process_MANAGEMENT_APPROVAL
+    #
+    #Click Element    AML_CTF_ASSESSMENT_NO
+    Click Element    us-relations_YES
+    Click Element    investigated-or-fined-last-3-years_NO
+    Click Element    mifid-applicable_YES
+    Click Element    wolfsberg-applicable_YES
+    Click Element    wolfsberg-linked_NO
+    #
+    Element Should Be Visible    wolfsberg-part1
+    #Wolfsberg Questionnaire
+    #    Select Checkbox    wolfsberg-part1_wolfsberg-1-1
+    Click Element    wolfsberg-part1_wolfsberg-1-1_YES
+    #    Select Checkbox    wolfsberg-part2_wolfsberg-2-10
+    Click Element    wolfsberg-part2_wolfsberg-2-10_YES
+    #    Select Checkbox    wolfsberg-part3_wolfsberg-3-12
+    Click Element    wolfsberg-part3_wolfsberg-3-12_YES
+    #    Select Checkbox    wolfsberg-part4_wolfsberg-4-18
+    Click Element    wolfsberg-part4_wolfsberg-4-18_YES
+    #    Select Checkbox    wolfsberg-part6_wolfsberg-6-24
+    Click Element    wolfsberg-part6_wolfsberg-6-24_YES
+    #
+    Click Element    wolfsberg-part1_wolfsberg-1-2_NO
+    Click Element    wolfsberg-part1_wolfsberg-1-5_NO
+    Click Element    wolfsberg-part1_wolfsberg-1-7_NO
+    Click Element    wolfsberg-part2_wolfsberg-2-11_NO
+    Click Element    wolfsberg-part3_wolfsberg-3-14_NO
+    Click Element    wolfsberg-part3_wolfsberg-3-16_NO
+    Click Element    wolfsberg-part4_wolfsberg-4-20_NO
+    Click Element    wolfsberg-part5_wolfsberg-5-23_NO
+
+Fullfill draft page with basic data for Category TAX
+    [Documentation]    Precondition: Edit draft page for Category TAX is opened.
+    ...    Action: fullfill the fields of the Edit draft page with example data.
+    Page Should Contain Element    tax-number
+    #Get date
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #
+    #    Click Element    EXEMPT
+    #
+    #    Input Text    giin    ${dd}${mm}${yyyy}001
+    Click Element    specific-fatca-contact_YES
+    Input Text    fatca-contact_firstname    Milanco
+    Input Text    fatca-contact_lastname    Bikov
+    Input Text    fatca-contact_job-title    Developer
+    Input Text    fatca-contact_phone    0256987530
+    Input Text    fatca-contact_email    milanco@bikov.com
+    Input Text    tax-number    ${dd}${mm}${yyyy}018
+    Select From List By Value    tax-country    AF
+    Select From List By Value    tax-country    AX
+
+Add entry for table Shareholding companies
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #Add new for table Shareholders
+    Add New to Table    Shareholding
+    Insert Text Value in Field of Frame    Company    company-legal-name    shareholding-company_ADD
+    Insert Text Value in Field of Frame    25    shares-percentage    shareholding-company_ADD
+    Click Element    //*[@id='shareholding-company_ADD']//*[@id='comp-level-of-ownership_DIRECT']
+    Select from List of Frame by Label    Australia    registered-country    shareholding-company_ADD
+    Select from List of Frame by Label    Belgium    operating-country    shareholding-company_ADD
+    Select from List of Frame by Index    1    stock-exchange    shareholding-company_ADD
+    Click OK in Frame    shareholding-company_ADD
+
+Add entry for table Ultimate Beneficial Owners
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #Add new for table Other ultimate beneficial owners
+    Add New to Table    Ultimate beneficial owners
+    Insert Text Value in Field of Frame    Wim    name_firstname    shareholder_ADD
+    Insert Text Value in Field of Frame    Benny    name_lastname    shareholder_ADD
+    Insert Text Value in Field of Frame    Milanco    name_firstname-local    shareholder_ADD
+    Insert Text Value in Field of Frame    Matthias    name_lastname-local    shareholder_ADD
+    Insert Text Value in Field of Frame    Developer    job-title    shareholder_ADD
+    Click Element    //*[@id='shareholder_ADD']//*[@id='gender_Male']
+    #    Pick date in the past in frame    date-of-birth    shareholder_ADD
+    Insert Text Value in Field of Frame    11/01/1910    date-of-birth    shareholder_ADD
+    Select from List of Frame by Index    20    country-of-birth    shareholder_ADD
+    Insert Text Value in Field of Frame    21    shares-percentage    shareholder_ADD
+    #Select from List of Frame by Label    Belgium    nationality    shareholder_ADD
+    Select from List of Frame by Label    France    nationality    shareholder_ADD
+    # compound Address of Residence
+    Insert Text Value in Field of Frame    1100    address-of-residence_pobox    shareholder_ADD
+    #    Insert Text Value in Field of Frame    rue Ernest Solvay    address-of-residence_street-address    shareholder_ADD
+    Insert Text Value in Field of Frame    La Hulpe    address-of-residence_city    shareholder_ADD
+    Select from List of Frame by Index    20    address-of-residence_country    shareholder_ADD
+    Click OK in Frame    shareholder_ADD
+
+Add entry for table Directors
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #Add new for table Directors
+    Add New to Table    Board of directors
+    Insert Text Value in Field of Frame    Irving    firstname    DIRECTOR_ADD
+    Insert Text Value in Field of Frame    Ravi    lastname    DIRECTOR_ADD
+    Insert Text Value in Field of Frame    Xavier    firstname-local    DIRECTOR_ADD
+    Insert Text Value in Field of Frame    Christophe    lastname-local    DIRECTOR_ADD
+    Insert Text Value in Field of Frame    Tester    job-title    DIRECTOR_ADD
+    Click Element    //*[@id='gender']//*[@id='Male']
+    #    Pick date in the past in frame    date-of-birth    DIRECTOR_ADD
+    Insert Text Value in Field of Frame    11/01/1910    date-of-birth    DIRECTOR_ADD
+    Select from List of Frame by Value    NETHERLANDS    country-of-birth    DIRECTOR_ADD
+    Select from List of Frame by Value    NETHERLANDS    nationality    DIRECTOR_ADD
+    #    Pick date in the future in frame    appointment-date    DIRECTOR_ADD
+    Insert Text Value in Field of Frame    ${dd}/12/${yyyy}    appointment-date    DIRECTOR_ADD
+    # compound Address of Residence
+    Insert Text Value in Field of Compound of Frame    1100    pobox    address-of-residence    DIRECTOR_ADD
+    #    Insert Text Value in Field of Compound of Frame    rue Ernest Solvay    street-address    address-of-residence    DIRECTOR_ADD
+    Insert Text Value in Field of Compound of Frame    La Hulpe    city    address-of-residence    DIRECTOR_ADD
+    Select from List of Compound of Frame by Value    BELGIUM    country    address-of-residence    DIRECTOR_ADD
+    Click OK in Frame    DIRECTOR_ADD
+
+Add entry for table Executive
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #Add new for table Executive management
+    Add New to Table    Senior
+    Insert Text Value in Field of Frame    Howard    firstname    MANAGER_ADD
+    Insert Text Value in Field of Frame    Glasby    lastname    MANAGER_ADD
+    Insert Text Value in Field of Frame    Chris    firstname-local    MANAGER_ADD
+    Insert Text Value in Field of Frame    Gruwier    lastname-local    MANAGER_ADD
+    Insert Text Value in Field of Frame    Manager    job-title    MANAGER_ADD
+    Click Element    //*[@id='gender']//*[@id='Male']
+    #    Pick date in the past in frame    date-of-birth    MANAGER_ADD
+    Select from List of Frame by Value    UNITED KINGDOM    country-of-birth    MANAGER_ADD
+    Select from List of Frame by Value    UNITED KINGDOM    nationality    MANAGER_ADD
+    #    Pick date in the future in frame    appointment-date    MANAGER_ADD
+    # compound Address of Residence
+    Insert Text Value in Field of Compound of Frame    1100    pobox    address-of-residence    MANAGER_ADD
+    #    Insert Text Value in Field of Compound of Frame    rue Ernest Solvay    street-address    address-of-residence    MANAGER_ADD
+    Insert Text Value in Field of Compound of Frame    La Hulpe    city    address-of-residence    MANAGER_ADD
+    Select from List of Compound of Frame by Value    BELGIUM    country    address-of-residence    MANAGER_ADD
+    Click OK in Frame    MANAGER_ADD
+
+Add entry for table Key controllers
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #Add new for table Executive management
+    Add New to Table    Key controllers
+    Insert Text Value in Field of Frame    Howard    name_firstname    key-controller_ADD
+    Insert Text Value in Field of Frame    Glasby    name_lastname    key-controller_ADD
+    Insert Text Value in Field of Frame    Chris    name_firstname-local    key-controller_ADD
+    Insert Text Value in Field of Frame    Gruwier    name_lastname-local    key-controller_ADD
+    #    Insert Text Value in Field of Frame    Manager    job-title    key-controller_ADD
+    Click Element    //*[@id='key-controller_ADD']//*[@id='gender_Male']
+    Select from List of Frame by Index    20    country-of-birth    key-controller_ADD
+    #    Pick date in the past in frame    date-of-birth    key-controller_ADD
+    Insert Text Value in Field of Frame    11/01/1910    date-of-birth    key-controller_ADD
+    #    Pick date in the future in frame    appointment-date    key-controller_ADD
+    Insert Text Value in Field of Frame    12/${dd}/${yyyy}    appointment-date    key-controller_ADD
+    # compound Address of Residence
+    Insert Text Value in Field of Frame    1100    address-of-residence_pobox    key-controller_ADD
+    #    Insert Text Value in Field of Frame    rue Ernest Solvay    address-of-residence_street-address    key-controller_ADD
+    Insert Text Value in Field of Frame    La Hulpe    address-of-residence_city    key-controller_ADD
+    Select from List of Frame by Index    20    address-of-residence_country    key-controller_ADD
+    #
+    Select from List of Frame by Index    20    nationality    key-controller_ADD
+    #
+    Selenium2Library.Select Checkbox    member-of_membership_BOARD_OF_DIRECTORS
+    #
+    Click OK in Frame    key-controller_ADD
+
+Add entry for table Key controllers from upload dialog
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #Add new for table Executive management
+    Click Element    //*[@id='uploadWizardDialog']//*[text()[contains(.,"Key controllers")]]/ancestor::div/*[@id='addRow']
+    Wait Until Keyword Succeeds    10s    1s    Page Should Contain    Add - Key controllers
+    #
+    Insert Text Value in Field of Frame    Howard    name_firstname    key-controller_ADD
+    Insert Text Value in Field of Frame    Glasby    name_lastname    key-controller_ADD
+    Insert Text Value in Field of Frame    Chris    name_firstname-local    key-controller_ADD
+    Insert Text Value in Field of Frame    Gruwier    name_lastname-local    key-controller_ADD
+    #    Insert Text Value in Field of Frame    Manager    job-title    key-controller_ADD
+    Click Element    //*[@id='key-controller_ADD']//*[@id='gender_Male']
+    Select from List of Frame by Index    20    country-of-birth    key-controller_ADD
+    #    Pick date in the past in frame    date-of-birth    key-controller_ADD
+    Insert Text Value in Field of Frame    11/01/1910    date-of-birth    key-controller_ADD
+    #    Pick date in the future in frame    appointment-date    key-controller_ADD
+    Insert Text Value in Field of Frame    12/${dd}/${yyyy}    appointment-date    key-controller_ADD
+    # compound Address of Residence
+    Insert Text Value in Field of Frame    1100    address-of-residence_pobox    key-controller_ADD
+    #    Insert Text Value in Field of Frame    rue Ernest Solvay    address-of-residence_street-address    key-controller_ADD
+    Insert Text Value in Field of Frame    La Hulpe    address-of-residence_city    key-controller_ADD
+    Select from List of Frame by Index    20    address-of-residence_country    key-controller_ADD
+    #
+    Select from List of Frame by Index    20    nationality    key-controller_ADD
+    #
+    Select Checkbox    member-of_membership_BOARD_OF_DIRECTORS
+    #
+    Click OK in Frame    key-controller_ADD
+
+Add entry for table AML person contact
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    #Add new for table Shareholders
+    Add New to Table    AML person
+    Insert Text Value in Field of Frame    Guillaume    firstname    aml-contactperson_ADD
+    Insert Text Value in Field of Frame    Polet    lastname    aml-contactperson_ADD
+    Insert Text Value in Field of Frame    gp    job-title    aml-contactperson_ADD
+    Insert Text Value in Field of Frame    0201591561    phone    aml-contactperson_ADD
+    Insert Text Value in Field of Frame    g.p@gp.com    email    aml-contactperson_ADD
+    Click OK in Frame    aml-contactperson_ADD
+
+Remove all entries for table
+    [Arguments]    ${table_id}
+    ${#_rows_to_delete}=    Get Matching Xpath Count    //*[@id="${table_id}"]//*[@id="ROW"]//*[@id='deleteRow']
+    ${limit}=    Evaluate    ${#_rows_to_delete}+1
+    : FOR    ${idx}    IN RANGE    1    ${limit}
+    \    Click Element    xpath=(//*[@id="${table_id}"]//*[@id="ROW"]//*[@id='deleteRow'])[${idx}]
+
+Pick date in the past
+    [Arguments]    ${field}
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    Click Element    ${field}_POPUP
+    #    Click Element    //*[@id="${field}_CONTAINER"]//following::*[text()[contains(.,'${yyyy}')]]//ancestor::button
+    #    Click Element    //*[@id="${field}_CONTAINER"]//following::*[text()[contains(.,'${yyyy}')]]//ancestor::button
+    Click Element    //*[@id="${field}_CONTAINER"]//following::*[text()='2011']//ancestor::button
+    Click Element    //*[@id="${field}_CONTAINER"]//following::*[text()='January']//ancestor::button
+    Click Button    //*[@id="${field}_CONTAINER"]//following::*[text()='01']//ancestor::button
+
+Pick date in the future
+    [Arguments]    ${field}
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    Click Element    ${field}_POPUP
+    #    Click Element    //*[@id="${field}_CONTAINER"]//following::*[text()[contains(.,'${yyyy}')]]//ancestor::button
+    #    Click Element    //*[@id="${field}_CONTAINER"]//following::*[text()[contains(.,'${yyyy}')]]//ancestor::button
+    Click Element    //*[@id="${field}_CONTAINER"]//following::*[text()='2020']//ancestor::button
+    Click Element    //*[@id="${field}_CONTAINER"]//following::*[text()='December']//ancestor::button
+    Click Button    //*[@id="${field}_CONTAINER"]//following::*[text()='31']//ancestor::button
+
+Pick date in the past in frame
+    [Arguments]    ${field}    ${frame}
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    Click Element    //*[@id='${frame}']//*[@id="${field}_POPUP"]
+    #    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()[contains(.,'${yyyy}')]]//ancestor::button
+    #    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()[contains(.,'${yyyy}')]]//ancestor::button
+    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='2011']//ancestor::button
+    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='January']//ancestor::button
+    Click Button    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='01']//ancestor::button
+
+Pick date in the future in frame
+    [Arguments]    ${field}    ${frame}
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    Click Element    //*[@id='${frame}']//*[@id="${field}_POPUP"]
+    #    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()[contains(.,'${yyyy}')]]//ancestor::button
+    #    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()[contains(.,'${yyyy}')]]//ancestor::button
+    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='2020']//ancestor::button
+    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='December']//ancestor::button
+    Click Button    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='31']//ancestor::button
+
+Update future date to another future date in frame
+    [Arguments]    ${field}    ${frame}
+    ${yyyy}    ${mm}    ${dd}=    Get Time    year,month,day
+    Click Element    //*[@id='${frame}']//*[@id="${field}_POPUP"]
+    #    Click Element    //*[@id='${frame}']//*[@id="${field}"]//following::*[text()='2020']//ancestor::button
+    #    Click Element    //*[@id='${frame}']//*[@id="${field}"]//following::*[text()='December']//ancestor::button
+    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='2020']//ancestor::button
+    Click Element    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='December']//ancestor::button
+    Click Button    //*[@id='${frame}']//*[@id="${field}_CONTAINER"]//following::*[text()='12']//ancestor::button
+
+Verify element in table
+    [Arguments]    ${table}    ${ref_col_name}    ${ref_col_value}    ${verif_col_name}    ${verif_col_value}
+    Element Should Be Visible    //*[@id='${table}']//*[@id='${ref_col_name}']//*[text()='${ref_col_value}']/ancestor::*[@id='ROW']//*[@id='${verif_col_name}']//*[text()[contains(.,'${verif_col_value}')]]
+
+Verify table Shareholders updateRow is visible
+    Element Should Be Visible    //*[@id="shareholders"]//*[@id="updateRow"]
+
+Verify table Shareholders updateRow is not visible
+    Element Should Not Be visible    //*[@id="shareholders"]//*[@id="updateRow"]
+
+Verify table Shareholders deleteRow is visible
+    Element Should Be Visible    //*[@id="shareholders"]//*[@id="deleteRow"]
+
+Verify table Shareholders deleteRow is not visible
+    Element Should Not Be visible    //*[@id="shareholders"]//*[@id="deleteRow"]
+
+Verify field is editable
+    [Arguments]    ${field}
+    Element Should Be Enabled    ${field}
+
+Verify checkbox is readonly and selected
+    [Arguments]    ${field_XPATH}
+    [Documentation]    Action: Verify the field is readonly
+    Element Should Be Visible    ${field_XPATH}
+    Verify checkbox is readonly    ${field_XPATH}
+    Checkbox Should Be Selected    ${field_XPATH}
+
+Verify checkbox is readonly and not selected
+    [Arguments]    ${field_XPATH}
+    [Documentation]    Action: Verify the field is readonly
+    Verify checkbox is readonly    ${field_XPATH}
+    Checkbox Should Not Be Selected    ${field_XPATH}
+
+Verify input field is readonly and contains
+    [Arguments]    ${field_XPATH}    ${value}
+    [Documentation]    Action: Verify the field is readonly
+    Verify field is readonly    ${field_XPATH}
+    Element Should Be Visible    ${field_XPATH}//*[text()[contains(.,'${value}')]]
+
+Select a checkbox
+    [Arguments]    ${path}
+    Page loading done
+    Wait Until Page Contains Element    ${path}    20 secs
+    ${click_ok}    Run Keyword And Return Status    Selenium2Library.Click Element    ${path}
+    Run Keyword Unless    ${click_ok}    Scroll and Click Element    ${path}
+    Page loading done

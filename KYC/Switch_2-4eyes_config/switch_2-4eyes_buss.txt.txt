@@ -1,0 +1,128 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+Switch entities group to 2 eyes
+    [Arguments]    ${group_head}
+    #
+    RPC.Update Preferences    ${group_head}    false    false    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch entities group to 4 eyes
+    [Arguments]    ${group_head}
+    #
+    RPC.Update Preferences    ${group_head}    true    true    true    true    true
+    ...    true    true
+    RPC.Clean Caches
+
+Switch Swift to 2 eyes
+    [Tags]    iris2
+    #    REST Update 2Eyes 4Eyes    administrator_SW1_user    2S2P
+    RPC.Update Preferences    ${GROUP_HEAD_SWIFT}    false    false    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch Swift to 4 eyes
+    #    REST Update 2Eyes 4Eyes    administrator_SW1_user    4S4P
+    RPC.Update Preferences    ${GROUP_HEAD_SWIFT}    true    true    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch I group to 2 eyes
+    #REST Update 2Eyes 4Eyes    administrator_I1_user    2S2P
+    RPC.Update Preferences    ${GROUP_HEAD_I}    false    false    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch I group to 4 eyes
+    #
+    #REST Update 2Eyes 4Eyes    administrator_I1_user    4S4P
+    RPC.Update Preferences    ${GROUP_HEAD_I}    true    true    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch 42J group to 2 eyes
+    #REST Update 2Eyes 4Eyes    administrator_4J1_user    2S2P
+    RPC.Update Preferences    ${GROUP_HEAD_4J}    false    false    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch 42J group to 4 eyes
+    #REST Update 2Eyes 4Eyes    administrator_4J1_user    4S4P
+    RPC.Update Preferences    ${GROUP_HEAD_4J}    true    true    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch 24I and 42J groups to 2eyes
+    Switch I group to 2 eyes
+    Switch 42J group to 2 eyes
+
+Switch 24I and 42J groups to 4eyes
+    Switch I group to 4 eyes
+    Switch 42J group to 4 eyes
+
+Switch 24I and 42J groups to original eyes config
+    #
+    RPC.Update Preferences    ${GROUP_HEAD_I}    false    true    true    true    true
+    ...    true    true
+    RPC.Update Preferences    ${GROUP_HEAD_4J}    true    false    true    true    true
+    ...    true    true
+    RPC.Clean Caches
+    [Teardown]    Close All Browsers
+
+Switch S group to 4 eyes
+    #
+    #REST Update 2Eyes 4Eyes    administrator_S_user    4S4P
+    RPC.Update Preferences    ${GROUP_HEAD_S}    true    true    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch S group to 2 eyes
+    #
+    #REST Update 2Eyes 4Eyes    administrator_S_user    2S2P
+    RPC.Update Preferences    ${GROUP_HEAD_S}    false    false    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+    [Teardown]    Close All Browsers
+
+Switch 24I 42J Swift groups to original eyes config
+    Switch 24I and 42J groups to original eyes config
+    Switch Swift to 2 eyes
+    RPC.Clean Caches
+    [Teardown]    Close All Browsers
+
+Set entities group to 2 eyes with AM
+    [Arguments]    ${group_head}
+    #
+    RPC.Update Preferences    ${group_head}    false    false    true    true    true
+    ...    true    true
+    RPC.Clean Caches
+
+Set entities group to 4 eyes with AM
+    [Arguments]    ${group_head}
+    #
+    RPC.Update Preferences    ${group_head}    true    true    true    true    true
+    ...    true    true
+    RPC.Clean Caches
+
+Set entities group to 2 eyes without AM
+    [Arguments]    ${group_head}
+    #
+    RPC.Update Preferences    ${group_head}    false    false    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Set entities group to 4 eyes without AM
+    [Arguments]    ${group_head}
+    #
+    RPC.Update Preferences    ${group_head}    true    true    true    true    true
+    ...    true    false
+    RPC.Clean Caches
+
+Switch CITI to 2 eyes
+    [Tags]    iris2
+    #    REST Update 2Eyes 4Eyes    administrator_SW1_user    2S2P
+    RPC.Update Preferences    ${GROUP_HEAD_A}    false    false    true    true    true
+    ...    true    false
+    RPC.Clean Caches

@@ -1,0 +1,106 @@
+*** Settings ***
+Resource          contribute_workflow_unit.txt
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+WF Submit Draft
+    [Arguments]    ${entity}    ${category}
+    In Entity and Category    ${entity}    ${category}
+    Submit draft 2eyes    submitting
+    Verify draft is Submitted
+
+WF Reject Draft Qualification
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Click Reject draft
+    Comment in Reject dialog    ${note}
+    Confirm Reject
+    #Verify draft is in Draft status    # in comment because not working in case reject by bank quaifier
+
+WF Qualify Draft
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Verify draft is publishable 2eyes
+    Publish draft 2eyes    ${note}
+    Verify draft is Published
+
+WF Qualify Draft With Checklist
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Verify draft is publishable 2eyes
+    Fill out qualification checklist to all passed
+    Publish draft 2eyes    ${note}
+    Verify draft is Published
+
+WF Submit Draft With Checklist
+    [Arguments]    ${entity}    ${category}
+    In Entity and Category    ${entity}    ${category}
+    Fill out qualification checklist to all passed
+    Submit draft 2eyes    submitting
+    Verify draft is Submitted
+
+WF Propose Draft For Submission
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Click Submit Draft for Approval
+    Comment in Submit Draft for Approval dialog    ${note}
+    Confirm Submit Draft for Approval
+    Verify draft is proposed for submission
+
+WF Reject Draft Submission
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Click Reject draft
+    Comment in Reject dialog    ${note}
+    Confirm Reject
+    Verify folder is in Draft status
+
+WF Approve Draft Submission
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Approve draft 4eyes    ${note}
+    Verify draft is Submitted
+
+WF Propose Draft For Publication
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Click Propose for publication
+    Comment in Propose for publication dialog    ${note}
+    Confirm Propose for publication
+    Verify draft is proposed for publication
+
+WF Propose Draft For Publication With Checklist
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Fill out qualification checklist to all passed
+    Click Propose for publication
+    Comment in Propose for publication dialog    ${note}
+    Confirm Propose for publication
+    Verify draft is proposed for publication
+
+WF Reject Draft Publication
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Verify submitted draft can be Rejected
+    Click Reject draft
+    Comment in Reject dialog    ${note}
+    Confirm Reject
+    Verify folder is in Draft status
+
+WF Publish Draft
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Click Publish draft 4eyes
+    Comment in Publish 4eyes dialog    ${note}
+    Confirm Publish 4eyes
+    Verify draft is Published
+    Verify folder is in Draft status
+
+WF Propose Draft For Submission With Checklist
+    [Arguments]    ${entity}    ${category}    ${note}
+    In Entity and Category    ${entity}    ${category}
+    Fill out qualification checklist to all passed
+    Click Submit Draft for Approval
+    Comment in Submit Draft for Approval dialog    ${note}
+    Confirm Submit Draft for Approval
+    Verify draft is proposed for submission

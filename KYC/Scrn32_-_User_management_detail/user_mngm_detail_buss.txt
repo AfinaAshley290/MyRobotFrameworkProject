@@ -1,0 +1,89 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          user_mngm_detail_unit.txt
+
+*** Keywords ***
+Verify role cannot be removed
+    [Arguments]    ${role}
+    Element Should Not Be visible    //*[@id='ROW']//*[text()[contains(.,'${role}')]]/ancestor::*[@id='ROW']//*[@id='removeRole']
+
+Verify role can be removed
+    [Arguments]    ${role}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${role}')]]/ancestor::*[@id='ROW']//*[@id='removeRole']
+
+Verify role cannot be assigned
+    [Arguments]    ${role}
+    Element Should Not Be visible    //*[@id='ROW']//*[text()[contains(.,'${role}')]]/ancestor::*[@id='ROW']//*[@id='assignRole']
+
+Verify role can be assigned
+    [Arguments]    ${role}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${role}')]]/ancestor::*[@id='ROW']//*[@id='assignRole']
+
+Verify role is already assigned
+    [Arguments]    ${role}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${role}')]]/ancestor::*[@id='ROW']//*[@id='removeRole']
+
+Create user
+    Element Should Be Visible    //*[@id='create']
+    Click Element    //*[@id='create']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Not Be Visible    //*[@id='create']
+    Element Should Be Visible    //*[@id="users"]
+
+Delete User
+    Element Should Be Visible    //*[@id='delete']
+    Click element    //*[@id='delete']
+    Element Should Be Visible    //*[@id="deleteUserDialog"]
+    Click element    //*[@id="deleteUserDialog"]//*[@id="deleteUser"]
+    Element Should Not Be Visible    //*[@id="deleteUserDialog"]
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Be Visible    users
+    Load whole page
+
+Verify default entities scope is activated
+    Checkbox Should Be Selected    //*[@id='defaultScope']
+
+Verify default entities scope is desactivated
+    Checkbox Should Not Be Selected    //*[@id='defaultScope']
+
+Activate the default entities scope
+    Element Should Be Visible    //*[@id='defaultScope']
+    Select Checkbox    //*[@id='defaultScope']
+    Checkbox Should Be Selected    //*[@id='defaultScope']
+
+Desactivate the default entities scope
+    Element Should Be Visible    //*[@id='defaultScope']
+    #Unselect Checkbox By ID    //*[@id='defaultScope']
+    #Changes By Hassan
+    ${unselected}=    Run Keyword And Return Status    Selenium2Library.Checkbox Should Not Be Selected    //*[@id='defaultScope']
+    #Run Keyword Unless    ${unselected}    Unselect Checkbox    //*[@id='defaultScope']
+    Run Keyword If    ${unselected} == False    Selenium2Library.Click Element    //*[@id='defaultScope']
+    Selenium2Library.Checkbox Should Not Be Selected    //*[@id='defaultScope']
+
+Save user changes
+    Element Should Be Visible    //*[@id='saveChanges']
+    Click Element    //*[@id='saveChanges']
+    #higher timeout because this can take a while
+    Element Should Be Visible    //*[@id="appFooter"]
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Not Be visible    //*[@id='saveChanges']
+
+Assigned access to entities-verify entity is in user scope
+    [Arguments]    ${bic}
+    Assigned access to entities-filter entity from list    ${bic}
+    Element should be visible    //*[@id='assignedAccessToEntities']//*[text()[contains(.,'${bic}')]]
+
+Assigned access to entities-verify entity is not in user scope
+    [Arguments]    ${bic}
+    Assigned access to entities-filter entity from list    ${bic}
+    Element Should Be Visible    //*[@id='assignedAccessToEntities']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//input
+    Checkbox Should Not Be Selected    //*[@id='assignedAccessToEntities']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//input
+
+Assigned access to entities-select entity with BIC
+    [Arguments]    ${bic}
+    Assigned access to entities-filter entity from list    ${bic}
+    Click Element    //*[@id='assignedAccessToEntities']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//input

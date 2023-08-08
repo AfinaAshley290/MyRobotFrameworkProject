@@ -1,0 +1,109 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          entity_edit_unit.txt
+
+*** Keywords ***
+Create basic draft for Category
+    [Arguments]    ${category}
+    In Category    ${category}
+    Open create draft
+    Run Keyword    Fullfill draft page with basic data for Category ${category}
+    Click Save Draft
+
+Create empty draft for Category
+    [Arguments]    ${category}
+    In Category    ${category}
+    Open create draft
+    Click Save Draft
+
+Open create draft
+    Element Should Be Visible    //*[@id="createDraft"]
+    #Element Should Be Visible    //*[@id='createDraft']
+    Element Should Not Be visible    //*[@id='folderData']//*[@id='editDraft']
+    #Click Element    //*[@id='createDraft']
+    Execute Javascript    $('#createDraft').click()
+    Page loading done
+    Element Should Be Visible    //*[@id='saveDraft']
+
+Remove first instance of document
+    [Arguments]    ${doc}
+    Load page infinite scroll
+    ${folder}=    Get Folder
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']//ancestor::*[@id='ROW']//*[@id='deleteDocument']//*[@title="Delete"][1]
+
+Confirm document removal
+    Element Should Be Visible    //*[@id="deleteDocumentDialog"]//*[@id="deleteDocument"]
+    Click Element    //*[@id="deleteDocumentDialog"]//*[@id="deleteDocument"]
+    Element Should Not Be visible    //*[@id="deleteDocumentDialog"]
+    Element Should Be Visible    //*[@id='folderData']//*[@id='saveDraft']
+
+Remove document in language
+    [Arguments]    ${doc}    ${language}
+    [Documentation]    Removes specified document translation and returns number of documents of that document type that are still uploaded
+    ${folder}=    Get Folder
+    #Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='deleteDocument']    #OLD_UPLOAD
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']//*[@id='deleteDocument']//*[@title="Delete"]
+
+Verify I cannot remove document
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Element Should Not Be visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']//ancestor::*[@id='ROW']//*[@id='deleteDocument'])[1]
+
+Open Update document
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    Click Element    //*[@id="${folder}FolderDocuments" ]//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id="${folder}FolderDocuments" ]//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    Click Element    //*[@id="${folder}FolderDocuments" ]//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='updateDocument']
+
+Comment in Publish 2eyes dialog
+    [Arguments]    ${text}
+    Wait Until Page Contains Element    //*[@id='publishDraftDialog']//textarea    10s
+    Input Text    //*[@id='publishDraftDialog']//textarea    ${text}
+
+Comment in Propose for publication dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    //*[@id="proposeForPublicationQualifiedDialog"]//*[@id="proposeForPublicationQualified"]
+    Input Text    //*[@id='proposeForPublicationQualifiedDialog']//textarea    ${text}
+
+Comment in Publish 4eyes dialog
+    [Arguments]    ${text}
+    Wait Until Page Contains Element    //*[@id='publishQualifiedDialog']//textarea
+    Input Text    //*[@id='publishQualifiedDialog']//textarea    ${text}
+
+Create draft with input text in specified field
+    [Arguments]    ${field}    ${text_for_field}
+    Open create draft
+    Input Text    ${field}    ${text_for_field}
+    Click Save Draft
+
+Edit draft with input text in specified field
+    [Arguments]    ${field}    ${text_for_field}
+    Click Edit Draft and wait editing page
+    Input Text    ${field}    ${text_for_field}
+    Click Save Draft
+    Element Should Be Visible    //*[@id='folderData']//*[@class="tab-pane ng-scope active"]//*[@id='editDraft']
+
+Update document
+    [Arguments]    ${doc}    ${language}
+    [Documentation]    Upload document for, specified type.
+    ...    It uploads for English language in case of single or multi instance, with expiration date or not.
+    ...
+    ...    folder = "draft" or "published"
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']
+    Open Update document    ${doc}    ${language}
+    Upload dialog - upload translation document    ${language}
+    #    Upload dialog - upload new document
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    documentDescription
+    Run Keyword If    ${present}    Input Text    documentDescription    update doc
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='documentExpirationDate']
+    #    Run Keyword If    ${present}    Input Text    //*[@id='uploadWizardDialog']//*[@id='documentExpirationDate']    01 01 2020
+    Run Keyword If    ${present}    Pick date in the future in frame    documentExpirationDate    uploadWizardDialog
+    #    Wait Until Keyword Succeeds    30 sec    3 sec    Select From List    //*[@id='uploadWizardDialog']//*[text()[contains(.,'document')]]//ancestor::*[@id='ROW']//*[@id='language']    English
+    #
+    Upload dialog - move to step upload preview
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'translation')]]
+    Run Keyword If    ${present}    Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'preview')]]
+    Upload dialog - finish upload

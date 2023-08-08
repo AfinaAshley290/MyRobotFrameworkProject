@@ -1,0 +1,496 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          manage_access_to_data_doc_SWP_entity_unit.txt
+
+*** Variables ***
+
+*** Keywords ***
+Access Management Dialog - Request access for all
+    Access Management Dialog - Select Action for a all entities    dataAndDocumentAccess_All    REQUEST_ALL_ACCESS
+
+Access Management Dialog - Request access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Validate entity has not access to data and document    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    dataAndDocumentAccess    REQUEST_ACCESS
+    Access Management Dialog - Validate entity access to data and document is requested    ${bic}
+
+Access Management Dialog - Cancel request access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    dataAndDocumentAccess    CANCEL_REQUEST_ACCESS
+
+Access Management Dialog - Request SWP Payment access for all
+    Access Management Dialog - Select Action for a all entities    PAY_swProfileAccess_All    REQUEST_ALL_ACCESS
+
+Access Management Dialog - Request SWP Trade and Finance access for all
+    Access Management Dialog - Select Action for a all entities    TAF_swProfileAccess_All    REQUEST_ALL_ACCESS
+
+Access Management Dialog - Surrender access for all
+    Access Management Dialog - Select Action for a all entities    dataAndDocumentAccess_All    SURRENDER_ALL_ACCESS
+
+Access Management Dialog - Surrender access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    dataAndDocumentAccess    SURRENDER_ACCESS
+
+Access Management Dialog - Select Action for a given entity
+    [Arguments]    ${bic}    ${category}    ${action}
+    #Execute Javascript    $($x('//*[@id="entity"]//*[text()[contains(.,"${bic}")]]/ancestor::*[@id="ROW"]//*[@id="${category}"]//*[@id="${action}"]')).click()
+    Access Management Dialog - Validate category is visible for a given entity    ${bic}    ${category}
+    Execute Javascript    $("#ROW #entity").find(':contains("${bic}")').parents('#ROW').find('#${category} #${action}').click()
+    Run Keyword If    '${action}'=='NO_ACCESS'    Access Management Dialog - Validate Action is selected for a given entity    ${bic}    ${category}    WILL_REQUEST_ACCESS
+    #    Run Keyword If    '${action}'!='NO_ACCESS'    Access Management Dialog - Validate Action is selected for a given entity    ${bic}    ${category}    WILL_${action}
+
+Access Management Dialog - Select Action for a all entities
+    [Arguments]    ${category}    ${action}
+    Element Should Be Visible    //*[@id='${category}']
+    Execute Javascript    $('#${category} #${action}').click()
+
+Access Management Dialog - user can manage access to data and document
+    Element Should Be Visible    //*[@id='manageAccessManagementDialog']
+    ${count}=    Get Matching Xpath Count    //*[@id='ROW']
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='dataAndDocumentAccess']    ${count}
+
+Access Management Dialog - Validate entity has not access to data and document
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    dataAndDocumentAccess    REQUEST_ACCESS
+
+Access Management Dialog - Note
+    [Arguments]    ${note}
+    Element Should Be Visible    //textarea
+    Input Text    //textarea    ${note}
+
+Access Management Dialog - Click Confirm
+    Element Should Be Visible    //*[@id='manageAccessManagementDialog']//*[@id='nextDialog']
+    Click Element    //*[@id='manageAccessManagementDialog']//*[@id='nextDialog']
+    #Element Should Be Visible    //*[@id='manageAccessManagementDialog']//*[@id='confirmDialog']
+    #Click Element    //*[@id='manageAccessManagementDialog']//*[@id='confirmDialog']
+
+Access Management Dialog - Click Cancel
+    ${cancel_button_locator}=    Set Variable    //*[@id='cancelDialog']
+    Element Should Be Visible    ${cancel_button_locator}
+    Click Element    ${cancel_button_locator}
+    Element Should Not Be visible    ${cancel_button_locator}
+
+Access Management Dialog - Validate entity has not access to SWP Payment
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    NO_ACCESS
+
+Access Management Dialog - Select Action should be available for entity
+    [Arguments]    ${bic}    ${category}    ${action}
+    ${entity_row_locator}=    Set Variable    //*[@id='entity']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    ${action_locator}=    Set Variable    ${entity_row_locator}//*[@id='${category}']//*[@id='${action}']
+    Page Should Contain Element    ${action_locator}
+
+Access Management Dialog - Validate entity access to data and document is requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Action should be selected for entity    ${bic}    dataAndDocumentAccess    WILL_REQUEST_ACCESS
+
+Access Management Dialog - Action should be selected for entity
+    [Arguments]    ${bic}    ${category}    ${action}
+    ${entity_row_locator}=    Set Variable    //*[@id='entity']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    ${action_locator}=    Set Variable    ${entity_row_locator}//*[@id='${category}']//*[@id='${action}']
+    Element Should Be Visible    ${action_locator}
+
+Access Management Confirmation Dialog - Click Confirm
+    #//*[@id='manageAccessManagementConfirmationDialog']//*[@id='confirmDialog']
+    ${confirm_button_locator}=    Set Variable    //*[@id='manageAccessManagementDialog']//*[@id='confirmDialog']
+    Element Should Be Visible    ${confirm_button_locator}
+    Click Element    ${confirm_button_locator}
+    Element Should Not Be visible    //*[@id='manageAccessManagementDialog']
+
+Access Management Confirmation Dialog - Click Cancel
+    ${cancel_button_locator}=    Set Variable    //*[@id='manageAccessManagementConfirmationDialog']//*[@id='cancelDialog']
+    Element Should Be Visible    ${cancel_button_locator}
+    Click Element    ${cancel_button_locator}
+    Element Should Not Be visible    ${cancel_button_locator}
+
+Access Management Dialog - Validate access request to data and document is pending for all entities
+    ${count}=    Get Matching Xpath Count    //*[@id='ROW']
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='dataAndDocumentAccess']//*[text()[contains(.,'pending')]]    ${count}
+
+Access Management Dialog - Validate access to data and document is requested for all entities
+    ${count}=    Get Matching Xpath Count    //*[@id='ROW']
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='dataAndDocumentAccess']//*[@id='WILL_REQUEST_ACCESS']    ${count}
+
+Access Management Dialog - Request SWP Payment access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    NO_ACCESS
+    Access Management Dialog - Validate Action is selected for a given entity    ${bic}    PAY_swProfileAccess    WILL_REQUEST_ACCESS
+
+Access Management Dialog - Request SWP Trade and Finance access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    NO_ACCESS
+    Access Management Dialog - Validate Action is selected for a given entity    ${bic}    TAF_swProfileAccess    WILL_REQUEST_ACCESS
+
+Access Management Dialog - Validate entity has not access to SWP Trade and Finance
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    TAF_swProfileAccess    NO_ACCESS
+
+Access Management Dialog - Validate entity access to SWP Payment is requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Action should be selected for entity    ${bic}    PAY_swProfileAccess    WILL_REQUEST_ACCESS
+
+Access Management Dialog - Validate entity access to SWP Trade and Finance is requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Action should be selected for entity    ${bic}    TAF_swProfileAccess    WILL_REQUEST_ACCESS
+
+Access Management Dialog - Cancel SWP Payment request access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    CANCEL_REQUEST_ACCESS
+
+Access Management Dialog - Cancel SWP Trade and Finance request access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    CANCEL_REQUEST_ACCESS
+
+Access Management Dialog - Validate access to SWP Payment is requested for all entities
+    ${count}=    Get Matching Xpath Count    //*[@id='ROW']
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='PAY_swProfileAccess']//*[@id='WILL_REQUEST_ACCESS']    ${count}
+
+Access Management Dialog - Validate access to SWP Trade and Finance is requested for all entities
+    ${count}=    Get Matching Xpath Count    //*[@id='ROW']
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='TAF_swProfileAccess']//*[@id='WILL_REQUEST_ACCESS']    ${count}
+
+Access Management Dialog - Validate access request to SWP Payment is pending for all entities
+    ${count}=    Get Matching Xpath Count    //*[@id='ROW']
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='PAY_swProfileAccess']//*[text()[contains(.,'pending')]    ${count}
+
+Access Management Dialog - Validate access request to SWP Trade and Finance is pending for all entities
+    ${count}=    Get Matching Xpath Count    //*[@id='ROW']
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='TAF_swProfileAccess']//*[text()[contains(.,'pending')]    ${count}
+
+Access Management Dialog - Validate entity access to data and document is pending
+    [Arguments]    ${bic}
+    Element Should Be Visible    //*[@id="entity"]//*[text()[contains(.,"${bic}")]]/ancestor::*[@id="ROW"]//*[@id="dataAndDocumentAccess"]//*[text()[contains(.,"pending")]]
+
+Access Management Dialog - user cannot manage access to data and document
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='dataAndDocumentAccess']    0
+
+Access Management Dialog - Validate entity access to data and document cannot be requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Action cannot be selected for a given entity    ${bic}    dataAndDocumentAccess    REQUEST_ACCESS
+
+Access Management Dialog - Action cannot be selected for a given entity
+    [Arguments]    ${bic}    ${category}    ${action}
+    Page Should Not Contain Element    //*[@id="entity"]//*[text()[contains(.,"${bic}")]]/ancestor::*[@id="ROW"]//*[@id="${category}"]//*[@id="${action}"]
+
+Access Management Dialog - Validate entity access to data and document can be requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    dataAndDocumentAccess    REQUEST_ACCESS
+
+Access Management Dialog - Validate entity access to SWP Payment cannot be requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Action cannot be selected for a given entity    ${bic}    PAY_swProfileAccess    NO_ACCESS
+
+Access Management Dialog - Validate entity access to SWP Trade and Finance cannot be requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Action cannot be selected for a given entity    ${bic}    TAF_swProfileAccess    NO_ACCESS
+
+Access Management Dialog - Validate entity access to SWP Payment can be requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    NO_ACCESS
+
+Access Management Dialog - Validate entity access to SWP Trade and Finance can be requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    TAF_swProfileAccess    NO_ACCESS
+
+Access Management Dialog - user cannot manage access to SWP
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='PAY_swProfileAccess']    0
+    Xpath Should Match X Times    //*[@id='ROW']//*[@id='TAF_swProfileAccess']    0
+
+Access Management Dialog - Validate entity access to SWP Payment is pending
+    [Arguments]    ${bic}
+    Element Should Be Visible    //*[@id="entity"]//*[text()[contains(.,"${bic}")]]/ancestor::*[@id="ROW"]//*[@id='PAY_swProfileAccess']//*[text()[contains(.,'pending')]]
+
+Access Management Dialog - Validate entity access to SWP Trade and Finance is pending
+    [Arguments]    ${bic}
+    Element Should Be Visible    //*[@id="entity"]//*[text()[contains(.,"${bic}")]]/ancestor::*[@id="ROW"]//*[@id='TAF_swProfileAccess']//*[text()[contains(.,'pending')]]
+
+Access Management Dialog - Grant SWP Payment level 1 access for all
+    Access Management Dialog - Select Action for a all entities    PAY_swProfileAccess_All    GRANT_ALL_LEVEL1
+
+Access Management Dialog - Grant SWP Payment level 1 and 2 access for all
+    Access Management Dialog - Select Action for a all entities    PAY_swProfileAccess_All    GRANT_ALL_LEVEL1AND2
+
+Access Management Dialog - Reject SWP Payment access for all
+    Access Management Dialog - Select Action for a all entities    PAY_swProfileAccess_All    REJECT_ALL_ACCESS
+
+Access Management Dialog - Grant SWP Trade and Finance level 1 access for all
+    Access Management Dialog - Select Action for a all entities    TAF_swProfileAccess_All    GRANT_ALL_LEVEL1
+
+Access Management Dialog - Grant SWP Trade and Finance level 1 and 2 access for all
+    Access Management Dialog - Select Action for a all entities    TAF_swProfileAccess_All    GRANT_ALL_LEVEL1AND2
+
+Access Management Dialog - Reject SWP Trade and Finance access for all
+    Access Management Dialog - Select Action for a all entities    TAF_swProfileAccess_All    REJECT_ALL_ACCESS
+
+Access Management Dialog - Grant SWP Payment level 1 for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    GRANT_LEVEL1
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    GRANT_LEVEL1
+    Access Management Dialog - Action should be selected for entity    ${bic}    PAY_swProfileAccess    LEVEL1_WILL_BE_GRANTED
+
+Access Management Dialog - Grant SWP Payment level 1 and 2 access for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    GRANT_LEVEL1AND2
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    GRANT_LEVEL1AND2
+    Access Management Dialog - Action should be selected for entity    ${bic}    PAY_swProfileAccess    LEVEL1AND2_WILL_BE_GRANTED
+
+Access Management Dialog - Reject SWP Payment access for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    REJECT_ACCESS
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    REJECT_ACCESS
+    Access Management Dialog - Action should be selected for entity    ${bic}    PAY_swProfileAccess    ACCESS_WILL_BE_REJECTED
+
+Access Management Dialog - Grant SWP Trade and Finance level 1 access for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    TAF_swProfileAccess    GRANT_LEVEL1
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    GRANT_LEVEL1
+    Access Management Dialog - Action should be selected for entity    ${bic}    TAF_swProfileAccess    LEVEL1_WILL_BE_GRANTED
+
+Access Management Dialog - Grant SWP Trade and Finance level 1 and 2 access for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    TAF_swProfileAccess    GRANT_LEVEL1AND2
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    GRANT_LEVEL1AND2
+    Access Management Dialog - Action should be selected for entity    ${bic}    TAF_swProfileAccess    LEVEL1AND2_WILL_BE_GRANTED
+
+Access Management Dialog - Reject SWP Trade and Finance access for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    TAF_swProfileAccess    REJECT_ACCESS
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    REJECT_ACCESS
+    Access Management Dialog - Action should be selected for entity    ${bic}    TAF_swProfileAccess    ACCESS_WILL_BE_REJECTED
+
+Access Management Dialog - Validate entity access to SWP Payment level 1 can be granted
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    GRANT_LEVEL1
+
+Access Management Dialog - Validate entity access to SWP Payment level 1 and 2 can be granted
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    GRANT_LEVEL1AND2
+
+Access Management Dialog - Validate entity access to SWP Payment can be rejected
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    REJECT_ACCESS
+
+Access Management Dialog - Validate entity access to SWP Trade and Finance level 1 can be granted
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    TAF_swProfileAccess    GRANT_LEVEL1
+
+Access Management Dialog - Validate entity access to SWP Trade and Finance level 1 and 2 can be granted
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    TAF_swProfileAccess    GRANT_LEVEL1AND2
+
+Access Management Dialog - Validate entity access to SWP Trade and Finance can be rejected
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    TAF_swProfileAccess    REJECT_ACCESS
+
+Grant Access Management Dialog - Click Confirm
+    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='nextDialog']
+    #    Run Keyword And Ignore Error    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='grantDialog']
+    #    Run Keyword And Ignore Error    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='rejectDialog']
+    #    Run Keyword And Ignore Error    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='partialGrantDialog']
+
+Grant Access Management Confirmation Dialog - Click Confirm
+    #//*[@id='grantAccessManagementConfirmationDialog']//*[@id='confirmDialog']
+    Element Should Be Visible    //*[@id='grantAccessManagementDialog']//*[@id[contains(.,'Dialog')]]
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='grantAccessManagementDialog']//*[@id='grantDialog']
+    Run Keyword If    ${present}    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='grantDialog']
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='grantAccessManagementDialog']//*[@id='rejectDialog']
+    Run Keyword If    ${present}    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='rejectDialog']
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='grantAccessManagementDialog']//*[@id='partialGrantDialog']
+    Run Keyword If    ${present}    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='partialGrantDialog']
+    Element Should Not Be visible    //*[@id='grantAccessManagementDialog']
+
+Access Management Dialog - Validate entity access to SWP Payment level 2 can be requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    REQUEST_LEVEL2
+
+Access Management Dialog - Request SWP Payment level 2 access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    REQUEST_LEVEL2
+
+Access Management Dialog - Validate entity access to SWP Payment level 2 is requested
+    [Arguments]    ${bic}
+    Access Management Dialog - Action should be selected for entity    ${bic}    PAY_swProfileAccess    WILL_REQUEST_ACCESS
+
+Access Management Dialog - Grant SWP Payment level 2 access for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    PAY_swProfileAccess    GRANT_LEVEL2
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    GRANT_LEVEL2
+    Access Management Dialog - Action should be selected for entity    ${bic}    PAY_swProfileAccess    LEVEL2_WILL_BE_GRANTED
+
+Access Management Dialog - Surrender SWP Payment access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    SURRENDER_ACCESS
+
+Access Management Dialog - Surrender SWP Trade and Finance access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    SURRENDER_ACCESS
+
+Access Management Dialog - Revoke SWP Payment Level 2 access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    REVOKE_LEVEL2
+
+Access Management Dialog - Revoke SWP Payment access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    REVOKE_ACCESS
+
+Access Management Dialog - Revoke SWP Trade and Finance Level 2 access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    REVOKE_LEVEL2
+
+Access Management Dialog - Revoke SWP Trade and Finance access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    REVOKE_ACCESS
+
+Access Management Dialog - Revoke SWP Payment access for all entities in the group
+    [Arguments]    ${entitygroup}
+    Access Management Dialog - Select Action for a all entities in a group    ${entitygroup}    PAY_swProfileAccessGroup    GROUP_REVOKE_ALL_ACCESS
+
+Access Management Dialog - Select Action for a all entities in a group
+    [Arguments]    ${entityGroup}    ${category}    ${action}
+    Element Should Be Visible    //*[@id='${category}']
+    Execute Javascript    $("#ROW #entityGroup").find(':contains("${entitygroup}")').parents('#ROW').find('#${category} #${action}').click()
+
+Revoke Access Management Dialog - Click Confirm
+    Element Should Be Visible    //*[@id='revokeAccessManagementDialog']//*[@id='nextDialog']
+    Click Element    //*[@id='revokeAccessManagementDialog']//*[@id='nextDialog']
+    #Element Should Be Visible    //*[@id='revokeAccessManagementDialog']//*[@id='confirmDialog']
+    #Click Element    //*[@id='revokeAccessManagementDialog']//*[@id='confirmDialog']
+
+Revoke Access Management Confirmation Dialog - Click Confirm
+    #//*[@id='revokeAccessManagementConfirmationDialog']//*[@id='confirmDialog']
+    ${confirm_button_locator}=    Set Variable    //*[@id='revokeAccessManagementDialog']//*[@id='confirmDialog']
+    Element Should Be Visible    ${confirm_button_locator}
+    Click Element    ${confirm_button_locator}
+    Element Should Not Be visible    //*[@id='revokeAccessManagementDialog']
+
+Access Management Dialog - Revoke SWP Payment level 2 access for all entities in the group
+    [Arguments]    ${entitygroup}
+    Access Management Dialog - Select Action for a all entities in a group    ${entitygroup}    PAY_swProfileAccessGroup    GROUP_REVOKE_LEVEL2
+
+Access Management Dialog - Grant Data and Documents access for all
+    Access Management Dialog - Select Action for a all entities    dataAndDocumentAccess_All    GRANT_ALL_ACCESS
+
+Access Management Dialog - Grant Data and Documents access for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    dataAndDocumentAccess    GRANT_ACCESS
+    Access Management Dialog - Select Action for a given entity    ${bic}    dataAndDocumentAccess    GRANT_ACCESS
+    Access Management Dialog - Action should be selected for entity    ${bic}    dataAndDocumentAccess    ACCESS_WILL_BE_GRANTED
+
+Access Management Dialog - Reject Data and Documents access for all
+    Access Management Dialog - Select Action for a all entities    dataAndDocumentAccess_All    REJECT_ALL_ACCESS
+
+Access Management Dialog - Reject Data and Documents access for given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action should be available for entity    ${bic}    dataAndDocumentAccess    REJECT_ACCESS
+    Access Management Dialog - Select Action for a given entity    ${bic}    dataAndDocumentAccess    REJECT_ACCESS
+    Access Management Dialog - Action should be selected for entity    ${bic}    dataAndDocumentAccess    ACCESS_WILL_BE_REJECTED
+
+Access Management Dialog - Revoke Data and Documents access for all entities in the group
+    [Arguments]    ${entitygroup}
+    Access Management Dialog - Select Action for a all entities in a group    ${entitygroup}    dataAndDocumentAccessGroup    GROUP_REVOKE_ALL_ACCESS
+
+Access Management Dialog - Revoke Data and Documents access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    dataAndDocumentAccess    REVOKE_ACCESS
+
+Access Management Dialog - Grant SWP Access for given entity
+    [Arguments]    ${bic}    ${grants}
+    [Documentation]    grants are:
+    ...
+    ...    P1: Payment level 1
+    ...    P2: Payment levels 1 and 2
+    ...    P2T1: Payment levels 1 and 2 and Trade & Finance level 1 and 2
+    ...    P2T2
+    ...    P1T1
+    ...    T1
+    ...    T2
+    ...    P1T2
+    Run Keyword If    '${grants}'=='P1'    Access Management Dialog - Grant SWP Payment level 1 for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P1'    Access Management Dialog - Reject SWP Trade and Finance access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P2'    Access Management Dialog - Grant SWP Payment level 1 and 2 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P2'    Access Management Dialog - Reject SWP Trade and Finance access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P2T1'    Access Management Dialog - Grant SWP Payment level 1 and 2 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P2T1'    Access Management Dialog - Grant SWP Trade and Finance level 1 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P2T2'    Access Management Dialog - Grant SWP Payment level 1 and 2 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P2T2'    Access Management Dialog - Grant SWP Trade and Finance level 1 and 2 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P1T1'    Access Management Dialog - Grant SWP Payment level 1 for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P1T1'    Access Management Dialog - Grant SWP Trade and Finance level 1 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='T1'    Access Management Dialog - Grant SWP Trade and Finance level 1 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='T1'    Access Management Dialog - Reject SWP Payment access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='T2'    Access Management Dialog - Grant SWP Trade and Finance level 1 and 2 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='T2'    Access Management Dialog - Reject SWP Payment access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P1T2'    Access Management Dialog - Grant SWP Payment level 1 for given entity    ${bic}
+    Run Keyword If    '${grants}'=='P1T2'    Access Management Dialog - Grant SWP Trade and Finance level 1 and 2 access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='NONE'    Access Management Dialog - Reject SWP Payment access for given entity    ${bic}
+    Run Keyword If    '${grants}'=='NONE'    Access Management Dialog - Reject SWP Trade and Finance access for given entity    ${bic}
+
+Access Management Dialog - 2 X Confirm
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm
+    Element Should Not Be visible    //*[@id='manageAccessManagementDialog']
+
+Access Management Dialog - Validate Action is selected for a given entity
+    [Arguments]    ${bic}    ${category}    ${action}
+    Element Should Be Visible    //*[@id="entity"]//*[text()[contains(.,"${bic}")]]/ancestor::*[@id="ROW"]//*[@id="${category}"]//*[@id='${action}']
+
+Access Management Dialog - Validate category is visible for a given entity
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id="entity"]//*[text()[contains(.,"${bic}")]]/ancestor::*[@id="ROW"]//*[@id="${category}"]
+
+Access Management Dialog - Expand entity group
+    [Arguments]    ${entity_group}
+    Element Should Be Visible    //*[@id='entityGroup']//*[text()[contains(.,'${entity_group}')]]//ancestor::*[@id='ROW']//*[@id='entityGroupExpand']
+    #small instability counter
+    ${status}    Run Keyword And Return Status    Click Element    //*[@id='entityGroup']//*[text()[contains(.,'${entity_group}')]]//ancestor::*[@id='ROW']//*[@id='entityGroupExpand']
+    Run Keyword Unless    ${status}    Click Element    //*[@id='entityGroup']//*[text()[contains(.,'${entity_group}')]]//ancestor::*[@id='ROW']//*[@id='entityGroupExpand']
+
+Access Management Dialog - Cancel Surrendered SWP Payment access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    PAY_swProfileAccess    CANCEL_THE_SURRENDER
+    Access Management Dialog - Validate Action is selected for a given entity    ${bic}    PAY_swProfileAccess    WILL_HAVE_ACCESS
+
+Access Management Dialog - Cancel Surrendered SWP Trade and Finance access for a given entity
+    [Arguments]    ${bic}
+    Access Management Dialog - Select Action for a given entity    ${bic}    TAF_swProfileAccess    CANCEL_THE_SURRENDER
+    Access Management Dialog - Validate Action is selected for a given entity    ${bic}    TAF_swProfileAccess    WILL_HAVE_ACCESS
+
+Access Management Dialog - Validate entity has access to data and document
+    [Arguments]    ${bic}
+    ${entity_row_locator}=    Set Variable    //*[@id='entity']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    ${action_locator}=    Set Variable    ${entity_row_locator}//*[@id='dataAndDocumentAccess']//*[@id='ACCESS']
+    Element Should Be Visible    ${action_locator}
+
+Access Management Dialog - Validate entity access to data and document is surrendered
+    [Arguments]    ${bic}
+    ${entity_row_locator}=    Set Variable    //*[@id='entity']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    ${action_locator}=    Set Variable    ${entity_row_locator}//*[@id='dataAndDocumentAccess']//*[@id='SURRENDERED']
+    Element Should Be Visible    ${action_locator}
+
+Access Management Dialog - Validate entity access to data and document is granted
+    [Arguments]    ${bic}
+    Access Management Dialog - Action should be selected for entity    ${bic}    dataAndDocumentAccess    HAS_ACCESS
+
+Access Management Dialog - Validate entity access to data and document is rejected
+    [Arguments]    ${bic}
+    Access Management Dialog - Action should be selected for entity    ${bic}    dataAndDocumentAccess    REJECTED
+
+Access Management Dialog - Access status should be
+    [Arguments]    ${bic}    ${category}    ${status}
+    ${entity_row_locator}=    Set Variable    //*[@id='entity']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    ${action_locator}=    Set Variable    ${entity_row_locator}//*[@id='${category}']//*[text()[contains(.,'${status}')]]
+    Element Should Be Visible    ${action_locator}
+
+Revoke Access Management Dialog - 2 X Confirm
+    Revoke Access Management Dialog - Click Confirm
+    Revoke Access Management Confirmation Dialog - Click Confirm
+    Element Should Not Be visible    //*[@id='revokeAccessManagementDialog']
+
+Grant Access Management Dialog - 2 X Confirm
+    Grant Access Management Dialog - Click Confirm
+    Grant Access Management Confirmation Dialog - Click Confirm
+    Element Should Not Be visible    //*[@id='grantAccessManagementDialog']
+
+Access Management Dialog - Verify that it contains given number of rows
+    [Arguments]    ${numberofrows}
+    Xpath Should Match X Times    //*[@id='ROW']    ${numberofrows}

@@ -1,0 +1,113 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          my_entities_unit.txt
+
+*** Keywords ***
+Filter on text
+    [Arguments]    ${text}
+    Input Text    //*[@id='inputSearch']    ${text}
+
+Filter on country
+    [Arguments]    ${country}
+    #Select Checkbox    //*[@id="searchParam"]//*[text()[contains(.,'${country}')]]//ancestor::label//input[@type='checkbox']
+    Select Checkbox    //*[@id="searchParam"]//*[@type='checkbox' and @value='${country}']
+
+Unfilter on country
+    [Arguments]    ${country}
+    Unselect Checkbox    //*[@id="searchParam"]//*[text()[contains(.,'${country}')]]//ancestor::label//input[@type='checkbox']
+
+Entities list should contain
+    [Arguments]    ${bic}
+    Load whole page
+    #
+    Element Should Be Visible    //*[@id="entities"]//*[@id='ROW']//*[text()[contains(.,'${bic}')]]
+
+Entities list number of rows should be
+    [Arguments]    ${number}
+    Load whole page
+    #
+    Xpath Should Match X Times    //*[@id='entities']//*[@id='ROW']    ${number}
+
+Entities list should not contain
+    [Arguments]    ${bic}
+    #Load whole page
+    Filter on text    ${bic}
+    Element Should Not Be visible    //*[@id="entities"]//*[@id='ROW']//*[text()[contains(.,'${bic}')]]
+
+Filter on entity type
+    [Arguments]    ${entitytype}
+    Select Checkbox    //*[@id="searchParam"]//*[@type='checkbox' and @value='${entitytype}']    #Search by Value
+
+Unfilter on entity type
+    [Arguments]    ${entitytype}
+    Unselect Checkbox    //*[@id="searchParam"]//*[@type='checkbox' and @value='${entitytype}']
+
+Filter on KYC data to show entities awaiting action
+    Select Checkbox    //*[@id="searchParam"]//*[text()[contains(.,'attention')]]//ancestor::label//input[@type='checkbox']
+    Load whole page
+
+Reset filter
+    Click Element    //*[@id="searchParam"]//*[@id='reset']
+    Load whole page
+
+Counterparties list should contain
+    [Arguments]    ${bic}
+    Load whole page
+    Element Should Be Visible    //*[@id='entities']//*[@id='ROW']//*[text()[contains(.,'${bic}')]]
+
+Counterparties Entity Category is shown as accessible
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}']
+    Element Should Not Be visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}']/ancestor::*[@id='folderInfo']//*[@id="folderInfoLockstatus"]
+
+Counterparties Entity Category is shown as not accessible
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}']
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}']/ancestor::*[@id='folderInfo']//*[@id="folderInfoLockstatus"]
+
+Counterparties Entity Category does not have completeness score
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}']
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}' and @class='ng-binding text-light']
+
+Counterparties Entity Category has completeness score less than 50
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}']
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}' and @class='ng-binding text-warning']
+
+Counterparties Entity Category has completeness score more than 50
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}']
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='folderInfoName' and text()='${${category}}' and @class='ng-binding text-success']
+
+Counterparties list should not contain
+    [Arguments]    ${bic}
+    Element Should Not Be visible    //*[@id='entities']//*[@id='ROW']//*[text()[contains(.,'${bic}')]]
+
+Access reports should be visible
+    Element Should Be Visible    //*[@id="accessReports"]
+
+Access reports should not be visible
+    Element Should Not Be Visible    //*[@id="accessReports"]
+
+Access given reports should be clickable
+    Access Reports Should Be Visible
+    Click Element    //*[@id="accessReports"]
+    Element Should Be Visible    //*[@id="selfDataAccessReport"]    #note accessGivenReport was renamed selfDataAccessReport (see comment in page source)
+    Click Element    //*[@id="selfDataAccessReport"]    #note accessGivenReport was renamed selfDataAccessReport (see comment in page source)
+
+Access given reports should not be visible
+    Access Reports Should Be Visible
+    Click Element    //*[@id="accessReports"]
+    Element Should Not Be Visible    //*[@id="selfDataAccessReport"]    #note accessGivenReport was renamed selfDataAccessReport (see comment in page source)
+
+Access given reports should be clickable - Swift Profile
+    Access Reports Should Be Visible
+    Click Element    //*[@id="accessReports"]
+    Element Should Be Visible    //*[@id="swiftProfileGivenReport"]
+    Click Element    //*[@id="swiftProfileGivenReport"]
+
+Access given reports should not be visible - Swift Profile
+    Access Reports Should Be Visible
+    Click Element    //*[@id="accessReports"]
+    Element Should Not Be Visible    //*[@id="swiftProfileGivenReport"]

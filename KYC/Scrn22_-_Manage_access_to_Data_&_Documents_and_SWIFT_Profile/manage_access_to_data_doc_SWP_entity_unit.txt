@@ -1,0 +1,163 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          manage_access_to_data_doc_SWP_dialog_unit.txt
+
+*** Variables ***
+
+*** Keywords ***
+Entity - Open Access Management Dialog
+    [Documentation]    If no access have been granted yet, a button 'View and manage access' is present on the entity screen.
+    ...    Click the button
+    ${noaccess}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='noAccess']//*[@id='manageAccess']
+    Run Keyword If    ${noaccess}    Click Element    //*[@id='noAccess']//*[@id='manageAccess']
+    ${spaccess}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='SP']/span[text()="SWIFT Traffic Profile"]
+    Run Keyword If    ${spaccess}    Click Element    //*[@id='SP']/span[text()="SWIFT Traffic Profile"]
+    ${access}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='actionMenu']//*[@id='manageAccess']
+    Run Keyword If    ${access}    Click Element    //*[@id='actionMenu']//*[@id='manageAccess']
+
+Entity - Open Access Management Dialog from Action Menu
+    [Documentation]    If access have already been granted , a link 'View and manage access' is present on action menu.
+    ...    Click the link to open the access management dialog
+    Element Should Be Visible    //*[@id='actionMenu']//*[@id='manageAccess']
+    Click Element    //*[@id='actionMenu']//*[@id='manageAccess']
+
+Entity - Validate folder categories are visible
+    Element Should Not Be visible    //*[@id='noAccess']//*[@id='manageAccess']
+
+Entity - Validate View and Manage Access Button is visible
+    [Documentation]    Click on the button 'Request Access' from the entity screen and validate the Access Management Dialog screen is opened. To be used when no access have been granted yet.
+    Element Should Be Visible    //*[@id='manageAccess']
+
+Entity - Validate View and Manage access link is visible
+    Element Should Be visible    //*[@id='actionMenu']//*[@id='manageAccess']
+
+Entity - Validate View and Manage Access Button is not visible
+    [Documentation]    Click on the button 'Request Access' from the entity screen and validate the Access Management Dialog screen is opened. To be used when no access have been granted yet.
+    Element Should Not Be visible    //*[@id='manageAccess']
+
+Entity - Validate View and Manage access link is not visible
+    Element Should Not Be visible    //*[@id='actionMenu']//*[@id='manageAccess']
+
+Entity - Validate can view SWP report
+    [Arguments]    ${swpcateg}    ${level}
+    Element Should Be Visible    //*[text()[contains(.,'${swpcateg}')]]/ancestor::*[@id="latestSwiftProfileReports"]//*[@id='viewReport' and contains(@href,'${level}')]
+
+Entity - Validate cannot view SWP report
+    [Arguments]    ${category}    ${level}
+    ${swpcateg}=    Set Variable If    '${category}'=='PAY'    Payments
+    ${swpcateg}=    Set Variable If    '${category}'=='TAF'    Trade & Finance
+    Element Should Not Be visible    //*[text()[contains(.,'${swpcateg}')]]/ancestor::*[@id="latestSwiftProfileReports"]//*[@id='viewReport' and contains(@href,'${level}')]
+
+Entity - Open Counterparty Access Management Dialog from Action Menu
+    [Documentation]    If access have already been granted , a link 'View and manage access' is present on action menu.
+    ...    Click the link to open the access management dialog
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='actionMenu']//*[@id='manageCounterpartyAccess']
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Element Should Be Visible    //*[@id='actionMenu']//*[@id='manageCounterpartyAccess']
+    Click Element    //*[@id='actionMenu']//*[@id='manageCounterpartyAccess']
+
+SWP Reports - Validate can see reports
+    [Arguments]    ${category}    ${date}    ${level}
+    Log    ${date}
+    Import Library    String
+    @{months}=    Create List    Jan    Feb    Mar    Apr    May
+    ...    Jun    Jul    Aug    Sep    Oct    Nov
+    ...    Dec
+    #get date data as numbers
+    ${year}=    Get Substring    ${date}    0    4
+    ${month}=    Get Substring    ${date}    4    6
+    ${day}=    Get Substring    ${date}    6    8
+    #remove possible leading zero
+    ${month}=    Convert To Integer    ${month}
+    #get month index...
+    ${monthindex}=    Evaluate    ${month}-1
+    #get month as string
+    ${month}=    Set Variable    ${months[${monthindex}]}
+    #get date as string
+    ${date}=    Set Variable    ${day} ${month} ${year}
+    #Element Should Be Visible    //div//*[text()[contains(.,'${category}')]]//ancestor::table//tbody//tr//*[text()[contains(.,'${date}')]]//ancestor::tr//*[@id="viewReport"]//*[text()[contains(.,'${level}')]]
+    Element Should Be Visible    //*[@id[contains(.,"SwiftProfileReports")]]//*[text()[contains(.,'${category}')]]//ancestor::table//*[text()[contains(.,'${date}')]]//ancestor::table//*[@id="viewReport"]//*[text()[contains(.,'${level}')]]
+
+SWP Reports - Click on Latest
+    Click Element    //*[@id="latest"]
+
+SWP Reports - Click on Previous versions
+    Element Should Be Visible    //*[@id="previousVersions"]
+    Click Element    //*[@id="previousVersions"]
+
+SWP Reports - Validate cannot see reports
+    [Arguments]    ${category}    ${date}    ${level}
+    Log    ${date}
+    Import Library    String
+    @{months}=    Create List    Jan    Feb    Mar    Apr    May
+    ...    Jun    Jul    Aug    Sep    Oct    Nov
+    ...    Dec
+    #get date data as numbers
+    ${year}=    Get Substring    ${date}    0    4
+    ${month}=    Get Substring    ${date}    4    6
+    ${day}=    Get Substring    ${date}    6    8
+    #remove possible leading zero
+    ${month}=    Convert To Integer    ${month}
+    #get month index...
+    ${monthindex}=    Evaluate    ${month}-1
+    #get month as string
+    ${month}=    Set Variable    ${months[${monthindex}]}
+    #get date as string
+    ${date}=    Set Variable    ${day} ${month} ${year}
+    #Element Should Not Be visible    //div//*[text()[contains(.,'${category}')]]//ancestor::table//tbody//tr//*[text()[contains(.,'${date}')]]//ancestor::tr//*[@id="viewReport"]//*[text()[contains(.,'${level}')]]
+    Element Should Not Be visible    //*[@id[contains(.,"SwiftProfileReports")]]//*[text()[contains(.,'${category}')]]//ancestor::table//*[text()[contains(.,'${date}')]]//ancestor::table//*[@id="viewReport"]//*[text()[contains(.,'${level}')]]
+
+Entity - Validate View and Manage counterparty access link is not visible
+    Element Should Not Be visible    //*[@id='actionMenu']//*[@id='manageCounterpartyAccess']
+
+Entity - Validate View and Manage counterparty access link is visible
+    Element Should Be visible    //*[@id='actionMenu']//*[@id='manageCounterpartyAccess']
+
+Entity folder - Validate user has no longer access
+    ${count}=    Get Matching Xpath Count    //*[@id="folderHadAccess"]
+    Run Keyword Unless    ${count}>0    Fail    msg= no longer access msg is not visible, nut it should be
+
+For Information - Revoke Data and Docs access event is visible
+    [Arguments]    ${granting_bic}    ${entity_group}    ${nbr_of_revoked_entities}
+    Filter entries on BIC    ${granting_bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='Informative']/ancestor::*[@id='ROW' and @type='ACCESS_REVOKED']//*[@id='entityBic' and text()[contains(.,'${granting_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${entity_group} (${nbr_of_revoked_entities}')]]/ancestor::*[@id='ROW']
+    ${taskId}=    Return Id of Task By Status,Bic,GroupHead,Type and NbrOfRevokedEntity    Informative    ${granting_bic}    ${entity_group}    ACCESS_REVOKED    ${nbr_of_revoked_entities}
+    Element Should Be Visible    ${taskId}
+
+For Information - Surrendered Data and Docs access event is visible
+    [Arguments]    ${granting_bic}    ${entity_group}    ${nbr_of_revoked_entities}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='Informative']/ancestor::*[@id='ROW' and @type='ACCESS_SURRENDERED']//*[@id='entityBic' and text()[contains(.,'${granting_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${entity_group} (${nbr_of_revoked_entities} entit')]]/ancestor::*[@id='ROW']
+    Filter entries on BIC    ${granting_bic}
+    ${taskId}=    Return Id of Task By Status,Bic,GroupHead,Type and NbrOfRevokedEntity    Informative    ${granting_bic}    ${entity_group}    ACCESS_SURRENDERED    ${nbr_of_revoked_entities}
+    Element Should Be Visible    ${taskId}
+
+Outbox - Reply received - click on access request reply
+    [Arguments]    ${bic}
+    [Documentation]    If access have already been granted , a link 'View and manage access' is present on action menu.
+    ...    Click the link to open the access management dialog
+    Filter entries on BIC    ${bic}
+    Click Element    //*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW' and @type='ACCESS_REQUEST']
+
+Outbox - Completed - click on access request completed task
+    [Arguments]    ${status}    ${bic}    ${requesting_group}
+    [Documentation]    If access have already been granted , a link 'View and manage access' is present on action menu.
+    ...    Click the link to open the access management dialog
+    Filter entries on BIC    ${bic}
+    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='REQUEST_ACCESS']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_group}')]]
+
+Outbox - Completed - Open revoke access management dialog from access request completed task
+    [Arguments]    ${status}    ${bic}    ${requesting_group}
+    [Documentation]    If access have already been granted , a link 'View and manage access' is present on action menu.
+    ...    Click the link to open the access management dialog
+    Filter entries on BIC    ${bic}
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='REQUEST_ACCESS']//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_group}')]]
+    ${taskId}=    Return Id of Task By Type,Status,Bic and GroupHead    ${status}    ${bic}    ${requesting_group}    REQUEST_ACCESS
+    Click Element    ${taskId}
+    Element Should Be Visible    //*[@id='entityRevokeAccess']
+    Click Element    //*[@id='entityRevokeAccess']
+
+REST Get Folder Data
+    [Arguments]    ${user}    ${bic}    ${category}    ${version}
+    ${data}=    REST.Get Folder Data    ${${user}_user}    ${bic}    ${category}    ${version}
+    [Return]    ${data}

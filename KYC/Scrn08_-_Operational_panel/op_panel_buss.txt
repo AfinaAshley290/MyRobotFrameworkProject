@@ -1,0 +1,91 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          op_panel_unit.txt
+
+*** Keywords ***
+Operational panel is not visible
+    Element Should Not Be visible    //*[@id="qualificationAssistance"]
+
+Operational panel - add note
+    [Arguments]    ${note_text}
+    Click Element    //*[@id='qualificationAssistance']//*[@id='addNote']
+    Element Should Be Visible    //*[@id='addOrUpdateFolderNoteDialog']
+    Input Text    //*[@id='addOrUpdateFolderNoteDialog']//textarea    ${note_text}
+    Click Element    //*[@id='addOrUpdateFolderNoteDialog']//*[@id="addOrUpdateFolderNote"]
+    Element Should Not Be Visible    //*[@id='addOrUpdateFolderNoteDialog']
+
+Operational panel - verify note of user is present
+    [Arguments]    ${note_text}    ${user}
+    Open Notes View all dialog
+    Element Should Be Visible    //*[@id="viewFolderNotesDialog"]//*[text()[contains(.,"${note_text}")]]//ancestor::*[@id="ROW"]//*[text()[contains(.,"${${user}_name}")]]
+    Close Notes View all dialog
+
+Operational panel - verify note detail is present
+    [Arguments]    ${note_text}    ${user}    ${note_detail}
+    Open Notes View all dialog
+    Element Should Be Visible    //*[@id="viewFolderNotesDialog"]//*[text()[contains(.,"${note_text}")]]//ancestor::*[@id="ROW"]//*[text()[contains(.,"${${user}_user}")]]//ancestor::*[@id="ROW"]//*[text()[contains(.,"${note_detail}")]]
+    Close Notes View all dialog
+
+Operational panel - qualification history is empty
+    Element Should Be Visible    //*[@id='qualificationAssistance']//*[@id='qualificationHistory']
+    Element Should Not Be visible    //*[@id='qualificationAssistance']//*[@id='qualificationHistory']//*[@id='ROW']
+
+Operational panel - verify qualification task of user is present
+    [Arguments]    ${task_outcome}    ${task_last_assignee}
+    Element Should Be Visible    //*[@id='qualificationAssistance']//*[@id='qualificationHistory']
+    Element Should Be Visible    //*[@id='qualificationAssistance']//*[@id='qualificationHistory']//*[@id='ROW']//*[@id="outcome" and text()[contains(.,'${task_outcome}')]]//ancestor::*[@id='ROW']//*[@id="assignedTo" and text()[contains(.,'${${task_last_assignee}_name}')]]
+
+Operational panel - communication history is empty
+    Element Should Be Visible    //*[@id='qualificationAssistance']//*[@id='communicationHistory']
+    Element Should Not Be visible    //*[@id='qualificationAssistance']//*[@id='communicationHistory']//*[@id='ROW']
+
+Operational panel - verify U2S query of user is present in communication history
+    [Arguments]    ${bic}    ${user_sent_msg}    ${note_text}
+    Open Communication history View all dialog
+    ${msg_U2S_query}=    Set Variable    Draft was not succesfully qualified by SWIFT and was not published
+    ${communication_dialog}=    Set Variable    //*[@id='viewCommunicationHistoryDialog']
+    Element Should Be Visible    ${communication_dialog}//*[text()[contains(.,'${msg_U2S_query}')]]//ancestor::*[@id='ROW']//*[text()[contains(.,"${user_sent_msg}")]]//ancestor::*[@id='ROW']//*[text()[contains(.,"${note_text}")]]
+    Close Communication history View all dialog
+
+Operational panel - verify S2U query of user is present in communication history
+    [Arguments]    ${bic}    ${user_complete_name_sent_msg}    ${note_text}
+    Open Communication history View all dialog
+    ${communication_dialog}=    Set Variable    //*[@id='viewCommunicationHistoryDialog']
+    ${msg_S2U_query}=    Set Variable    SWIFT sent a message
+    Element Should Be Visible    ${communication_dialog}//*[text()[contains(.,'${msg_S2U_query}')]]//ancestor::*[@id='ROW']//*[text()[contains(.,"${user_complete_name_sent_msg}")]]//ancestor::*[@id='ROW']//*[text()[contains(.,"${note_text}")]]
+    Close Communication history View all dialog
+
+Operational panel - verify U2U query is not present in communication history
+    Open Communication history View all dialog
+    ${communication_dialog}=    Set Variable    //*[@id='viewCommunicationHistoryDialog']
+    ${msg_U2U_query}=    Set Variable    about data and documents
+    Element Should Be Visible    ${communication_dialog}
+    Xpath Should Match X Times    ${communication_dialog}//*[text()[contains(.,'${msg_U2U_query}')]]    0
+    Close Communication history View all dialog
+
+Operational panel - verify Document query is not present in communication history
+    Open Communication history View all dialog
+    ${communication_dialog}=    Set Variable    //*[@id='viewCommunicationHistoryDialog']
+    ${doc_query}=    Set Variable    golden/certified copy
+    Xpath Should Match X Times    ${communication_dialog}//*[text()[contains(.,'${doc_query}')]]    0
+    ${doc_query}=    Set Variable    content clarification
+    Xpath Should Match X Times    ${communication_dialog}//*[text()[contains(.,'${doc_query}')]]    0
+    Close Communication history View all dialog
+
+Operational panel - verify reply U2S query of user is present in communication history
+    [Arguments]    ${bic}    ${user_sent_msg}    ${reply_note_text}
+    Open Communication history View all dialog
+    ${msg_U2S_query}=    Set Variable    Draft was not succesfully qualified by SWIFT and was not published
+    ${communication_dialog}=    Set Variable    //*[@id='viewCommunicationHistoryDialog']
+    Element Should Be Visible    ${communication_dialog}//*[text()[contains(.,'${msg_U2S_query}')]]//ancestor::*[@id='ROW']//*[text()[contains(.,"${user_sent_msg}")]]//ancestor::*[@id='ROW']//*[text()[contains(.,"${reply_note_text}")]]
+    Close Communication history View all dialog
+
+Operational panel - verify U2S query of user is NOT present in communication history
+    [Arguments]    ${bic}    ${user_sent_msg}    ${note_text}
+    ${status}=    Run Keyword And Return Status    Operational panel - verify U2S query of user is present in communication history    ${bic}    ${user_sent_msg}    ${note_text}
+    RUn keyword if    ${status}    Fail    query is visible but it shouldnt
+
+Operational panel - verify reply U2S query of user is NOT present in communication history
+    [Arguments]    ${bic}    ${user_sent_msg}    ${reply_note_text}
+    ${status}=    Run Keyword And Return Status    Operational panel - verify reply U2S query of user is present in communication history    ${bic}    ${user_sent_msg}    ${reply_note_text}
+    RUn keyword if    ${status}    Fail    reply query is visible but it shouldnt

@@ -1,0 +1,78 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          entity_view_buss.txt
+Resource          variables.txt
+
+*** Keywords ***
+Verify can read ongoing draft in Category page
+    Verify folder is in Draft status
+
+Verify can read submitted draft in Category page
+    Verify user has access granted to data and document
+    Verify draft is Submitted
+    Verify draft is not submittable
+
+Verify can read published draft in Category page
+    Verify user has access granted to data and document
+    Verify draft is Published
+
+Verify I have access but cannot read draft in Category page
+    Verify user has access granted to data and document
+    Element Should Be Visible    //*[text()[contains(.,"No data available")]]
+
+Verify cannot read Category page
+    ${passed1}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='noAccess']
+    ${passed2}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[text()[contains(.,"No data available")]]
+    Run Keyword Unless    ${passed1} or ${passed2}    Capture Page Screenshot
+    Run Keyword Unless    ${passed1} or ${passed2}    Fail    user can read the Category page
+
+Verify can read Qualified draft in Category type
+    Verify user has access granted to data and document
+    Verify draft is proposed for submission
+
+Verify can read submitted draft in Category page 4eyes
+    Verify user has access granted to data and document
+    Verify draft is proposed for submission
+
+Verify cannot read submitted draft in Category page 4eyes
+    #Verify No data avaliable 4eyes
+    Verify cannot read Category page
+
+Verify can read the approved draft 4eyes
+    Element Should Be Visible    //*[@id='folderStatus']//*[text()[contains(.,'Submitted')]]
+
+Verify cannot read the approved draft 4eyes
+    Element Should Be Visible    //*[@id="folderNoData"]//*[text()[contains(.,'No data available')]]
+
+Verify can read Qualified draft when status will be qualified 4eyes
+    Verify user has access granted to data and document
+    Verify draft is proposed for publication
+
+Verify cannot read Qualified draft when status will be qualified 4eyes
+    #Verify user do not has access granted to data and document
+    Page Should Not Contain    //*[@id='folderStatus']//*[text()[contains(.,"Qualified")]]
+    Element Should Not Be visible    //*[@id='folderData']//*[@class="tab-pane ng-scope active"]//*[@id='updatedBy']
+
+Verify can read Qualified draft when status will be submitted 4eyes
+    Verify user has access granted to data and document
+    Page Should Contain Element    //*[@id='folderStatus']//*[text()[contains(.,"Submitted")]]
+    #Element Should Contain    //*[@id="qualificationRequest"]    This draft is pending publication
+
+Verify cannot read Qualified draft when status will be submitted 4eyes
+    Verify user has access granted to data and document
+    Page Should not Contain Element    //*[@id='folderStatus']//*[text()[contains(.,"Submitted")]]
+    #Element Should Not Be Visible    //*[@id="qualificationRequest"]    This draft is pending publication
+    Element Should Not Be visible    //*[@id='folderData']//*[@class="tab-pane ng-scope active"]//*[@id='updatedBy']
+
+Verify can see the draft 4 eyes
+    Page Should Contain Element    //*[@id='folderStatus']//*[text()[contains(.,"Draft")]]
+
+Verify cannot see the draft 4 eyes
+    Verify cannot read Category page
+
+Verify can read published draft
+    Verify user has access granted to data and document
+    Element Should Be Visible    //*[@id='folderData']//*[text()[contains(.,"Published")]]
+
+Verify can not read published draft
+    Element Should Not Be visible    //*[@id='folderData']//*[text()[contains(.,"Published")]]

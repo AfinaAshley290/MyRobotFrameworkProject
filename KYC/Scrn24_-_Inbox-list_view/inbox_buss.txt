@@ -1,0 +1,68 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_unit.txt
+
+*** Keywords ***
+Open Inbox filter Awaiting Action
+    Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='awaitingAction']
+    Click Element    //*[@id='tasksNavigation']//*[@id='awaitingAction']
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='awaitingAction']/ancestor::*[@class="active"]
+    Run Keyword Unless    ${activated}    Click Element    //*[@id='tasksNavigation']//*[@id='awaitingAction']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Open Inbox filter Assigned to Me
+    Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='assignedToMe']
+    Click Element    //*[@id='tasksNavigation']//*[@id='assignedToMe']
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='assignedToMe']/ancestor::*[@class="active"]
+    Run Keyword Unless    ${activated}    Click Element    //*[@id='tasksNavigation']//*[@id='assignedToMe']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Open Inbox filter Completed
+    Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='completed']
+    Click Element    //*[@id='tasksNavigation']//*[@id='completed']
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='completed']/ancestor::*[@class="active"]
+    Run Keyword Unless    ${activated}    Click Element    //*[@id='tasksNavigation']//*[@id='completed']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Open Inbox filter Show all
+    Page loading done
+    Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='allTasks']
+    Click Element    //*[@id='tasksNavigation']//*[@id='allTasks']
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='allTasks']/ancestor::*[@class="active"]
+    Run Keyword Unless    ${activated}    Click Element    //*[@id='tasksNavigation']//*[@id='allTasks']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Open Outbox filter Pending Reply
+    Element Should Be Visible    //*[@id='requestsNavigation']//*[@id='pendingReply']
+    Click Element    //*[@id='requestsNavigation']//*[@id='pendingReply']
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='requestsNavigation']//*[@id='pendingReply']/ancestor::*[@class="active"]
+    Run Keyword Unless    ${activated}    Click Element    //*[@id='requestsNavigation']//*[@id='pendingReply']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Open Outbox filter Reply received
+    [Documentation]    KYC-3103: reply received is removed
+    ${reply_received_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='requestsNavigation']//*[@id='replyReceived']
+    Run Keyword If    ${reply_received_present}    Click Element    //*[@id='requestsNavigation']//*[@id='replyReceived']
+    Run Keyword Unless    ${reply_received_present}    Click Element    //*[@id='requestsNavigation']//*[@id='allRequests']
+    #
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Open Outbox filter Show all
+    Element Should Be Visible    //*[@id='requestsNavigation']//*[@id='allRequests']
+    Click Element    //*[@id='requestsNavigation']//*[@id='allRequests']
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='requestsNavigation']//*[@id='allRequests']/ancestor::*[@class="active"]
+    Run Keyword Unless    ${activated}    Click Element    //*[@id='requestsNavigation']//*[@id='allRequests']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Open Inbox filter Events
+    Element Should Be Visible    //*[@id='tasksNavigation']//*[@id='events']
+    Click Element    //*[@id='tasksNavigation']//*[@id='events']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done

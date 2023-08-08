@@ -1,0 +1,13 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          preferences_unit.txt
+
+*** Keywords ***
+Select daily notifications for Open Inbox tasks
+    Selenium2Library.Select From List By Label    taskNotificationFrequency    Once a day
+
+Select daily notifications for Information events
+    Selenium2Library.Select From List By Label    eventNotificationFrequency    Once a day
+
+Save preferences
+    Click Element    save

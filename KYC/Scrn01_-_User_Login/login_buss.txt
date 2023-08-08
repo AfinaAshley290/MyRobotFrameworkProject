@@ -1,0 +1,28 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          login_unit.txt
+
+*** Keywords ***
+As SubmitterA1 for entity and category
+    [Arguments]    ${entity}    ${category}
+    Login as    submitter_A1
+    In Entity    ${entity}
+    In Category    ${category}
+    Capture Page Screenshot
+
+Open Entity as
+    [Arguments]    ${entity}    ${user}
+    Login as    ${user}
+    In Entity    ${entity}
+
+Open Inbox as
+    [Arguments]    ${user}
+    Login as    ${user}
+    Open Inbox
+
+Verify user cannot login to KYC
+    [Arguments]    ${login as}
+    ${loginstatus}=    Run Keyword And Return Status    Login as    ${login as}    #dummy_A3
+    Run Keyword If    ${loginstatus}==True    Fail    User shoud not be able to login
+    Run Keyword If    ${loginstatus}==False    Element Should not Be Visible    //*[@id='appNavigation']//*[@id="home"]
+    Close Browser

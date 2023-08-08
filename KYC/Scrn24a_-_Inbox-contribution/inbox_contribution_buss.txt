@@ -1,0 +1,297 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_contribution_unit.txt
+
+*** Keywords ***
+Verify I can view folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Comment    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    $('#tasks').find('tr[type="QUALIFICATION_AND_PUBLICATION_REQUIRED"] #entityBic:contains("[${bic}]")')    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Comment    Run Keyword Unless    ${present}    Reload Page
+    Comment    Run Keyword Unless    ${present}    Filter entries on BIC    ${bic}
+    Comment    Element Should Be Visible    $('#tasks').find('tr[type="QUALIFICATION_AND_PUBLICATION_REQUIRED"] #entityBic:contains("[${bic}]")').closest('#taskSubtitle').find('#entityFolder').text().trim()    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Sleep    5s
+    Comment    ${task}=    Execute Javascript    return $('#tasks').find('tr[type="QUALIFICATION_REQUIRED"] #entityBic:contains("[${bic}]")')
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Element Should be Visible    ${taskId}
+    Comment    ${folder}=    Execute Javascript    return $('#tasks').find('tr[type="QUALIFICATION_REQUIRED"] #entityBic:contains("[${bic}]")').closest('#taskSubtitle').find('#entityFolder').text().trim()
+    Comment    Should be True    '${category_title}'=='${folder}'
+
+Verify I cannot view folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Comment    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Should Be Equal    ${taskId}    ${None}
+
+Verify folder task is assigned to
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${assignee_name}
+    Filter entries on BIC    ${bic}
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Comment    ${path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::tr//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::tr//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::tr    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Comment    ${path_assignedTo}=    Get Task Assignee    ${taskId}
+    Comment    Comment    ${path_assignedTo}=    Set Variable    ${path}//*[@id='${taskId}_taskAssignedTo']
+    Comment    Comment    #
+    Comment    ${present}=    Run Keyword And Return Status    Element Should Be Visible    ${path_assignedTo}
+    Comment    Run Keyword Unless    ${present}    Reload Page
+    Comment    Run Keyword Unless    ${present}    Filter entries on BIC    ${bic}
+    Comment    Comment    Element Should Be Visible    ${path_assignedTo}
+    Comment    Wait Until Keyword Succeeds    10s    1s    Element Text Should Be    ${path_assignedTo}    ${assignee_name}
+    ${assignee}=    Get Task Assignee    ${taskId}
+    Should be True    '${assignee}'=='${assignee_name}'
+    Comment    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Comment    ${assigneeName}=    Execute Javascript    return $('#${taskId}_taskAssignedTo' ).text().trim()
+    Comment    Should be True    '${assigneeName}'=='${assignee_name}'
+
+Verify folder task is unassigned
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    #Filter entries on BIC    ${bic}
+    #${path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    #${path_assignedTo}=    Set Variable    ${path}//*[@id='taskAssignedTo']
+    #${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${path_assignedTo}
+    #Run Keyword Unless    ${present}    Reload Page
+    #Run Keyword Unless    ${present}    Filter entries on BIC    ${bic}
+    #Element Should Be Visible    ${path_assignedTo}
+    #Element Text Should Be    ${path_assignedTo}    Unassigned
+    Filter entries on BIC    ${bic}
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #${taskStatus}=    Get Task Status    ${taskId}
+    # Should be True    '${status}'=='${taskStatus}'
+    ${assignee}=    Get Task Assignee    ${taskId}
+    Should be True    '${assignee}'=='Unassigned'
+
+Verify I cannot reserve folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Element Should Not Be Visible    ${taskId}_taskActionsMenu
+
+Verify I cannot unreserve folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    Element Should Not Be Visible    ${taskId}_taskActionsMenu
+
+Verify note for task
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for folder task    ${status}    ${bic}    ${category_title}
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']
+    Comment    ${taskNote}=    Execute Javascript    return $('#${taskId}_taskBody #taskNote')
+    Comment    Element Should Be Visible    ${taskNote}    #//*[@id='${taskId}_taskBody']//*[@id='taskNote']
+    #${SeeMore}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='${taskId}_taskBody']//*[@id='taskNote']//*[@id='showMore']    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']//*[@id='showMore']
+    ${SeeMore}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='${taskId}_taskBody']//*[@id='taskNote']//*[@id='showMore']    #//*[@id='${taskId}_taskBody']/div[@id='taskComments']//*[@id='taskNote']//*[@id='showMore']
+    Run Keyword If    '${SeeMore}' == 'True'    Click Element    //*[@id='${taskId}_taskBody']/div[@id='taskComments']//*[@id='taskNote']//*[@id='showMore']
+    Execute Javascript    $('#${taskId} #showMore a').click()
+    #Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskNote']    ${note_text}
+    Element should Contain    //*[@id='${taskId}_taskBody']//*[@id='taskNote']    ${note_text}
+    Comment    ${isTrue}=    Execute Javascript    return $('#${taskId}_taskBody #taskNote').text().contains('${note_text}')
+    Comment    Should be True    ${isTrue}
+
+Verify feedback for task
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for folder task    ${status}    ${bic}    ${category_title}
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    //*[@id='${taskId}']//*[@id='taskFeedback']
+    ${SeeMore}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='${taskId}']//*[@id='taskFeedback']//*[@id='showMore']    #//*[@id='taskStatus']/*[text()='Proposed for publication']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'HSBCHKHHXXX')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'Identification of Customer')]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']//*[@id='showMore']
+    Run Keyword If    '${SeeMore}' == 'True'    Click Element    //*[@id='${taskId}']//*[@id='taskFeedback']//*[@id='showMore']    #//*[@id='taskStatus']/*[text()='Proposed for publication']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'HSBCHKHHXXX')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'Identification of Customer')]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']//*[@id='showMore']
+    Element Should Contain    //*[@id='${taskId}']//*[@id='taskFeedback']    ${note_text}    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']
+    #Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']    ${note_text}
+
+Verify I can see BIC for task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Sleep    3s
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::tr//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::tr//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::tr//*[@id='entityBic']    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']
+    #Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']    ${bic}    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    ${taskId}    ${bic}
+
+Verify I can see completion date for task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Sleep    2s
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    //*[@id='${taskId}']//*[@id='taskStatus']//*[@id='completionDate']
+    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='completionDate']
+
+Verify I can view request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Sleep    10s
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Comment    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Comment    Element Should Be Visible    ${taskId}
+
+Verify I cannot view request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Element Should Not Be visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+
+Verify I can see completion date for request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='completionDate']
+
+Verify I can see BIC for request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']
+    Element Should Contain    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='entityBic']    ${bic}
+
+Verify note for request
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for folder request    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']
+    ${SeeMore}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']//*[@id='showMore']
+    Run Keyword If    '${SeeMore}' == 'True'    Click Element    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']//*[@id='showMore']
+    Element Should Contain    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']    ${note_text}
+
+Verify feedback for request
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${note_text}
+    Filter entries on BIC    ${bic}
+    Show comment for folder request    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']
+    Element Should Contain    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']    ${note_text}
+
+Verify I can see Received date for task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Sleep    2s
+    #    Element Should be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    ${taskId}_taskReceivedDate    #//*[@id='${taskId}_taskReceivedDate']    #//*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+
+Verify I can see Sent date for request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestSentDate']
+
+Reserve task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='${task_id}_taskBody']/div//span[@id='entityBic' and text()[contains(.,'${bic}')]]
+    Run Keyword Unless    ${present}    Reload Page
+    #    Run Keyword Unless    ${present}    Load whole page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${bic}
+    Comment    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    Comment    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    Comment    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    Comment    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='assignTaskToMe']
+    #Fixed Assigned to
+    #Element should be Visible    //*[@id='${task_id}_taskAssignedTo']/em/span
+    Execute Javascript    $('#${task_id}_taskActions').trigger('click');
+    Execute Javascript    $('#${task_id}_taskActions').closest('.btn-group').find('ul.dropdown-menu > li > a:contains("Assign to me")').trigger('click');
+
+Unreserve task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='${task_id}_taskBody']/div//span[@id='entityBic' and text()[contains(.,'${bic}')]]
+    Run Keyword Unless    ${present}    Reload Page
+    #    Run Keyword Unless    ${present}    Load whole page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${bic}
+    Comment    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    Comment    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    Comment    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    Comment    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='unreserveTask']
+    #Fixed Assigned to
+    Element should be Visible    //*[@id='${task_id}_taskAssignedTo']
+    Execute Javascript    $('#${task_id}_taskActions').trigger('click');
+    Execute Javascript    $('#${task_id}_taskActions').closest('.btn-group').find('ul.dropdown-menu > li > #unreserveTask').trigger('click');
+    Reload Page
+    Load whole page
+
+Verify note by of note for request
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${role}
+    Filter entries on BIC    ${bic}
+    Show comment for folder request    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']
+    Element Should Contain    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']//strong    ${role}
+
+Verify note by of feedback for request
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${role}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']
+    Element Should Contain    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']    ${role}
+
+Verify I can view folder task by regex
+    [Arguments]    ${regex}
+    ${taskcount}=    KYC Count Tasks By Regex    ${regex}
+    BuiltIn.Log    ${taskcount} tasks found
+    Run Keyword Unless    ${taskcount}>0    Fail    No task found for given filter ${regex}
+
+Verify I can view folder task by filter
+    [Arguments]    ${filter}
+    ${taskcount}=    KYC Count Tasks By Filter    ${filter}
+    Run Keyword Unless    ${taskcount}>0    Fail    No task found for given filter ${filter}
+
+Verify I can view request by filter
+    [Arguments]    ${filter}
+    ${taskcount}=    KYC Count Tasks By Filter    ${filter}
+    Run Keyword Unless    ${taskcount}>0    Fail    No request found for given filter ${filter}
+
+Assign folder task to user
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${user}
+    Filter entries on BIC    ${bic}
+    #
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Assign task to user    ${task_id}    ${user}
+    #
+    Reload Page
+    Load whole page
+
+Verify folder task shows assigner
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${assigner_user}
+    Filter entries on BIC    ${bic}
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Verify task shows assigner    ${task_id}    ${assigner_user}
+
+Verify folder task does not show assigner
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Verify task does not show assigner    ${task_id}
+
+Verify folder task can be unreserved
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Verify task can be unreserved    ${task_id}
+
+Verify folder task cannot be unreserved
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Verify task cannot be unreserved    ${task_id}
+
+Verify folder task is assignable to all users entity role
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${role}    ${current_user}
+    Filter entries on BIC    ${bic}
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Comment    ${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    #
+    Verify task is assignable to all users entity role    ${bic}    ${role}    ${current_user}    ${task_id}
+
+Verify folder task is assignable to all users entity role except user
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${role}    ${assignee}    ${current_user}
+    Filter entries on BIC    ${bic}
+    ${task_id}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    #
+    Verify task is assignable to all users entity role except user    ${bic}    ${role}    ${assignee}    ${current_user}    ${task_id}
+
+Take over folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Reserve task    ${status}    ${bic}    ${category_title}
+    Confirm Takeover

@@ -1,0 +1,26 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          entity_request_access_unit.txt
+
+*** Keywords ***
+Verify I have access granted in Category page
+    #Element Should Not Be visible    //*[@id='folderNoAccess']//*[text()[contains(.,'No access')]]
+    #Element Should Not Be visible    //*[@id='folderNoAccess']//*[text()[contains(.,'Access requested pending')]]
+    Element Should Not Be visible    //*[@id='folderNoAccess']
+
+Verify I do not have access granted in Category page
+    #    Wait Until Element Is Visible    //*[@id='folderNoAccess']//*[text()[contains(.,'No access granted')]]
+    ${no_access}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='folderNoAccess']
+    Run Keyword Unless    ${no_access}    Element Should Be Visible    //*[@id='folderPendingAccessRequest']
+
+Verify I cannot request access in Category page
+    Element Should Be Visible    //*[@id='folderNoAccess']
+    Element Should Not Be visible    //*[@id='folderNoAccess']//*[@id='requestAccess']
+    Element Should Not Be visible    //*[@id='actionMenu']//*[@id='requestAccess']
+
+Verify I can request access in Category page
+    Element Should Be Visible    //*[@id='folderNoAccess']//*[@id='requestAccess']
+    Element Should Be Visible    //*[@id='folderNoAccess']//*[@id='requestAccess']
+    #Element Should Be Visible    //*[@id='actionMenu']//*[@id='requestAccess']    By Ravi
+    Element Should Be Visible    //*[@id='actionMenu']//*[@id='requestAccessDataAndDocuments']

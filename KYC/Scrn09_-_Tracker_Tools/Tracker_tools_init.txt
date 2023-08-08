@@ -1,0 +1,75 @@
+*** Settings ***
+Resource          Tracker_tools_buss.txt
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+Select from List
+    [Arguments]    ${ID}    ${Value}
+    Execute Javascript    $('#${ID} > select').val(${Value}).trigger('change');
+
+Get Todays Date
+    [Documentation]    Clicks on a date from a pop-up calendar ,then goes back to the previous window.
+    ${date}=    Get Current Date    result_format=datetime
+    ${date}=    Convert Date    ${date}    result_format=%d %b %Y
+    [Return]    ${date}
+
+Select Owner from List
+    [Arguments]    ${ID}    ${Value}
+    Execute Javascript    $('#${ID} select').val(${Value}).trigger('change');
+
+Choose today date
+    ${date}=    Get Current Date    result_format=datetime
+    Execute Javascript    $($($('[datepicker-popup-wrap]')[2]).find('button>span:contains("${date.day}")')[0]).click();
+
+Set Owner to None
+    [Arguments]    ${ID}
+    Execute Javascript    $('#${ID} select').val(null).trigger('change');
+
+Go to Follow Up Tab
+    [Arguments]    ${entity}
+    Click Link    ${Home_Link}
+    In Entity    ${entity}
+    In Category    IOC
+    Click Element    ${Follow_Up_Button}
+    Click Element    ${Follow_Up_Tab}
+
+Set Entity Owner to None
+    [Arguments]    ${entity}
+    Go to Follow Up Tab    ${entity}
+    Set Owner to None    ${FollowupOwnerSelect_Dropdown}
+
+Initialize Entities
+    Login as    publisher_SW1
+    Set Entity Owner to None    ${ENTITIES_A[78]}
+    Set Entity Owner to None    ${ENTITIES_A[68]}
+    Set Entity Owner to None    ${ENTITIES_A[58]}
+    Set Entity Owner to None    ${ENTITIES_A[48]}
+    Set Entity Owner to None    ${ENTITIES_A[38]}
+    Set Entity Owner to None    ${ENTITIES_A[10]}
+    Set Entity Owner to None    ${ENTITIES_A[20]}
+    Set Entity Owner to None    ${ENTITIES_A[30]}
+    Set Entity Owner to None    ${ENTITIES_A[40]}
+    Close Browser
+
+Get Todays Date Time
+    [Documentation]    Clicks on a date from a pop-up calendar ,then goes back to the previous window.
+    ${date}=    Get Current Date    result_format=datetime
+    ${date}=    Convert Date    ${date}    result_format=%d %b %Y %H:%M:%S
+    [Return]    ${date}
+
+Assigned To
+    [Arguments]    ${No}    ${user}
+    execute Javascript    $('#tasks_row_${No}_taskActions').trigger('click');
+    Comment    Execute Javascript    $('#tasks_row_${No}_taskActions').closest('.btn-group').find('ul.dropdown-menu > li > a:contains("${${user}_name}")').trigger('click');
+    Execute Javascript    $('#tasks_row_${No}_taskActionsMenu').find('li.ng-scope > a:contains("${${user}_name}")').trigger('click');
+    Click Element    //*[@id='takeover']
+
+Select Task Owner Add Task
+    [Arguments]    ${user}
+    Execute Javascript    $('#trackertool_newtaskContainer').find('.row > .col-sm-4 > select').trigger('click');
+    Execute Javascript    $('#trackertool_newtaskContainer').find('.row > .col-sm-4 > select > option:contains("${${user}_name}")').trigger('click');
+
+Return Task ID
+    [Arguments]    ${user}    ${comment}    ${task_owner}    ${due_date}
+    ${id}=    Execute Javascript    return $('div.kyc-panel-header').find('span:contains("${${user}_name}")').closest('.kyc-panel').find('div > .col-sm-8 > div:contains("${comment}")').closest('.kyc-panel').find('div > .col-sm-4 > div > small > strong > span.ng-binding:contains("${${task_owner}_name}")').closest('.kyc-panel').find('div > .col-sm-4 > div > strong:contains("${due_date}")').closest('.kyc-panel').attr('id');
+    [Return]    ${id}

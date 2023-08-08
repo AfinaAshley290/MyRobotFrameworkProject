@@ -1,0 +1,8 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          user_mngm_view_buss.txt
+
+*** Keywords ***
+Click Invite a new user
+    Click Element    //*[@id='inviteUser']

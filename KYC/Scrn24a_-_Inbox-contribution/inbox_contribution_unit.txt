@@ -1,0 +1,96 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_contribution_buss.txt
+
+*** Keywords ***
+Open folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='taskBody']
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Click Element    ${taskId}_taskBody
+
+Open folder request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Click Element    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='requestBody']
+
+Add task narrative to folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${text}
+    Filter entries on BIC    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='addInternalComment']
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Click Element    //*[@id='${taskId}_taskBody']//*[@id="addInternalComment"]
+    Element Should Be Visible    addTaskCommentDialog
+    Input Text    //*[@id="addTaskCommentDialog"]//textarea    ${text}
+    Click Element    addTaskComment
+    Element Should Not Be visible    addTaskCommentDialog
+
+Cannot add task narrative to folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${text}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='addInternalComment']
+
+Verify task narrative for folder task is visible
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${text}
+    Filter entries on BIC    ${bic}
+    Show comment for folder task    ${status}    ${bic}    ${category_title}
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskComment']//*[@id='commentRow']//*[text()[contains(.,'${text}')]]
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}_taskBody']//*[@id='taskComment']    ${text}
+
+Verify task narrative detail for folder task is visible
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${text}    ${detail}
+    Filter entries on BIC    ${bic}
+    Show comment for folder task    ${status}    ${bic}    ${category_title}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskComment']//*[@id='commentRow']//*[text()[contains(.,'${text}')]]
+    #Element Should Contain    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskComment']//*[@id='commentRow']//*[text()[contains(.,'${text}')]]/ancestor::*[@id='commentRow']    ${detail}
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}_taskBody']//*[@id='taskComment']    ${text}
+    Element Should Contain    //*[@id='${taskId}_taskBody']//*[@id='taskComment']    ${detail}
+
+Show comment for folder request
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    ${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    Run Keyword If    ${visible}    Click Element    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+
+Show comment for folder task
+    [Arguments]    ${status}    ${bic}    ${category_title}
+    Comment    ${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    Comment    Run Keyword If    ${visible}    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    Comment    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+    ${taskId}=    Return Id of Task By Status,Bic and Category Name    ${status}    ${bic}    ${category_title}
+    Element Should Be Visible    ${taskId}
+    ${visible}=    Run Keyword and Return Status    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id="showHideComments"]    Hide comments
+    Run Keyword If    ${visible} == False    Click Element    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id="showHideComments"]
+    Run Keyword If    ${visible} == False    Element Should Be Visible    /*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id='taskNote']
+
+Click on task by filter
+    [Arguments]    ${filter}
+    ${filterArray}=    Split String    ${filter}    ,
+    KYC Click On Task By Filter    ${filter}
+
+Click on task by regex
+    [Arguments]    ${regex}
+    KYC Click On Task By Regex    ${regex}
+
+Count requests by filter
+    [Arguments]    ${filter}    ${count}
+    ${requestcount}=    KYC Count Requests By Filter    ${filter}
+    Run Keyword Unless    ${requestcount}==${count}    Fail    number of requests found for given filter ${filter} is not equal to ${count}
+
+Count events by filter
+    [Arguments]    ${filter}    ${count}
+    ${eventcount}=    KYC Count Events By Filter    ${filter}
+    Run Keyword Unless    ${eventcount}==${count}    Fail    number of events found for given filter ${filter} is not equal to ${count}
+
+Count tasks by filter
+    [Arguments]    ${filter}    ${count}
+    ${taskscount}=    KYC Count Tasks By Filter    ${filter}
+    Run Keyword Unless    ${taskscount}==${count}    Fail    number of tasks found for given filter ${filter} is not equal to ${count}

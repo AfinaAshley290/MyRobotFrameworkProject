@@ -1,0 +1,138 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_consumption_buss.txt
+
+*** Keywords ***
+Open Grant task
+    [Arguments]    ${status}    ${bic}    ${requesting_entities}
+    Filter entries on BIC    ${bic}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    #    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    #Element Should Be Visible    //*[@id='taskStatus']//*[text()='${status}']/ancestor::*[@id="tasks_row_0" and @type="REQUEST_ACCESS"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='tasks_row_0']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='tasks_row_0']
+    ${taskId}=    Return Id of Task By Type,Status,Bic and GroupHead    ${status}    ${bic}    ${requesting_entities}    REQUEST_ACCESS
+    #Click Element    //*[@id='taskStatus']//*[text()='${status}']/ancestor::*[@id="tasks_row_0" and @type="REQUEST_ACCESS"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='tasks_row_0']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='tasks_row_0']
+    Element Should Be Visible    ${taskId}
+    Click Element    ${taskId}
+
+Open Grant task and wait dialog opens
+    [Arguments]    ${status}    ${bic}    ${requesting_entities}
+    Filter entries on BIC    ${bic}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    #    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    #Element Should Be Visible    //*[@id='taskStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="REQUEST_ACCESS"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    #Click Element    //*[@id='taskStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="REQUEST_ACCESS"]//*[@id="entityBic" and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="taskTitle"]//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    ${taskId}=    Return Id of Task By Type,Status,Bic and GroupHead    ${status}    ${bic}    ${requesting_entities}    REQUEST_ACCESS
+    Element Should Be Visible    ${taskId}
+    Click Element    ${taskId}
+    Element Should Be Visible    //*[@id='grantAccessManagementDialog']
+
+Open Grant request
+    [Arguments]    ${status}    ${bic}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='requestStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="requestNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    Click Element    //*[@id='requestStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="requestNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    Element Should Be Visible    //*[@id='grantAccessManagementDialog']
+
+Add task narrative to grant task
+    [Arguments]    ${status}    ${bic}    ${text}
+    Filter entries on BIC    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='addInternalComment']
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Click Element    //*[@id='${taskId}_taskBody']//*[@id="addInternalComment"]
+    Element Should Be Visible    addTaskCommentDialog
+    Input Text    //*[@id="addTaskCommentDialog"]//textarea    ${text}
+    Click Element    addTaskComment
+    Element Should Not Be visible    addTaskCommentDialog
+
+Cannot add task narrative to grant task
+    [Arguments]    ${status}    ${bic}    ${text}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='addInternalComment']
+
+Verify task narrative for grant task is visible
+    [Arguments]    ${status}    ${bic}    ${text}
+    Filter entries on BIC    ${bic}
+    Show comment for grant task    ${status}    ${bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskComment']//*[@id='commentRow']//*[text()[contains(.,'${text}')]]
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}_taskBody']//*[@id='taskComment']    ${text}
+
+Show comment for grant task
+    [Arguments]    ${status}    ${bic}
+    #${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    #Run Keyword If    ${visible}    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${bic}
+    Element Should Be Visible    ${taskId}
+    ${visible}=    Run Keyword and Return Status    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id="showHideComments"]    Hide comments
+    Run Keyword If    ${visible} == False    Click Element    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id="showHideComments"]
+    Run Keyword If    ${visible} == False    Element Should Be Visible    /*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id='taskNote']
+
+Show comment for grant request
+    [Arguments]    ${status}    ${bic}
+    ${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="requestNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    Run Keyword If    ${visible}    Click Element    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="requestNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id="ROW" and @type="ACCESS_REQUEST"]//*[@id="requestNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+
+Input Comment in Request Access dialog
+    [Arguments]    ${text}
+    Input Text    //*[@id='requestAccessDialog']//textarea    ${text}
+
+Input Comment in Grant Access dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    //*[@id='grantAccessManagementDialog']
+    Input Text    //*[@id='grantAccessManagementDialog']//textarea    ${text}
+
+Reject Access Request in Grant dialog
+    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='rejectDialog']
+    Element Should Not Be visible    //*[@id='grantAccessManagementDialog']
+
+Grant Access Request in Grant dialog
+    Click Element    //*[@id='grantAccessManagementDialog']//*[@id='grantAccessDialog']
+    Element Should Not Be visible    //*[@id='grantAccessManagementDialog']
+
+Verify number of requesting entities
+    [Arguments]    ${entities_array}
+    ${#_entities_str}=    Get Matching Xpath Count    //*[@id='grantAccessManagementDialog']//*[@id='ROW']
+    ${#_entities}=    Evaluate    ${#_entities_str}
+    ${length_array}=    Get Length    ${entities_array}
+    ${length_array_entities}=    Evaluate    ${length_array}-1
+    Should Be Equal As Numbers    ${#_entities}    ${length_array_entities}
+
+Input Comment in SWP Request Access dialog
+    [Arguments]    ${text}
+    Input Text    //*[@id='requestSwiftProfileDialog']//textarea    ${text}
+
+Show comment for SWP grant request
+    [Arguments]    ${status}    ${bic}
+    ${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='requestStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="SWIFT_PROFILE_ACCESS_REQUEST"]//*[@id="requestNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    Run Keyword If    ${visible}    Click Element    //*[@id='requestStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="SWIFT_PROFILE_ACCESS_REQUEST"]//*[@id="requestNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    Element Should Be Visible    //*[@id='requestStatus']//*[text()='${status}']/ancestor::*[@id="ROW" and @type="SWIFT_PROFILE_ACCESS_REQUEST"]//*[@id="requestNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+
+Show comment for SWP grant task
+    [Arguments]    ${status}    ${bic}
+    ${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']//*[text()='${status}']/ancestor::*[@id='ROW' and @type='SWIFT_PROFILE_ACCESS_REQUEST']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    Run Keyword If    ${visible}    Click Element    //*[@id='taskStatus']//*[text()='${status}']/ancestor::*[@id='ROW' and @type='SWIFT_PROFILE_ACCESS_REQUEST']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    Element Should Be Visible    //*[@id='taskStatus']//*[text()='${status}']/ancestor::*[@id='ROW' and @type='SWIFT_PROFILE_ACCESS_REQUEST']//*[@id="taskNote"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+
+Open task assign list and verify list users
+    [Arguments]    ${expected_users_list}    ${task_main_path}
+    #Click Element    ${task_main_path}//*[@id='taskActions']
+    Click Element    //*[@id='${task_main_path}_taskActions']
+    #Element Should Be Visible    ${task_main_path}//*[@id='taskActionsMenu']
+    Element Should Be Visible    //*[@id='${task_main_path}_taskActionsMenu']
+    #
+    Comment    ${nbr_users_UI}=    Get Matching Xpath Count    ${task_main_path}//*[@id='taskActionsMenu']//*[@id='user']
+    Comment    ${nbr_users_DB}=    Get Length    ${expected_users_list}
+    Comment    Should Be Equal As Integers    ${nbr_users_DB}    ${nbr_users_UI}
+    Comment    #
+    Comment    : FOR    ${idx}    IN RANGE    ${nbr_users_UI}
+    Comment    \    Element Should Be Visible    ${task_main_path}//*[@id='taskActionsMenu']//*[@id='user' and text()[contains(.,'${expected_users_list[${idx}]}')]]
+    ${nbr_users_UI}=    Get Matching Xpath Count    //*[@id='${task_main_path}_taskActionsMenu']//*[@id='user']
+    ${nbr_users_DB}=    Get Length    ${expected_users_list}
+    Should Be Equal As Integers    ${nbr_users_DB}    ${nbr_users_UI}
+    #
+    :FOR    ${idx}    IN RANGE    ${nbr_users_UI}
+    \    Element Should Be Visible    //*[@id='${task_main_path}_taskActionsMenu']//*[@id='user'and text()[contains(.,'${expected_users_list[${idx}]}')]]

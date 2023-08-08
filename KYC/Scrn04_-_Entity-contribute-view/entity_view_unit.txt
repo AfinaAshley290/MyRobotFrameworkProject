@@ -1,0 +1,697 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          entity_view_buss.txt
+Resource          variables.txt
+
+*** Keywords ***
+Open tab Draft
+    Click Element    //*[@id='folderData']//*[@id='draft']/a
+
+Open tab Published
+    Click Element    //*[@id='folderData']//*[@id='published']/a
+
+Open tab Version history
+    Click Element    //*[@id='folderData']//*[@id='previousVersions']/a
+
+Click Delete draft
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id="folderData"]//*[@id="deleteDraft"]
+    #Click Element    //*[@id="folderData"]//*[@id="deleteDraft"]
+    Execute Javascript    $('#folderData #deleteDraft').click()
+    Element Should Be Visible    //*[@id="deleteDraftDialog"]
+
+Click Submit Draft
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id='submitDraft']
+    #Click Element    //*[@id='submitDraft']
+    Execute Javascript    $('#folderData #submitDraft').click()
+
+In Category
+    [Arguments]    ${category_acronym}
+    [Documentation]    Action: Opens the specified Category page and checks the Category page is loaded.
+    #    Run Keyword And Ignore Error    Wait Until Element Is Visible    //*[text()[contains(.,"${${category}}"
+    Element Should Be Visible    //*[@id="${category_acronym}"]
+    Click Element    //*[@id="${category_acronym}"]
+    #Page Should Contain Element    //h3//*[text()[contains(.,"${${category_acronym}}")]]
+    Page loading done
+
+Check and Assign Category
+    [Documentation]    Precondition: Category page is opened for an Entity
+    ...    Action: Identifies which Category page is opened
+    : FOR    ${category_name}    IN    IOC    OMS    TOB    COM
+    ...    TAX
+    \    ${matched}=    Run Keyword And Return Status    Element Should Contain    //h3    ${${category_name}}
+    \    ${category}=    Set Variable If    ${matched}    ${category_name}
+    \    Run Keyword If    ${matched}    Exit For Loop
+    [Return]    ${category}
+
+Extract values from other version
+    [Documentation]    Action: Extract fields values from published version page.
+    ${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category_fields_readwrite}=    Set Variable    ${category}_fields_readwrite
+    ${category_fields_readonly}=    Set Variable    ${category}_fields_readonly
+    ${category_checkboxes_readwrite}=    Set Variable    ${category}_checkboxes_readwrite
+    ${category_checkboxes_readonly}=    Set Variable    ${category}_checkboxes_readonly
+    ${category_tables_IDs_readwrite}=    Set Variable    ${category}_tables_IDs_readwrite
+    ${category_tables_IDs_readonly}=    Set Variable    ${category}_tables_IDs_readonly
+    ${category_fields}=    Combine Lists    ${${category_fields_readwrite}}    ${${category_fields_readonly}}
+    ${category_checkboxes}=    Combine Lists    ${${category_checkboxes_readwrite}}    ${${category_checkboxes_readonly}}
+    ${category_tables}=    Combine Lists    ${${category_tables_IDs_readwrite}}    ${${category_tables_IDs_readonly}}
+    #Create/reset lists to be used for data comparison
+    Set Suite Variable    @{other_fields_values}    @{EMPTY}
+    Set Suite Variable    @{other_table_fields_values}    @{EMPTY}
+    #Extract fields data
+    : FOR    ${field}    IN    @{category_fields}
+    \    ${field_value}=    Get Text    ${field}
+    \    Append To List    ${other_fields_values}    ${field_value}
+    #for checkboxes is a bit tricky...to be done
+    #Extract table data
+    : FOR    ${table}    IN    @{category_tables}
+    \    Extract 1st column from other version table    ${table}
+
+Extract readwrite fields values from other version
+    [Documentation]    Action: Extract readwrite fields values from published version page.
+    ${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category_fields_readwrite}=    Set Variable    ${category}_fields_readwrite
+    ${category_checkboxes_readwrite}=    Set Variable    ${category}_checkboxes_readwrite
+    ${category_tables_IDs_readwrite}=    Set Variable    ${category}_tables_IDs_readwrite
+    #Create/reset lists to be used for data comparison
+    Set Suite Variable    @{other_fields_values}    @{EMPTY}
+    Set Suite Variable    @{other_table_fields_values}    @{EMPTY}
+    #Extract fields data
+    : FOR    ${field}    IN    @{${category_fields_readwrite}}
+    \    ${field_value}=    Get Text    ${field}
+    \    Append To List    ${other_fields_values}    ${field_value}
+    #for checkboxes is a bit tricky...to be done
+    #Extract table data
+    : FOR    ${table}    IN    @{${category_tables_IDs_readwrite}}
+    \    Extract 1st column from other version table    ${table}
+
+Compare with Category data fields values
+    [Documentation]    Precondition: works on the draft view page. This keyword is to be used after the "Extract values from other version" keyword.
+    ...    Action: Verifies the proposed draft fields data match the data from the source.
+    ...
+    ...    Uncomplete keyword
+    ...    -Missing for checkboxes as it is a bit tricky (checkboxes not displayed in view page as in edit page)
+    ...    -to be updated with check if table is really there... (like for check readwrite/readonly)
+    ${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category_fields_readwrite}=    Set Variable    ${category}_fields_readwrite
+    ${category_fields_readonly}=    Set Variable    ${category}_fields_readonly
+    ${category_checkboxes_readwrite}=    Set Variable    ${category}_checkboxes_readwrite
+    ${category_checkboxes_readonly}=    Set Variable    ${category}_checkboxes_readonly
+    ${category_tables_IDs_readwrite}=    Set Variable    ${category}_tables_IDs_readwrite
+    ${category_tables_IDs_readonly}=    Set Variable    ${category}_tables_IDs_readonly
+    ${category_fields}=    Combine Lists    ${${category_fields_readwrite}}    ${${category_fields_readonly}}
+    ${category_checkboxes}=    Combine Lists    ${${category_checkboxes_readwrite}}    ${${category_checkboxes_readonly}}
+    ${category_tables}=    Combine Lists    ${${category_tables_IDs_readwrite}}    ${${category_tables_IDs_readonly}}
+    #Create/reset lists to be used for data comparison
+    Set Suite Variable    @{table_fields_values}    @{EMPTY}
+    #Extract draft fields data and verify fields data are matching btw draft and other version
+    ${index}=    Set Variable    0
+    : FOR    ${field}    IN    @{category_fields}
+    \    ${field_value}=    Get Text    ${field}
+    \    ${other_field_value}=    Get From List    ${other_fields_values}    ${index}
+    \    Should Be Equal As Strings    ${field_value}    ${other_field_value}
+    \    ${index}=    Evaluate    ${index}+1
+    # to be done for checkboxes
+    #Extract draft tables data and verify tables data are matching btw draft and other \ version
+    : FOR    ${table}    IN    @{category_tables}
+    \    Extract 1st column from table    ${table}
+    Lists Should Be Equal    ${other_table_fields_values}    ${table_fields_values}
+
+Compare with Category readwrite fields values
+    [Documentation]    Precondition: works on the draft view page. This keyword is to be used after the "Extract readwrite fields values from other version" keyword.
+    ...    Action: Verifies the proposed draft readwrite fields data match the data from the other version.
+    ...
+    ...    Uncomplete keyword
+    ...    -Missing for checkboxes as it is a bit tricky (checkboxes not displayed in view page as in edit page)
+    ${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category_fields_readwrite}=    Set Variable    ${category}_fields_readwrite
+    ${category_checkboxes_readwrite}=    Set Variable    ${category}_checkboxes_readwrite
+    ${category_tables_IDs_readwrite}=    Set Variable    ${category}_tables_IDs_readwrite
+    #Create/reset lists to be used for data comparison
+    Set Suite Variable    @{table_fields_values}    @{EMPTY}
+    #Extract draft fields data and verify fields data are matching btw draft and other version
+    ${index}=    Set Variable    0
+    : FOR    ${field}    IN    @{${category_fields_readwrite}}
+    \    ${field_value}=    Get Text    ${field}
+    \    ${other_field_value}=    Get From List    ${other_fields_values}    ${index}
+    \    Should Be Equal As Strings    ${field_value}    ${other_field_value}
+    \    ${index}=    Evaluate    ${index}+1
+    # to be done for checkboxes
+    #Extract draft tables data and verify tables data are matching btw draft and other \ version
+    : FOR    ${table}    IN    @{${category_tables_IDs_readonly}}
+    \    Extract 1st column from table    ${table}
+    Lists Should Be Equal    ${other_table_fields_values}    ${table_fields_values}
+
+Extract 1st column from table
+    [Arguments]    ${table}
+    [Documentation]    Action: extract fields values from 1st column of a table
+    ${#_entries}=    Get Matching Xpath Count    //*[@id[starts-with(.,"${table}")] and @ng-repeat="row in rows"]
+    : FOR    ${idx}    IN RANGE    ${#_entries}
+    \    ${1st_clm_value}=    Get Text    //*[@id[starts-with(.,"${table}")] and @ng-repeat="row in rows"][${idx}+1]/descendant::*[1]
+    \    Append To List    ${table_fields_values}    ${1st_clm_value}
+
+Extract 1st column from other version table
+    [Arguments]    ${table}
+    [Documentation]    Action: extract fields values from 1st column of a table
+    ${#_entries}=    Get Matching Xpath Count    //*[@id[starts-with(.,"${table}")] and @ng-repeat="row in rows"]
+    : FOR    ${idx}    IN RANGE    ${#_entries}
+    \    ${1st_clm_value}=    Get Text    //*[@id[starts-with(.,"${table}")] and @ng-repeat="row in rows"][${idx}+1]/descendant::*[1]
+    \    Append To List    ${other_table_fields_values}    ${1st_clm_value}
+
+Extract readonly fields values from source reference
+    [Arguments]    ${BIC}    ${category}
+    [Documentation]    Action: Extract readonly fields values from source reference.
+    ...
+    ...    Missing keyword to retrieve source values for Category
+    ${category_fields_readonly}=    Set Variable    ${category}_fields_readonly
+    #Create/reset lists to be used for data comparison
+    #Extract source values
+    @{fields_values}=    Get sourced fields for Entity and Category    ${BIC}    ${category}
+    Log Many    @{fields_values}
+    [Return]    @{fields_values}
+
+Get sourced fields for Entity and Category
+    [Arguments]    ${BIC}    ${category}
+    @{tmp_list}=    SQL - Get ReadOnly Sources    ${BIC}
+    Log Many    @{tmp_list}
+    #Define data from Category
+    @{fields_values}=    Create List    @{tmp_list}
+    Log Many    @{fields_values}
+    [Return]    @{fields_values}
+
+Compare with Category readonly fields values
+    [Arguments]    @{other_fields_values}
+    [Documentation]    Precondition: works on the draft view page. This keyword is to be used after the "Extract readonly fields values from source" keyword.
+    ...    Action: Verifies the proposed draft readwrite fields data match the data from the other version.
+    ${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category_fields_readonly}=    Set Variable    ${category}_fields_readonly
+    #Extract draft fields data and verify fields data are matching btw draft and other version
+    Log Many    @{other_fields_values}
+    ${index}=    Set Variable    0
+    : FOR    ${field}    IN    @{${category_fields_readonly}}
+    \    ${field_value}=    Get Text    ${field}
+    \    ${other_field_value}=    Get From List    ${other_fields_values}    ${index}
+    \    BuiltIn.Log    Compare field ${field}
+    \    Should Be Equal As Strings    ${field_value}    ${other_field_value}
+    \    ${index}=    Evaluate    ${index}+1
+
+Check Category data readwrite fields values are empty
+    [Documentation]    Action: Verify that all data fields of the document are empty
+    ${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category_fields_readwrite}=    Set Variable    ${category}_fields_readwrite
+    ${category_checkboxes_readwrite}=    Set Variable    ${category}_checkboxes_readwrite
+    ${category_tables_IDs_readwrite}=    Set Variable    ${category}_tables_IDs_readwrite
+    #fields
+    : FOR    ${field}    IN    @{${category_fields_readwrite}}
+    \    Element Text Should Be    ${field}    ${EMPTY}
+    #checkboxes
+    #: FOR    ${field}    IN    @{${category_checkboxes_readwrite}}
+    #    Checkbox Should Not Be Selected    //*[@id="${field}"]
+    #    Run Keyword And Expect Error    *    Checkbox Should Be Selected    //*[@id="${field}"]
+    #tables
+    : FOR    ${table_ID}    IN    @{${category_tables_IDs_readwrite}}
+    \    Xpath Should Match X Times    //*[@id[starts-with(.,"${table_ID}")] and @ng-repeat="row in rows"]    0
+
+Click Edit Draft
+    [Documentation]    Action: Edit draft button is clicked and it opens the Edit draft page
+    Load page infinite scroll
+    Element Should Be Visible    //*[@id='folderData']//*[@id='editDraft']
+    #Click Element    //*[@id='folderData']//*[@id='editDraft']
+    Execute Javascript    $('#folderData #editDraft').click()
+
+Get documents evidence list for Category
+    [Arguments]    ${category}
+    ${list_evidence_docs_attributes}=    SQL - Get list of evidence docs    ${category}
+    Log Many    ${list_evidence_docs_attributes}
+    #Create List for variables
+    Set Suite Variable    @{list_docs}    @{EMPTY}
+    Set Suite Variable    @{list_multi_allowed}    @{EMPTY}
+    Set Suite Variable    @{list_required}    @{EMPTY}
+    Set Suite Variable    @{list_translation_allowed}    @{EMPTY}
+    #Extract info about doc evidences names and attributes
+    : FOR    ${line_list}    IN    @{list_evidence_docs_attributes}
+    \    Append To List    ${list_docs}    ${line_list[0]}
+    \    Append To List    ${list_multi_allowed}    ${line_list[1]}
+    \    Append To List    ${list_required}    ${line_list[2]}
+    \    Append To List    ${list_translation_allowed}    ${line_list[3]}
+    Log Many    @{list_docs}
+    Log Many    @{list_multi_allowed}
+    Log Many    @{list_required}
+    Log Many    @{list_translation_allowed}
+    [Return]    @{list_docs}
+
+Get fields evidence list for Category
+    [Arguments]    ${category}
+    @{list_evidence_fields_attributes}=    SQL - Get list of evidence fields    ${category}
+    Log Many    @{list_evidence_fields_attributes}
+    #Create List for variables
+    Set Suite Variable    @{list_fields}    @{EMPTY}
+    Set Suite Variable    @{list_fields_type}    @{EMPTY}
+    @{tmp_array}=    Create List    @{list_evidence_fields_attributes}
+    #Extract info about doc evidences names and attributes
+    : FOR    ${line_list}    IN    @{list_evidence_fields_attributes}
+    \    Append To List    @{list_fields}    ${line_list[0]}
+    \    Append To List    @{list_fields_type}    ${line_list[1]}
+    Log Many    @{list_fields}
+    Log Many    @{list_fields_type}
+    [Return]    @{list_fields}    @{list_fields_type}
+
+Fill out qualification checklist to all passed
+    Load page infinite scroll
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='folderData']//*[@id='${folder}FolderCheckList']
+    ${#_checks}=    Get Matching Xpath Count    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//*[@id="qualificationChecklist"]//*[@id='ROW']
+    : FOR    ${index}    IN RANGE    ${#_checks}
+    \    ${check_id}=    Set Variable    check_${index}_PASSED
+    \    Click Element    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//*[@id="qualificationChecklist"]//*[@id='${check_id}']
+    Input Text    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//textarea    Comment on qualification checklist
+
+Fill out qualification checklist to all failed
+    Load page infinite scroll
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='folderData']//*[@id='${folder}FolderCheckList']
+    ${#_checks}=    Get Matching Xpath Count    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//*[@id="qualificationChecklist"]//*[@id='ROW']
+    : FOR    ${index}    IN RANGE    ${#_checks}
+    \    ${check_id}=    Set Variable    check_${index}_FAILED
+    \    Click Element    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//*[@id='${check_id}']
+    Input Text    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//textarea    Comment on qualification checklist
+
+Fill out qualification checklist to half-half
+    ${folder}=    Get Folder
+    ${xpath_checklist}=    Set Variable    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//*[@id="qualificationChecklist"]
+    Element Should Be Visible    ${xpath_checklist}
+    ${#_checks}=    Get Matching Xpath Count    ${xpath_checklist}//*[@id='ROW']
+    ${half_#}=    Evaluate    int(${#_checks}/2)
+    ${other_half_#}=    Evaluate    ${#_checks}-${half_#}
+    : FOR    ${index}    IN RANGE    ${half_#}
+    \    ${check_id}=    Set Variable    check_${index}_PASSED
+    \    Element Should Be Visible    ${xpath_checklist}//*[@id='${check_id}']
+    \    Click Element    ${xpath_checklist}//*[@id='${check_id}']
+    : FOR    ${index}    IN RANGE    ${other_half_#}
+    \    ${idx}=    Evaluate    ${index}+${half_#}
+    \    ${check_id}=    Set Variable    check_${idx}_FAILED
+    \    Element Should Be Visible    ${xpath_checklist}//*[@id='${check_id}']
+    \    Click Element    ${xpath_checklist}//*[@id='${check_id}']
+    Comment on qualification checklist    Fill out qualification checklist for testing
+
+Open Change completeness score
+    Load page infinite scroll
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='folderData']//*[@id='showQualificationCheckList']
+    Click Element    showQualificationCheckList
+    Element Should Be Visible    //*[@id='folderData']//*[@id='${folder}FolderCheckList']
+    Element Should Be Visible    //*[@id='folderData']//*[@id='changeCompletenessScore']
+
+Comment on qualification checklist
+    [Arguments]    ${text}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//textarea
+    Input Text    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//textarea    ${text}
+
+Save changes Qualification checklist score
+    ${folder}=    Get Folder
+    Click Element    changeCompletenessScore
+
+Cancel change of Qualification checklist score
+    ${folder}=    Get Folder
+    Click Element    cancelChangeCompletenessScore
+    Element Should Not Be visible    //*[@id='folderData']//*[@id='${folder}FolderCheckList']
+    Element Should Be Visible    //*[@id='folderData']//*[@id='showQualificationCheckList']
+
+Manually set Completeness score to Successfully Qualified
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='folderData']//*[@id='${folder}FolderCheckList']
+    Click Element    //*[@id="${folder}FolderCheckList"]//*[@id="changeScore"]
+    Element Should Be Visible    //*[@id="${folder}FolderCheckList"]//*[@id="changeScoreMenu"]
+    Click Element    //*[@id="${folder}FolderCheckList"]//*[@id="changeScoreMenu"]//*[@id='changeToSuccessfullyQualified']
+
+Manually set Completeness score to Qualified with comments
+    Click Element    //*[@id="qualificationChecklist"]//*[@id="changeScore"]
+    Element Should Be Visible    changeScoreMenu
+    Click Element    changeToQualifiedWithComments
+
+Manually reset Completeness score to calculated score
+    #    Click Element    changeScore
+    #    Wait Until Element Is Visible    changeScoreMenu
+    #    Click Element    resetScore
+    #
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='folderData']//*[@id='${folder}FolderCheckList']
+    Click Element    //*[@id="${folder}FolderCheckList"]//*[@id="changeScore"]
+    Element Should Be Visible    //*[@id="${folder}FolderCheckList"]//*[@id="changeScoreMenu"]
+    Click Element    //*[@id="${folder}FolderCheckList"]//*[@id="changeScoreMenu"]//*[@id='resetScore']
+
+Get Folder
+    Comment    ${folder}=    Get Value    folderData
+    Sleep    5s
+    ${folder}=    Execute Javascript    return $('#folderData').attr('value');
+    [Return]    ${folder}
+
+Click Submit Draft for Approval
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Element Should Be Visible    //*[@id='folderActions']//*[@id='proposeForSubmissionDraft']
+    #Click Element    //*[@id='folderActions']//*[@id='proposeForSubmissionDraft']
+    Execute Javascript    $('#folderActions #proposeForSubmissionDraft').click()
+
+Comment in Submit Draft for Approval dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    proposeForSubmissionDraftDialog
+    Input Text    //*[@id='proposeForSubmissionDraftDialog']//textarea    ${text}
+
+Confirm Submit Draft for Approval
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Element Should Be Visible    //*[@id='proposeForSubmissionDraftDialog']//*[@id='proposeForSubmissionDraft']
+    Click Element    //*[@id='proposeForSubmissionDraftDialog']//*[@id='proposeForSubmissionDraft']
+
+Click Reconfirm of Published draft
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Element Should Be Visible    //*[@id='folderActions']//*[@id='reconfirmPublished']
+    #Click Element    //*[@id='folderActions']//*[@id='reconfirmPublished']
+    Execute Javascript    $('#folderActions #reconfirmPublished').click()
+    #
+    Element Should Be Visible    //*[@id='reconfirmPublishedDialog']
+
+Comment in Reconfirm dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    reconfirmPublishedDialog
+    Input Text    //*[@id='reconfirmPublishedDialog']//textarea    ${text}
+
+Comment in Reconfirm Draft dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    reconfirmDraftDialog
+    Input Text    //*[@id='reconfirmDraftDialog']//textarea    ${text}
+
+Comment in Reject dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    rejectDialog
+    Input Text    //*[@id='rejectDialog']//textarea    ${text}
+
+Confirm Reconfirm
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Capture Page Screenshot
+    Click Element    //*[@id='reconfirmPublishedDialog']//*[@id='reconfirmPublished']
+    Element Should Not Be visible    reconfirmPublishedDialog
+    Capture Page Screenshot
+
+Confirm Approve
+    [Documentation]    Action: from the draft view page, it clicks the Approve button to approve the proposed draft.
+    Element Should Be Visible    //*[@id='approveDraftDialog']
+    Click Element    //*[@id='approveDraftDialog']//*[@id='approveDraft']
+    Element Should Not Be visible    //*[@id='approveDraftDialog']
+
+Comment in Submit Draft 2eyes dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    submitDraftDialog
+    Input Text    //*[@id='submitDraftDialog']//textarea    ${text}
+
+Click Reconfirm of draft
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Element Should Be Visible    //*[@id='folderActions']//*[@id='reconfirmDraft']
+    #Click Element    //*[@id='folderActions']//*[@id='reconfirmDraft']
+    Execute Javascript    $('#folderActions #reconfirmDraft').click()
+
+Confirm Reconfirm Draft
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Click Element    //*[@id='reconfirmDraftDialog']//*[@id='reconfirmDraft']
+
+Extract view full entity data from source reference
+    [Arguments]    ${BIC}    ${category}
+    ${category_fields_viewfullentitydata}=    Set Variable    ${category}_fields_viewfullentitydata
+    #Create/reset lists to be used for data comparison
+    #Extract source values
+    @{fields_values}=    Get sourced field for view full entity data    ${BIC}    ${category}
+    Log Many    @{fields_values}
+    [Return]    @{fields_values}
+
+Get sourced field for view full entity data
+    [Arguments]    ${BIC}    ${category}
+    @{tmp_list}=    SQL - Get view full entity sources    ${BIC}
+    Log Many    @{tmp_list}
+    #Define data from Category
+    @{fields_values}=    Create List    @{tmp_list}
+    Log Many    @{fields_values}
+    [Return]    @{fields_values}
+
+Compare with category view full entity data
+    [Arguments]    @{other_fields_values}
+    #${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category}=    Set Variable    IOC
+    ${category_fields_viewfullentitydata}=    Set Variable    ${category}_fields_viewfullentitydata
+    #Extract draft fields data and verify fields data are matching btw draft and other version
+    Log Many    @{other_fields_values}
+    ${index}=    Set Variable    0
+    : FOR    ${field}    IN    @{${category_fields_viewfullentitydata}}
+    \    ${field_value}=    Get Text    ${field}
+    \    ${other_field_value}=    Get From List    ${other_fields_values}    ${index}
+    \    BuiltIn.Log    Compare field ${field}
+    \    Should Be Equal As Strings    ${field_value}    ${other_field_value}
+    \    #    Should Contain    ${field_value}    ${other_field_value}
+    \    ${index}=    Evaluate    ${index}+1
+
+Compare with category view parent details
+    [Arguments]    @{other_fields_values}
+    #${category}=    Check and Assign Category    #maybe this keyword to be removed...
+    ${category}=    Set Variable    IOC
+    ${category_Field_Parent_Headoffice}=    Set Variable    ${category}_Field_Parent_Headoffice
+    #Extract draft fields data and verify fields data are matching btw draft and other version
+    Log Many    @{other_fields_values}
+    ${index}=    Set Variable    0
+    : FOR    ${field}    IN    @{${category_Field_Parent_Headoffice}}
+    \    ${field_value}=    Get Text    ${field}
+    \    ${other_field_value}=    Get From List    ${other_fields_values}    ${index}
+    \    BuiltIn.Log    Compare field ${field}
+    \    Should Be Equal As Strings    ${field_value}    ${other_field_value}
+    \    #    Should Contain    ${field_value}    ${other_field_value}
+    \    ${index}=    Evaluate    ${index}+1
+
+Extract parent details from source reference
+    [Arguments]    ${BIC}    ${category}
+    ${category_Field_Parent_Headoffice}=    Set Variable    ${category}_Field_Parent_Headoffice
+    #Create/reset lists to be used for data comparison
+    #Extract source values
+    @{fields_values}=    Get source field for parent data    ${BIC}    ${category}
+    Log Many    @{fields_values}
+    [Return]    @{fields_values}
+
+Get source field for parent data
+    [Arguments]    ${BIC}    ${category}
+    @{tmp_list}=    Get parent source    ${BIC}
+    Log Many    @{tmp_list}
+    #Define data from Category
+    @{fields_values}=    Create List    @{tmp_list}
+    Log Many    @{fields_values}
+    [Return]    @{fields_values}
+
+Confirm Publish 4eyes
+    Element Should Be Visible    //*[@id="publishQualifiedDialog"]//*[@id="publishQualified"]
+    Click Element    //*[@id="publishQualifiedDialog"]//*[@id="publishQualified"]
+    Sleep    3s
+
+Click Publish draft 4eyes
+    Sleep    20s
+    Comment    Element Should Be Visible    //*[@id="folderActions"]//*[@id="publishQualified"]
+    Comment    Click Element    //*[@id="folderActions"]//*[@id="publishQualified"]
+    Comment    Execute Javascript    $('#folderActions #publishQualified').click()
+    Execute Javascript    $('button[ng-click="confirmAndPublishQualified($event)"]').click();
+
+Confirm Propose for publication
+    Element Should Be Visible    //*[@id="proposeForPublicationQualifiedDialog"]//*[@id="proposeForPublicationQualified"]
+    Click Element    //*[@id="proposeForPublicationQualifiedDialog"]//*[@id="proposeForPublicationQualified"]
+
+Click Propose for publication
+    #    Wait Until Element Is Visible    //*[@id="folderActions"]//*[@id="proposeForPublicationQualified"]
+    #    Click Element    //*[@id="folderActions"]//*[@id="proposeForPublicationQualified"]
+    Element Should Be Visible    //*[@id="folderActions"]//*[@id="proposeForPublicationQualified"]
+    #Click Element    //*[@id="folderActions"]//*[@id="proposeForPublicationQualified"]
+    Execute Javascript    $('#folderActions #proposeForPublicationQualified').click()
+
+Click Approve draft
+    Element Should Be Visible    //*[@id="folderActions"]//*[@id="approveDraft"]
+    #Click Element    //*[@id="folderActions"]//*[@id="approveDraft"]
+    Execute Javascript    $('#folderActions #approveDraft').click()
+
+Cancel edit draft
+    Click element    //*[@id="folderData"]//*[@id="cancelDraft"]
+
+Click Publish draft 2eyes
+    Element Should Be Visible    //*[@id="folderActions"]//*[@id="qualifyDraft"]
+    Click Element    //*[@id="folderActions"]//*[@id="qualifyDraft"]
+    Comment    Execute Javascript    $('#folderActions #qualifyDraft').click()
+
+Confirm Publish 2eyes
+    Element Should Be Visible    //*[@id="publishDraftDialog"]//*[@id="publishDraft"]
+    Click Element    //*[@id="publishDraftDialog"]//*[@id="publishDraft"]
+
+Confirm Reject
+    Element Should Be Visible    //*[@id="rejectDialog"]
+    Click Element    //*[@id="rejectDialog"]//*[@id="reject"]
+    Element Should Not Be visible    //*[@id="rejectDialog"]
+
+Click Reject draft
+    Element Should Be Visible    //*[@id="folderActions"]//*[@id="reject"]
+    #Click Element    //*[@id="folderActions"]//*[@id="reject"]
+    Execute Javascript    $('#folderActions #reject').click()
+
+Cancel draft Submit
+    Element Should Be Visible    //*[@id="submitDraftDialog"]
+    Click Element    //*[@id="submitDraftDialog"]//*[@id="cancelDialog"]
+    Element Should Not Be visible    //*[@id="submitDraftDialog"]
+
+Confirm draft removal
+    #Wait Until Element Is Visible    //*[@id="deleteDraftDialog"]
+    Element Should Be Visible    //*[@id="deleteDraftDialog"]
+    Click Element    //*[@id="deleteDraftDialog"]//*[@id="deleteDraft"]
+    Element Should Not Be visible    //*[@id="deleteDraftDialog"]
+
+Cancel draft removal
+    Element Should Be Visible    //*[@id="deleteDraftDialog"]
+    Click Element    //*[@id="deleteDraftDialog"]//*[@id="cancelDialog"]
+
+Confirm draft Submit
+    Element Should Be Visible    //*[@id="submitDraftDialog"]//*[@id="submitDraft"]
+    Click Element    //*[@id="submitDraftDialog"]//*[@id="submitDraft"]
+
+Click Takeover Draft
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Element Should Be Visible    //*[@id='folderData']//*[@id='takeOverDraft']
+    #Click Element    //*[@id='folderData']//*[@id='takeOverDraft']
+    Execute Javascript    $('#folderActions #takeOverDraft').click()
+
+Comment in Takeover draft dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    takeOverDraftDialog
+    Input Text    //*[@id='takeOverDraftDialog']//textarea    ${text}
+
+Confirm draft Takeover
+    Element Should Be Visible    //*[@id="takeOverDraftDialog"]//*[@id="submitDraft"]
+    Click Element    //*[@id="takeOverDraftDialog"]//*[@id="submitDraft"]
+
+Cancel draft Takeover
+    Element Should Be Visible    //*[@id="takeOverDraftDialog"]
+    Click Element    //*[@id="takeOverDraftDialog"]//*[@id="cancelDialog"]
+
+Comment in Approve draft dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    //*[@id='approveDraftDialog']
+    Input Text    //*[@id='approveDraftDialog']//textarea    ${text}
+
+Comment in Publish SWP dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    //*[@id='publishSwiftProfileDialog']
+    Input Text    //*[@id='publishSwiftProfileDialog']//textarea    ${text}
+
+Verify submit button is disabled
+    Element Should Be Visible    //*[@id='folderData']//*[@id='submitDraft' and @disabled="disabled"]
+
+Verify propose for submission button is disabled
+    Element Should Be Visible    //*[@id='folderActions']//*[@id='proposeForSubmissionDraft' and @disabled="disabled"]
+
+Click Edit Draft and wait editing page
+    [Documentation]    Action: Edit draft button is clicked and it opens the Edit draft page
+    Sleep    5s
+    Selenium2Library.Element Should Be Visible    //*[@id='folderData']//*[@id='editDraft']
+    Sleep    5s
+    #Click Element    //*[@id='folderData']//*[@id='editDraft']
+    Execute Javascript    $('#folderData #editDraft').click()
+    Sleep    5s
+    Selenium2Library.Element Should Not Be Visible    //*[@id='folderData']//*[@id='editDraft']
+    Page loading done
+
+Click Submit Pre-Draft
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Element Should Be Visible    //*[@id='folderData']//*[@id='submitPreDraft']
+    #Click Element    //*[@id='folderData']//*[@id='submitPreDraft']
+    Execute Javascript    $('#folderActions #submitPreDraft').click()
+
+Comment in Submit Pre-Draft 2eyes dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    //*[@id='submitPreDraftDialog']
+    Input Text    //*[@id='submitPreDraftDialog']//textarea    ${text}
+
+Confirm pre-draft Submit
+    Element Should Be Visible    //*[@id="submitPreDraftDialog"]//*[@id="submitPreDraft"]
+    Click Element    //*[@id="submitPreDraftDialog"]//*[@id="submitPreDraft"]
+
+Click Approve Pre-draft
+    Element Should Be Visible    //*[@id="folderActions"]//*[@id="approvePreDraft"]
+    #Click Element    //*[@id="folderActions"]//*[@id="approvePreDraft"]
+    Execute Javascript    $('#folderActions #approvePreDraft').click()
+
+Comment in Approve pre-draft dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    //*[@id='approvePreDraftDialog']
+    Input Text    //*[@id='approvePreDraftDialog']//textarea    ${text}
+
+Confirm pre-draft Approve
+    [Documentation]    Action: from the draft view page, it clicks the Approve button to approve the proposed draft.
+    Element Should Be Visible    //*[@id='approvePreDraftDialog']
+    Click Element    //*[@id='approvePreDraftDialog']//*[@id='approvePreDraft']
+
+Click Submit Pre-Draft for Approval
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Element Should Be Visible    //*[@id='folderActions']//*[@id='proposeForSubmissionPreDraft']
+    #Click Element    //*[@id='folderActions']//*[@id='proposeForSubmissionPreDraft']
+    Execute Javascript    $('#folderActions #proposeForSubmissionPreDraft').click()
+
+Comment in Submit Pre-Draft for Approval dialog
+    [Arguments]    ${text}
+    Element Should Be Visible    //*[@id='proposeForSubmissionPreDraftDialog']
+    Input Text    //*[@id='proposeForSubmissionPreDraftDialog']//textarea    ${text}
+
+Confirm Submit Pre-Draft for Approval
+    [Documentation]    Action: from the draft view page, it clicks the Submit Draft button to submit the draft.
+    Element Should Be Visible    //*[@id='proposeForSubmissionPreDraftDialog']//*[@id='proposeForSubmissionPreDraft']
+    Click Element    //*[@id='proposeForSubmissionPreDraftDialog']//*[@id='proposeForSubmissionPreDraft']
+
+Verify user and role for this entity is listed
+    [Arguments]    ${user}    ${role}
+    ${xpath}=    Set Variable    //*[@id='viewRolesAndUsersDialog']
+    #
+    ${dialog}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${xpath}
+    Run Keyword Unless    ${dialog}    Open user and role dialog on entity page
+    # check email
+    Element Should Be Visible    ${xpath}//*[@id='${role}']//*[text()[contains(.,'${${user}_user}')]]
+    Element Should Be Visible    ${xpath}//*[@id='${role}']//*[text()[contains(.,'${${user}_name}')]]
+    #
+
+Verify user and role for this entity is not listed
+    [Arguments]    ${user}    ${role}
+    ${xpath}=    Set Variable    //*[@id='viewRolesAndUsersDialog']
+    #
+    ${dialog}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${xpath}
+    Run Keyword Unless    ${dialog}    Open user and role dialog on entity page
+    # check email
+    Element Should not Be Visible    ${xpath}//*[@id='${role}']//*[text()[contains(.,'${${user}_user}')]]
+    Element Should not Be Visible    ${xpath}//*[@id='${role}']//*[text()[contains(.,'${${user}_name}')]]
+    #
+
+Open user and role dialog on entity page
+    ${xpath}=    Set Variable    //*[@id='viewRolesAndUsersDialog']
+    ${dialog}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${xpath}
+    Run Keyword Unless    ${dialog}    Click Element    //*[@id='viewRolesAndUsers']
+    Element Should Be Visible    ${xpath}
+
+Verify link to show users and roles is not visible
+    Element Should Not Be visible    //*[@id='viewRolesAndUsers']
+
+Close user and role dialog
+    ${xpath}=    Set Variable    //*[@id='viewRolesAndUsersDialog']
+    ${dialog}=    Run Keyword And Return Status    Element Should Be Visible    ${xpath}
+    Run Keyword If    ${dialog}    Click Element    ${xpath}//*[@id='closeDialog']
+    Element Should Not Be visible    ${xpath}
+
+Verify comment on qualification checklist
+    [Arguments]    ${text}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='folderData']//*[@id='${folder}FolderCheckList']//textarea
+    Load page infinite scroll
+    Capture Page Screenshot
+    ${comment}=    Execute Javascript    return $('#${folder}FolderCheckList #comments').val();
+    Should Be Equal As Strings    ${text}    ${comment}
+
+Click Select All for GEO country TOB
+    [Arguments]    ${CHKBOX_ID}
+    Execute Javascript    $(".col-sm-9").find("#${CHKBOX_ID}_selectDeselect > #selectAllCheckboxes").click();

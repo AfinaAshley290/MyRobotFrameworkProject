@@ -1,0 +1,53 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          entity_U2U_comm_buss.txt
+
+*** Keywords ***
+Open request golden copy for document in language
+    [Arguments]    ${doc}    ${doc_language}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='GOLD_COPY']
+    Element Should Be Visible    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+
+Open request translation for document in language
+    [Arguments]    ${doc}    ${doc_language}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='TRANSL']
+    Element Should Be Visible    //*[@id='requestDocumentTranslationDialog']//*[@id='sendDialog']
+
+Open request content clarification for document in language
+    [Arguments]    ${doc}    ${doc_language}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='CONTENT_CLARIFICATION']
+    Element Should Be Visible    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+
+Select language in Request translation dialog
+    [Arguments]    ${request_translation_language}
+    Select From List    //*[@id='requestDocumentTranslationDialog']//*[@id='language']    ${request_translation_language}
+
+Click Send in request Document query dialog
+    #    ${is_generic_request}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    requestDocumentGenericDialog
+    #    Run Keyword If    ${is_generic_request}    Click Element    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+    #    Run Keyword Unless    ${is_generic_request}    Click Element    //*[@id='requestDocumentTranslationDialog']//*[@id='sendDialog']
+    Selenium2Library.Element Should Be Visible    //*[@id='requestDocumentGenericDialog']
+    Click Element    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+
+Comment in request dialog
+    [Arguments]    ${text}
+    ${is_generic_request}=    Run Keyword And Return Status    Selenium2Library.Element Should Not Be Visible    //*[@id='requestDocumentGenericDialog']
+    Run Keyword If    ${is_generic_request}    Input Text    //*[@id='requestDocumentGenericDialog']//textarea    ${text}
+    Run Keyword Unless    ${is_generic_request}    Input Text    //*[@id='requestDocumentTranslationDialog']//textarea    ${text}
+
+Click Send in Send Message dialog
+    Element Should Be Visible    //*[@id='sendMessageDialog']
+    Click Element    //*[@id='sendMessageDialog']//*[@id='sendDialog']
+
+Send message dialog - select Data and docs topic
+    Selenium2Library.Select From List By Value    //*[@id="sendMessageDialog"]//*[@id='topic']    DATA_AND_DOCUMENTS
+    ${entities_list}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="sendMessageDialog"]//*[@id[contains(.,'sendMessageEntity')]]
+    #Run Keyword If    ${entities_list}    Select From List By Index    //*[@id="sendMessageDialog"]//*[@id='sendMessageEntity']    1
+    Run Keyword If    ${entities_list}    Select from List of Frame by Index    1    sendMessageEntity    sendMessageDialog

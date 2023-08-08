@@ -1,0 +1,82 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          user_mngm_view_unit.txt
+
+*** Keywords ***
+Verify all users and roles are displayed
+    [Arguments]    @{list_users_roles_group}
+    Load whole page
+    ${#_elements}=    Set Variable    0
+    @{tmp_array}=    Create List    @{list_users_roles_group}
+    : FOR    ${line_list}    IN    @{tmp_array}
+    \    #@{line_list}    Get List From String Pipes    ${line}
+    \    #@{line_list}    Get List From String Commas    ${line}
+    \    ${role}=    Set Variable    ${line_list[0]}
+    \    ${email}=    Set Variable    ${line_list[1]}
+    \    ${firstname}=    Set Variable    ${line_list[2]}
+    \    ${lastname}=    Set Variable    ${line_list[3]}
+    \    #    ${group}=    Set Variable    ${line_list[3]}
+    \    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${firstname}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${lastname}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${email}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${role}')]]
+    \    ${#_elements}=    Evaluate    ${#_elements}+1
+    #    Xpath Should Match X Times    //*[@class="userAssignedRoles"]/span    ${#_elements}
+
+View modify role assignment for
+    [Arguments]    ${user}
+    Click Element    //*[@id='ROW']//*[text()[contains(.,'${${user}_user}')]]/ancestor::*[@id='ROW']//*[@id='viewModify']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Be Visible    //*[@id='email']//*[text()[contains(.,'${${user}_user}')]]
+
+Verify user for group has role
+    [Arguments]    ${user}    ${role}
+    Element Should Be Visible    //*[@id="inviteUser"]
+    Load whole page
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${${user}_user}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${role}')]]
+
+Verify user for group does not have role
+    [Arguments]    ${user}    ${role}
+    Element Should Not Be visible    //*[@id='ROW']//*[text()[contains(.,'${${user}_user}')]]/ancestor::*[@id='ROW']//*[@class='userAssignedRoles']//*[text()[contains(.,'${role}')]]
+
+Invite user
+    [Arguments]    ${user_lastname}    ${user_firstname}    ${bic}
+    Click Element    //*[@id='inviteUser']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Be Visible    //*[@id='addUserDialog']
+    #
+    Element Should Be Visible    //*[@id='addUserDialog']//*[@id='addUser']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Be Visible    //*[@id='addUserDialog']//*[@id[contains(.,"selectedUser")]]
+    ${user_name}=    Set Variable    ${user_lastname} ${user_firstname} (${bic})
+    ${filter_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='addUserDialog']//*[@id='filter']
+    Run Keyword If    ${filter_present}    Input Text    filter    ${user_lastname}
+    Run Keyword If    ${filter_present}    Click Element    filterUser
+    Page loading done
+    Page Should Contain Element    //*[@id='addUserDialog']//*[@id='selectedUser']//*[text()[contains(.,'${user_name}')]]
+    #Element Should Be Visible    //*[@id='addUserDialog']//*[@id='selectedUser']//*[text()[contains(.,'${user_name}')]]
+    Select from List of Frame by Label    ${user_name}    selectedUser    addUserDialog
+    #    Select From List By Label    //*[@id='addUserDialog']//*[@id='selectedUser']    ${user_name}
+    Click Element    //*[@id='addUserDialog']//*[@id='addUser']
+    Element Should Not Be visible    addUserDialog
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Be Visible    //*[@id='name']//*[text()='${user_firstname}']//ancestor::*[@id='name']//*[text()='${user_lastname}']
+
+Verify can see assign role requester
+    Element should be visible    //*[@id='ROW']//*[text()[contains(.,'Requester')]]
+
+Verify can see assign role Granter
+    Element should be visible    //*[@id='ROW']//*[text()[contains(.,'Granter')]]
+
+Verify user is removed
+    [Arguments]    ${user}
+    Element Should Be Visible    //*[@id="inviteUser"]
+    Load whole page
+    Element Should Not Be visible    //*[@id='users']//*[@id='ROW']//*[text()[contains(.,'${${user}_user}')]]
+
+Verify user details in User details page
+    [Arguments]    ${user}
+    Element Should Be Visible    //*[@id='email']//*[text()[contains(.,'${${user}_user}')]]
+    Element Should Be Visible    //*[@id='name']//*[text()[contains(.,'${${user}_firstname}')]]//ancestor::*[@id='name']//*[text()[contains(.,'${${user}_lastname}')]]    #//*[@id='name']//*[text()[contains(.,'${${user}_name}')]]

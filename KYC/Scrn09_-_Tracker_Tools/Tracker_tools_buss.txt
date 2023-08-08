@@ -1,0 +1,146 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          Tracker_tools_init.txt
+
+*** Keywords ***
+Verify follow-up button
+    [Arguments]    ${User}    ${Category}
+    Login as    ${User}
+    In Entity    ${ENTITIES_A[88]}
+    In Category    ${Category}
+    ${STATUS}=    Run Keyword And Return Status    Selenium2Library.Element Should Not Be Visible    ${Follow_Up_Button}
+    Run Keyword IF    '${STATUS}' == 'True'    Log    The Follow -up button is not visible
+    Run Keyword IF    '${STATUS}' == 'False'    Log    The Follow -up button is visible
+
+Verify the Assign member Text
+    [Arguments]    ${Text}
+    Sleep    10s
+    ${Text_Assign}=    Execute Javascript    return $('#trackerFollowupTabContent > div > div.col-sm-7 > div > span').text().trim();
+    Log    ${Text_Assign}
+    Run Keyword IF    '${Text_Assign}'=='${Text}'    Log    The text next to the drop down list display correctly.
+    Run Keyword IF    '${Text_Assign}'!='${Text}'    Log    The text next to the drop down list display incorrectly.
+
+Assing user to Follow up every entity of the group
+    [Arguments]    ${Text}
+    Sleep    10s
+    ${Text_Assign}=    Execute Javascript    return $('#trackerFollowupTabContent > div > div > div > a').text().trim()
+    Log    ${Text_Assign}
+    Run Keyword IF    '${Text_Assign}'=='${Text}'    Log    The text next to the drop down list display correctly.
+
+Verify Setting Columns
+    [Arguments]    ${Index}    ${Text}
+    [Documentation]    Remarks: This Function is used to find Colums in Tracker Tool -> Group Setting tabs
+    ${Setting_Text}=    Execute Javascript    return $('#groupSettingsTableId').find('tbody > tr > td').eq('${Index}').text().trim();
+    Run Keyword If    '${Setting_Text}'=='${Text}'    Log    The position of the column is correct
+
+Verify Setting Value
+    [Arguments]    ${Index}    ${Action}
+    ${Value}=    Execute Javascript    return $('#trackerToolTabContainer > .tab-content > .tab-pane > .ng-scope > div > .tg > tbody > tr').eq('${Index}').find('> .tg-yw42 > .glyphicon').hasClass('glyphicon-${Action}');
+    Run Keyword If    '${Value}'=='True'    Log    The value for Setting Columns is correct
+
+Get Owner of Entity
+    ${Selection}=    Execute Javascript    return $('#trackerFollowupOwnerSelect > div > select').find('option:selected').text()
+    [Return]    ${Selection}    # Returns the selected owner of an entity
+
+Get Entity Main Page Owner Name
+    ${ownerName}=    Execute Javascript    return $('#${EntityFollowUpOwner_text}').text()
+    [Return]    ${ownerName}
+
+Verify Open Task
+    [Arguments]    ${number}    ${Actual_Text}    ${Due_date}    ${User}    ${Comment}
+    ${Text}=    Execute Javascript    return $('#trackertool_openTask_${number}_header > span').text();
+    Run Keyword If    '${Text}' =='${Actual_Text}'    Log    The title show correctly: ${Text}
+    Selenium2Library.Element Should Contain    //*[@id='trackertool_openTask_${number}_comments']    ${Comment}
+    Selenium2Library.Element Should Contain    //*[@id='trackertool_openTask_${number}_duedate']    ${Due_date}
+    Selenium2Library.Element Should Be Visible    //*[@id='trackertool_openTask_${number}_completebutton']
+
+Verify Task Complete
+    [Arguments]    ${number}    ${number_com}    ${user}    ${Comment}
+    ${Due_date}=    Get Todays Date Time
+    Click Element    //*[@id='trackertool_openTask_${number}_completebutton']
+    Click Link    ${showComplete}
+    ${Text}=    Get Text    //*[@id='trackertool_completedTask_0_completed']/small/strong/span[1]
+    Log    ${Text}
+    Run Keyword If    '${Text}' =='Marked Completed'    Log    The title show correctly: ${Text}
+    Selenium2Library.Element Should Contain    //*[@id='trackertool_completedTask_${number_com}_comments']    ${Comment}
+    Comment    Selenium2Library.Element Should Contain    //*[@id='trackertool_completedTask_${number_com}_completed']/small/strong    Task completed
+    Click Link    ${hideComplete}
+
+Verify Add button disabled
+    ${result}=    Execute Javascript    return \ $('#trackertool_addTaskButton').prop('disabled');
+    Run Keyword if    '${result}'== 'true'    Log    The Add button is disabled
+    Run Keyword if    '${result}'== 'false'    Log    The Add button is enable
+
+Verify All Follow-up Tasks Inbox
+    [Arguments]    ${No}    ${BIC}    ${Actual_Text}    ${Comment_Text}    ${Status}    ${User}
+    Input Text    ${INBOX_FOLLOWUP_SEARCH_TXTBOX}    ${BIC}
+    Sleep    10s
+    Selenium2Library.Element Should Be Visible    //*[@id='tasks_row_${No}_taskBody']//*[text()[contains(.,'${BIC}')]]
+    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${Status}']/ancestor::*[@id='tasks_row_${No}']//*[@id='tasks_row_${No}_taskBody']/div[text()[contains(.,'${BIC}')]]
+    ${Text}=    Get TexT    //*[@id='tasks_row_${No}_taskBody']//*[text()[contains(.,'${BIC}')]]
+    Run Keyword IF    '${Text}'=='${Actual_Text}'    Log    The verification is correct: ${Text}
+    Selenium2Library.Element Should Be Visible    //*[@id='tasks_row_${No}_taskBody']/a/span[text()[contains(.,'Show')]]
+    Click Element    //*[@id='tasks_row_${No}_taskBody']/a/span[text()[contains(.,'Show')]]
+    Selenium2Library.Element Should Contain    //*[@id='tasks_row_${No}_taskBody']/div[2]    ${Comment_Text}
+    Comment    Selenium2Library.Element Should Contain    //*[@id='tasks_row_${No}_taskAssignedTo']/strong    ${${User}_name}
+
+Verify Complete Tasks Inbox
+    [Arguments]    ${No}    ${BIC}    ${Actual_Text}    ${Comment_Text}
+    Input Text    ${INBOX_FOLLOWUP_SEARCH_TXTBOX}    ${BIC}
+    Sleep    10s
+    Selenium2Library.Element Should Be Visible    //*[@id='tasks_row_${No}_taskBody']//*[text()[contains(.,'${BIC}')]]
+    ${Text}=    Get TexT    //*[@id='tasks_row_${No}_taskBody']//*[text()[contains(.,'${BIC}')]]
+    Run Keyword IF    '${Text}'=='${Actual_Text}'    Log    The verification is correct: ${Text}
+    Selenium2Library.Element Should Be Visible    //*[@id='tasks_row_${No}_taskBody']/a/span[text()[contains(.,'Show')]]
+    Click Element    //*[@id='tasks_row_${No}_taskBody']/a/span[text()[contains(.,'Show')]]
+    Selenium2Library.Element Should Contain    //*[@id='tasks_row_${No}_taskBody']/div[2]    ${Comment_Text}
+
+Verify My Follow-up Tasks Inbox
+    [Arguments]    ${No}    ${BIC}    ${Actual_Text}    ${Comment_Text}    ${Status}
+    Input Text    ${INBOX_FOLLOWUP_SEARCH_TXTBOX}    ${BIC}
+    Sleep    10s
+    Selenium2Library.Element Should Be Visible    //*[@id='tasks_row_${No}_taskBody']//*[text()[contains(.,'${BIC}')]]
+    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${Status}']/ancestor::*[@id='tasks_row_${No}']//*[@id='tasks_row_${No}_taskBody']/div[text()[contains(.,'${BIC}')]]
+    ${Text}=    Get TexT    //*[@id='tasks_row_${No}_taskBody']//*[text()[contains(.,'${BIC}')]]
+    Run Keyword IF    '${Text}'=='${Actual_Text}'    Log    The verification is correct: ${Text}
+    Selenium2Library.Element Should Be Visible    //*[@id='tasks_row_${No}_taskBody']/a/span[text()[contains(.,'Show')]]
+    Click Element    //*[@id='tasks_row_${No}_taskBody']/a/span[text()[contains(.,'Show')]]
+    Selenium2Library.Element Should Contain    //*[@id='tasks_row_${No}_taskBody']/div[2]    ${Comment_Text}
+
+Edit Tasks
+    [Arguments]    ${Task_id}    ${Date}    ${user}
+    Click Element    //*[@id='${Task_id}_editbutton']
+    Input Text    //*[@id='${Task_id}_comments_editing']    dgwoieofdndowemssss(*&^%$^&*123()siudsud..//]cdscsc ° コンサート 昨夜, 最高
+    Input Text    //*[@id='${Task_id}_duedate_editing']/div[1]/div/input    ${Date}
+    Click Element    //*[@id='${Task_id}_duedate_editing']/div[2]/select
+    Comment    Execute Javascript    $('#${Task_id}_duedate_editing').find('.form-group > select.form-control > option:contains("${${user}_name}")').trigger('click');
+    Click Element    //*[@id='${Task_id}_duedate_editing']/div[2]/select/option[@label='${${user}_name}']
+
+Get Date after 7 days
+    ${date}=    Get Current Date    result_format=datetime
+    ${date}=    Add Time to Date    ${date}    7 days
+    ${date}=    Convert Date    ${date}    result_format=%d %b %Y
+    log    ${date}
+    [Return]    ${date}
+
+Verify seven days advance for due date
+    [Arguments]    ${Task_id}    ${Date}    ${user}
+    Click Element    //*[@id='${Task_id}_editbutton']
+    Input Text    //*[@id='${Task_id}_comments_editing']    dgwoieofdndowemssss(*&^%$^&*123()siudsud..//]cdscsc ° コンサート 昨夜, 最高
+    Input Text    //*[@id='${Task_id}_duedate_editing']/div[1]/div/input    ${Date}
+    Click Link    ${Task_id}_addsevendays
+    Click Element    //*[@id='${Task_id}_duedate_editing']/div[2]/select
+    Click Element    //*[@id='${Task_id}_duedate_editing']/div[2]/select/option[@label='${${user}_name}']
+
+Verify the Label for TaskOwner
+    [Arguments]    ${Text}
+    Sleep    10s
+    ${Text_Assign}=    Execute Javascript    return $('#trackerFollowupTabContent > p > span').text().trim();
+    Log    ${Text_Assign}
+    Run Keyword IF    '${Text_Assign}'=='${Text}'    Log    The text next to the drop down list display correctly.
+    Run Keyword IF    '${Text_Assign}'!='${Text}'    Log    The text next to the drop down list display incorrectly.
+
+Verify Date
+    [Arguments]    ${id}    ${Date}
+    ${Date_Value}=    Execute Javascript    return $('#${id}').val();
+    Run Keyword Unless    '${Date_Value}'=='${Date}'    Log    Passed

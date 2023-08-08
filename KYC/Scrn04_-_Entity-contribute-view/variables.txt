@@ -1,0 +1,8 @@
+*** Variables ***
+
+*** Keywords ***
+@{other_fields_values}
+
+@{table_fields_values}
+
+@{other_table_fields_values}

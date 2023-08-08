@@ -1,0 +1,35 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+Submit predraft dialog - Verify recommended fields warning is present
+    Element Should Be Visible    //*[@id='submitPreDraftDialog']//*[text()[contains(.,'Missing')]]
+
+Submit predraft dialog - Verify recommended fields warning is not present
+    Element Should not Be Visible    //*[@id='submitPreDraftDialog']//*[text()[contains(.,'Missing')]]
+    Element Should not Be Visible    //*[@id='submitPreDraftDialog']//*[text()[contains(.,'Incomplete')]]
+
+Verify draft's readonly data are sourced
+    [Documentation]    Precondition: An Active document set exists for Category, so a published version is available and I just used the "There is a published version" keyword to extract its fields values. A draft creation is ongoing and I just opened the Edit page.
+    ...    Action: In Edit page of the draft, compare the fields values with the one extracted from the published version.
+    #go to Draft
+    Click Element    //*[@id='folderData']//*[@id='draft']
+    Compare with Category Edit draft fields values
+
+Verify readonly fields are sourced
+    [Arguments]    ${BIC}    ${category}
+    @{fields_values}=    Extract readonly fields values from source reference    ${BIC}    ${category}
+    Log Many    @{fields_values}
+    Compare with Category readonly fields values    @{fields_values}
+
+Check evidence documents are not uploaded
+    [Arguments]    ${category}
+    ${folder}=    Get Folder
+    @{list_docs}=    Get documents evidence list for Category    ${category}
+    Log Many    @{list_docs}
+    : FOR    ${doc}    IN    @{list_docs}
+    \    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']
+
+Refresh sourced data
+    [Arguments]    ${BIC}    ${field_to_update}    ${new_value}
+    Update Entity ReadOnly field    ${BIC}    ${field_to_update}    ${new_value}

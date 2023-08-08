@@ -1,0 +1,105 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_U2U_comm_buss.txt
+
+*** Keywords ***
+Comment in Reply dialog
+    [Arguments]    ${text}
+    ${is_doc_query}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='replyDocumentQueryDialog']
+    Run Keyword If    ${is_doc_query}    Input Text    //*[@id='replyDocumentQueryDialog']//textarea    ${text}
+    Run Keyword Unless    ${is_doc_query}    Input Text    //*[@id='replyQueryDialog']//textarea    ${text}
+
+Click Send Reply
+    ${is_doc_query}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    replyDocumentQueryDialog
+    Run Keyword If    ${is_doc_query}    Click Element    //*[@id='replyDocumentQueryDialog']//*[@id='replyDocumentQuery']
+    Run Keyword Unless    ${is_doc_query}    Click Element    //*[@id='replyQueryDialog']//*[@id='replyQuery']
+    Element Should Not Be visible    //*[@id='replyDocumentQueryDialog']
+
+Open Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Changes By Hassan Mollah#
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='taskBody']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Element Should Be Visible    ${taskId}
+    Click Element    ${taskId}
+
+Open Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${msg_type}")]]
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='taskBody']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+    Click Element    ${taskId}
+
+Reply to Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ...    ${comment_text}
+    Filter entries on BIC    ${target_bic}
+    Open Document reply task    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Comment in Reply dialog    ${comment_text}
+    Click Send Reply
+
+Show comment for Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ${doc}=    Get doc title from code    ${doc}
+    #Changes By Hassan Mollah#
+    #${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    #Run Keyword If    ${visible}    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Element Should Be Visible    ${taskId}
+    ${visible}=    Run Keyword and Return Status    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id="showHideComments"]    Hide comments
+    Run Keyword If    ${visible} == False    Click Element    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id="showHideComments"]
+    Run Keyword If    ${visible} == False    Element Should Be Visible    /*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id='taskNote']
+
+Show comment for Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    #${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    #Run Keyword If    ${visible}    Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+    #Changes By Hassan Mollah#
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+    ${visible}=    Run Keyword and Return Status    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id="showHideComments"]    Hide comments
+    Run Keyword If    ${visible} == False    Click Element    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id="showHideComments"]
+    Run Keyword If    ${visible} == False    Element Should Be Visible    /*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskComments']//*[@id='taskNote']
+
+Show comment for Document query request
+    [Arguments]    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ${doc}=    Get doc title from code    ${doc}
+    ${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    Run Keyword If    ${visible}    Click Element    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+
+Show comment for Message request
+    [Arguments]    ${status}    ${target_bic}    ${msg_type}
+    ${visible}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'View')]]
+    Run Keyword If    ${visible}    Click Element    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='showHideComments']//*[text()[contains(.,'Hide')]]
+
+Get doc title from code
+    [Arguments]    ${doc}
+    ${doc_acr}=    Set Variable    ${doc}
+    ${idx}=    Get Index From List    ${docs_codes}    ${doc_acr}
+    ${doc}=    Set Variable    ${docs_titles[${idx}]}
+    [Return]    ${doc}
+
+Click on U2U-S2U reply task
+    [Arguments]    ${bic}    ${topic}
+    Filter entries on BIC    ${bic}
+    Click on task of given type    Awaiting action    ${bic}    ${topic}    REPLY_QUERY
+
+Click on U2S reply task
+    [Arguments]    ${bic}    ${category}
+    Filter entries on BIC    ${bic}
+    #Click Element    //*[@id='taskStatus']//*[text()[contains(.,'Awaiting action')]]/ancestor::*[@id='ROW' and @type='REPLY_QUERY']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW'][1]
+    #Execute Javascript    $('#tasks').find('tr #taskStatus:contains("Awaiting action")').closest('tr[type="REPLY_QUERY"]').find('#entityBic:contains("[${bic}]")').closest('#taskSubtitle').find('#entityBic:contains("[CITIGALXXXX]")').closest('#taskSubtitle').find('#entityFolder:contains("${category}")').click()
+    ${task_Id}=    Return Id of Task By Type,Status,Bic and Category Name    Awaiting action    ${bic}    ${category}    REPLY_QUERY
+    Element Should Be Visible    ${task_Id}
+    Click Element    ${task_Id}

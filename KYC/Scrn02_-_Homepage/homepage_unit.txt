@@ -1,0 +1,34 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          homepage_buss.txt
+
+*** Keywords ***
+Search for
+    [Arguments]    ${text}
+    Input Text    //*[@id='inputSearch']    ${text}
+    Execute Javascript    $('#find').click()
+    #
+    Page loading done
+
+Verify logged in as
+    [Arguments]    ${user}
+    Element Should Be Visible    //*[@id="appHeader"]//*[text()[contains(.,'${user}')]]
+
+Stop simulating user
+    [Arguments]    ${user}
+    Element Should Be Visible    //*[@id="stopSimulateUser"]
+    Click Element    //*[@id="stopSimulateUser"]
+    #    Click Element    //*[@id="findData"]    #Temporary fix
+    Element Should Be Visible    //*[@id="appHeader"]//*[text()[contains(.,'${user}')]]
+
+Search and open user in simulation mode
+    [Arguments]    ${user}
+    Element Should Be Visible    //*[@id="simulateUserDialog"]//*[@id="searchUsersInput"]
+    Input text    //*[@id="simulateUserDialog"]//*[@id="searchUsersInput"]    ${user}
+    Click Element    //*[@id="simulateUserDialog"]//*[@id="searchUsers"]
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Be Visible    //*[@id="simulateUserDialog"]//*[@id="userAction"]
+    Click Element    //*[@id="simulateUserDialog"]//*[@id="userAction"]/a
+    Element Should Be Visible    //*[@id="stopSimulateUser"]
+    Element Should Not Be visible    //*[@id="simulateUserDialog"]

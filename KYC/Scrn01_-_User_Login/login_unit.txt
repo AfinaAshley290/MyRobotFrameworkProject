@@ -1,0 +1,10 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          login_buss.txt
+
+*** Keywords ***
+Reset
+    Open Connection to PAC
+    ${tmp_feedback}=    Execute on SSH    /var/tmp/RFscripts/flashback_to_preconditions.sh
+    Close Connection
+    BuiltIn.Log    ${tmp_feedback}

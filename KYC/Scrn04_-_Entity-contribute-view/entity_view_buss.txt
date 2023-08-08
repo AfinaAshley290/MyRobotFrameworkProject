@@ -1,0 +1,444 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          entity_view_unit.txt
+Resource          variables.txt
+
+*** Keywords ***
+The document draft has empty fields values
+    [Documentation]    Precondition: a Category has a Draft with all data fields empty
+    ...    Action: Verify the saved draft have all data fields empty
+    Page Should Contain Element    //*[@id='folderData']//*[@id='draft']
+    Click Element    //*[@id='folderData']//*[@id='draft']
+    Check Category data readwrite fields values are empty
+
+Draft readwrite fields match published version
+    [Documentation]    Precondition: An Active document set exists for Category, so a published version is available. A draft is present, already created.
+    ...    Action: Verify the fields values between published and draft version match.
+    Page Should Contain Element    //*[@id='folderData']//*[@id='published']
+    Click Element    //*[@id='folderData']//*[@id='published']
+    Extract readwrite fields values from other version
+    Click Element    //*[@id='folderData']//*[@id='draft']
+    Compare with Category readwrite fields values
+
+There are N uploaded files
+    ${folder}=    Get Folder
+    ${#_uploaded_files}    Get Matching Xpath Count    //*[@id='${folder}FolderDocuments']//*[@id='ROW']//*[@id='viewDocument']
+    [Return]    ${#_uploaded_files}
+
+There is no uploaded instance for the document evidence
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'View')]]
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'Download')]]
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'Add')]]
+
+View document
+    [Arguments]    ${doc}
+    Sleep    5s
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']
+    Sleep    2s
+
+View document in language
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    #Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='viewDocument']    #OLD_UPLOAD
+    #Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='viewDocument']    #OLD_UPLOAD
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']//*[@id='viewDocument']    #NEW_UPLOAD
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']//*[@id='viewDocument']    #NEW_UPLOAD
+    Sleep    2s
+
+Verify document is displayed
+    @{array_titles}=    Get Window Titles
+    Select Window    title=@{array_titles}[1]
+    Title Should Be    document - view
+
+Verify document translation is displayed
+    [Arguments]    ${language}
+    @{array_titles}=    Get Window Titles
+    Select Window    title=@{array_titles}[1]
+    Title Should Be    document-${language} - view
+
+Download document
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='downloadDocument']
+    Run Keyword If    '${BROWSER}'=='ff'    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='downloadDocument']
+    Run Keyword If    '${BROWSER}'=='ie'    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='downloadDocument']
+    Sleep    2s
+
+Download document in language
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    #Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='downloadDocument']    #OLD_UPLOAD
+    #Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='downloadDocument']    #OLD_UPLOAD
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']//*[@id='downloadDocument']    #NEW_UPLOAD
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']//*[@id='downloadDocument']    #NEW_UPLOAD
+    Sleep    2s
+
+Verify document is downloaded
+    #to be defined
+    Run Keyword If    '${BROWSER}'=='ff'    Choose Ok On Next Confirmation
+
+Verify document translation is downloaded
+    [Arguments]    ${language}
+    #to be defined
+    Run Keyword If    '{BROWSER}=='ff'    Choose Ok On Next Confirmation
+
+Cannot View document
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']
+
+Cannot Download document
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[id='${doc}']/ancestor::*[@id='ROW']//*[@id='downloadDocument']
+
+Verify document is uploaded in language
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']
+    ${edit_page}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    saveDraft
+    #Run Keyword Unless    ${edit_page}    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='downloadDocument'])[1]    #OLD_UPLOAD
+    #Run Keyword If    ${edit_page}    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='deleteDocument'])[1]    #OLD_UPLOAD
+    #
+    Run Keyword Unless    ${edit_page}    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']//*[@id='downloadDocument'])[1]    #NEW_UPLOAD
+    Run Keyword If    ${edit_page}    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']//*[@id='deleteDocument'])[1]    #NEW_UPLOAD
+
+Verify document is not uploaded yet
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    ${edit_page}=    Run Keyword And Return Status    Element Should Be Visible    saveDraft
+    Run Keyword Unless    ${edit_page}    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']
+    Run Keyword Unless    ${edit_page}    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='downloadDocument']
+    Run Keyword If    ${edit_page}    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'English')]]/ancestor::*[@id='ROW']//*[@id='updateDocument']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'Add')]]
+
+Verify how many document of this type are present
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    #    ${#_uploaded_files}=    Get Matching Xpath Count    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']
+    #
+    #    ${edit_page}=    Selenium2Library.Element Should Not Be Visible    saveDraft
+    #    ${#_uploaded_files}=    Run Keyword Unless    ${edit_page}    Get Matching Xpath Count    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']
+    #    ${#_uploaded_files}=    Run Keyword If    ${edit_page}    Get Matching Xpath Count    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='updateDocument']
+    ${#_uploaded_files}=    Get Matching Xpath Count    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']
+    [Return]    ${#_uploaded_files}
+
+Verify how many document of this type should be present
+    [Arguments]    ${doc}    ${#_docs_left}
+    ${folder}=    Get Folder
+    #    Xpath Should Match X Times    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']    ${#_docs_left}
+    ${edit_page}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    saveDraft
+    Run Keyword Unless    ${edit_page}    Xpath Should Match X Times    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='viewDocument']    ${#_docs_left}
+    Run Keyword If    ${edit_page}    Xpath Should Match X Times    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='deleteDocument']    ${#_docs_left}
+
+Verify document in language is removed
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    #Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='viewDocument']    #OLD_UPLOAD
+    #Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='downloadDocument']    #OLD_UPLOAD
+    #
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='viewDocument']    #NEW_UPLOAD
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='downloadDocument']    #NEW_UPLOAD
+
+Verify Entity and Category page is opened
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='entityHeader']
+    Element Should Be Visible    //*[@id='entityHeader']//*[text()[contains(.,'${bic}')]]
+    #Element Should Be Visible    //h3//*[text()[contains(.,"${category}")]]
+
+Verify document description is updated
+    [Arguments]    ${doc}    ${language}    ${new_description}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${new_description}')]]
+
+Verify document validity date is updated
+    [Arguments]    ${doc}    ${language}    ${new_date}
+    #Element Text Should Be    //*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentExpirationDate']    ${new_date}
+    #Wait Until Element Is Visible    //*[text()[contains(.,'US Patriot Act Certification')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'English')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${new_date}')]]
+    ${folder}=    Get Folder
+    #${passed} =    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}')]/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentExpirationDate']    #OLD_UPLOAD
+    #Run Keyword If    ${passed}    Element Text Should Be    //*[@id='${folder}FolderDocuments']//*[@id='${doc}')]/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentExpirationDate']    ${new_date}    #OLD_UPLOAD
+    #Run Keyword Unless    ${passed}    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${new_date}')]]    #OLD_UPLOAD
+    ${passed} =    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}')]/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='documentExpirationDate']    #NEW_UPLOAD
+    Run Keyword If    ${passed}    Element Text Should Be    //*[@id='${folder}FolderDocuments']//*[@id='${doc}')]/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='documentExpirationDate']    ${new_date}    #NEW_UPLOAD
+    Run Keyword Unless    ${passed}    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${new_date}')]]    #NEW_UPLOAD
+
+Verify Qualification checklist score is Successfully qualified
+    #    Element Should Contain    changeScore    Successfully qualified
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderCheckList']//*[@id="changeScore"]//*[text()[contains(.,"Successfully qualified")]]
+
+Verify Qualification checklist score is Qualified with comments
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderCheckList']//*[@id="changeScore"]//*[text()[contains(.,"Qualified with comments")]]
+
+Verify Qualification checklist score is manually set
+    #    Element Should Contain    changeScore    manually set
+    Element Should Be Visible    //*[@id="changeScore"]//*[text()[contains(.,"manually set")]]
+
+Delete draft if exist
+    ${draft_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="createDraft"]
+    Run Keyword Unless    ${draft_present}    Click Delete draft
+    Run Keyword Unless    ${draft_present}    Confirm draft removal
+    Reload Page
+
+Verify No data avaliable 4eyes
+    Element should contain    //*[@id="folderNoData"]    No data available.
+
+Verify readonly view full entity data
+    [Arguments]    ${BIC}    ${category}
+    @{fields_values}=    Extract view full entity data from source reference    ${BIC}    ${category}
+    Log Many    @{fields_values}
+    Compare with category view full entity data    @{fields_values}
+
+Verify parent details from link head office and group parent
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='entityHeader']//*[text()[contains(.,'${bic}')]]
+    #
+    @{fields_values}=    Extract parent details from source reference    ${bic}    ${category}
+    Log Many    @{fields_values}
+    Capture Page Screenshot
+    Compare with category view parent details    @{fields_values}
+
+Verify can add English translation for document
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    #Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='addTranslation']    #OLD_UPLOAD
+    Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='addEnglishTranslation']    #NEW_UPLOAD
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+
+Verify cannot add English translation for document
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    #Selenium2Library.Element Should Not Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='addTranslation']    #OLD_UPLOAD
+    Selenium2Library.Element Should Not Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='addEnglishTranslation']    #NEW_UPLOAD
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+
+Publish draft 2eyes
+    [Arguments]    ${comment}
+    Element Should Be Visible    //*[@id="folderActions"]//*[@id="qualifyDraft"]
+    ${checklist_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="folderActions"]//*[@id="qualifyDraft" and @disabled="disabled"]
+    Run Keyword If    ${checklist_present}    Fill out qualification checklist to half-half
+    #
+    Click Publish draft 2eyes
+    Comment in Publish 2eyes dialog    ${comment}
+    Confirm Publish 2eyes
+    Element Should Not Be visible    //*[@id="publishDraftDialog"]
+
+Propose for publication 4eyes
+    [Arguments]    ${comment}
+    Element Should Be Visible    //*[@id="folderActions"]//*[@id="proposeForPublicationQualified"]
+    ${checklist_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="folderActions"]//*[@id="proposeForPublicationQualified" and @disabled="disabled"]
+    Run Keyword If    ${checklist_present}    Fill out qualification checklist to half-half
+    #
+    Click Propose for publication
+    Comment in Propose for publication dialog    ${comment}
+    Confirm Propose for publication
+
+Publish draft 4eyes
+    [Arguments]    ${comment}
+    Click Publish draft 4eyes
+    Comment in Publish 4eyes dialog    ${comment}
+    Confirm Publish 4eyes
+
+Submit draft 2eyes
+    [Arguments]    ${comment}
+    Click Submit Draft
+    Comment in Submit Draft 2eyes dialog    ${comment}
+    Confirm draft Submit
+
+Approve draft 4eyes
+    [Arguments]    ${comment}
+    Click Approve draft
+    Comment in Approve draft dialog    ${comment}
+    Confirm Approve
+
+Propose for submission 4eyes
+    [Arguments]    ${comment}
+    Click Submit Draft for Approval
+    Comment in Submit Draft for Approval dialog    ${comment}
+    Confirm Submit Draft for Approval
+
+Reject draft
+    [Arguments]    ${comment}
+    Click Reject draft
+    Comment in Reject dialog    ${comment}
+    Confirm Reject
+    Element Should Not Be visible    //*[@id="rejectDialog"]
+    Reload page
+
+Reconfirm of published draft
+    [Arguments]    ${comment}
+    Click Reconfirm of published draft
+    Comment in Reconfirm dialog    ${comment}
+    Confirm Reconfirm
+
+Reconfirm of draft
+    [Arguments]    ${comment}
+    Click Reconfirm of draft
+    Comment in Reconfirm Draft dialog    ${comment}
+    Confirm Reconfirm Draft
+    Element Should Not Be visible    //*[@id='reconfirmDraftDialog']
+
+Takeover draft
+    [Arguments]    ${comment}
+    Click Takeover Draft
+    Comment in Takeover draft dialog    ${comment}
+    Confirm draft Takeover
+    Element Should Not Be visible    //*[@id="takeOverDraftDialog"]//*[@id="submitDraft"]
+    #Reload Page
+
+Delete draft
+    Click Delete draft
+    Confirm draft removal
+
+Verify linked document is present
+    [Arguments]    ${doc}    ${language}    ${description}
+    ${folder}=    Get Folder
+    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@class[contains(.,'glyphicon-link')]])[1]
+    ${edit_page}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    saveDraft
+    Run Keyword Unless    ${edit_page}    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${description}')]]/ancestor::*[@id='ROW']//*[@class[contains(.,'glyphicon-link')]]/ancestor::*[@id='ROW']//*[@id='downloadDocument'])[1]    #NEW_LINK
+    Run Keyword If    ${edit_page}    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${description}')]]/ancestor::*[@id='ROW']//*[@class[contains(.,'glyphicon-link')]]/ancestor::*[@id='ROW']//*[@id='unlinkDocumentSet'])[1]    #NEW_LINK
+
+Verify can add another language for document
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    #Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='addTranslation']    #OLD_UPLOAD
+    Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='addAnotherLanguage']    #NEW_UPLOAD
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+
+Verify cannot add another language for document
+    [Arguments]    ${doc}    ${language}
+    ${folder}=    Get Folder
+    #Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']    #OLD_UPLOAD
+    #Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']    #OLD_UPLOAD
+    #Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']    #OLD_UPLOAD
+    #Selenium2Library.Element Should Not Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='addTranslation']    #OLD_UPLOAD
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    Selenium2Library.Element Should Not Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[@id='addAnotherLanguage']    #NEW_UPLOAD
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+
+Verify local document is present
+    [Arguments]    ${doc}    ${language}    ${description}
+    ${folder}=    Get Folder
+    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${language}')]]/ancestor::*[@id='ROW'])[1]
+    ${edit_page}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    saveDraft
+    Run Keyword Unless    ${edit_page}    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${description}')]]/ancestor::*[@id='ROW']//*[@id='downloadDocument'])[1]    #NEW_LINK
+    Run Keyword If    ${edit_page}    Element Should Be Visible    xpath=(//*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${description}')]]/ancestor::*[@id='ROW']//*[@id='documentActionsLink'] )[1]    #NEW_LINK
+
+Verify linked document is not present
+    [Arguments]    ${doc}    ${language}    ${description}
+    ${folder}=    Get Folder
+    ${edit_page}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    saveDraft
+    Run Keyword Unless    ${edit_page}    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${description}')]]/ancestor::*[@id='ROW']//*[@class[contains(.,'glyphicon-link')]]/ancestor::*[@id='ROW']//*[@id='downloadDocument']
+    Run Keyword If    ${edit_page}    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='${language}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${description}')]]/ancestor::*[@id='ROW']//*[@class[contains(.,'glyphicon-link')]]/ancestor::*[@id='ROW']//*[@id='unlinkDocumentSet']
+
+Verify mandatory document warning is displayed in dialog
+    [Arguments]    ${doc}    ${dialog}
+    ${doc_title}=    Get doc title from code    ${doc}
+    Element Should Be Visible    //*[@id="${dialog}"]//*[text()[contains(.,"${doc_title}")]]
+
+Verify recommended field warning is displayed in dialog
+    [Arguments]    ${field}    ${dialog}
+    Element Should Be Visible    //*[@id="${dialog}"]//*[text()[contains(.,"${field}")]]
+
+Verify mandatory document warning is not displayed in dialog
+    [Arguments]    ${doc}    ${dialog}
+    ${doc_title}=    Get doc title from code    ${doc}
+    Element Should not be visible    //*[@id="${dialog}"]//*[text()[contains(.,"${doc_title}")]]
+
+Verify recommended field warning is not displayed in dialog
+    [Arguments]    ${field}    ${dialog}
+    Element Should not be visible    //*[@id="${dialog}"]//*[text()[contains(.,"${field}")]]
+
+Verify mandatory field warning is not displayed in dialog
+    [Arguments]    ${field}    ${dialog}
+    Element Should not be visible    //*[@id="${dialog}"]//*[text()[contains(.,"${field}")]]
+
+Verify optional field warning is not displayed in dialog
+    [Arguments]    ${field}    ${dialog}
+    Element Should not be visible    //*[@id="${dialog}"]//*[text()[contains(.,"${field}")]]
+
+Approve SWP
+    Element Should Be Visible    //*[@id='approveReport']
+    Click Element    //*[@id='approveReport']
+    Element Should Be visible    //*[@id='approveSwiftProfileDialog']
+    Click Element    //*[@id='approveSwiftProfileDialog'] //*[@id='approveSwiftProfile']
+    Element Should Not Be visible    //*[@id='approveSwiftProfileDialog']
+
+Publish SWIFT Profile
+    [Arguments]    ${category}    ${comment}
+    Click Element    //*[@id='publishReport' and ancestor::*[@id='latestSwiftProfileReports']//text()[contains(.,'${category}')]]
+    #Comment in Publish SWP dialog    ${comment}
+    Element Should Be Visible    //*[@id='publishSwiftProfileDialog']
+    Click Element    //*[@id='publishSwiftProfileDialog']//*[@id='publishSwiftProfile']
+    Element Should Not Be visible    //*[@id='publishSwiftProfileDialog']
+
+Reject SWP
+    Element Should Be Visible    //*[@id='rejectReport']
+    Click Element    //*[@id='rejectReport']
+    Element Should Be visible    //*[@id='rejectSwiftProfileDialog']
+    Click Element    //*[@id='rejectSwiftProfileDialog'] //*[@id='rejectSwiftProfile']
+    Element Should Not Be visible    //*[@id='rejectSwiftProfileDialog']
+
+Reject and cancel reject SWP
+    Element Should Be Visible    //*[@id='rejectReport']
+    Click Element    //*[@id='rejectReport']
+    Element Should Be visible    //*[@id='rejectSwiftProfileDialog']
+    Click Element    //*[@id='rejectSwiftProfileDialog'] //*[@id='cancelDialog']
+    Element Should Not Be visible    //*[@id='rejectSwiftProfileDialog']
+    Element Should Be Visible    //*[@id='rejectReport']
+
+Approve but cancel approve SWP
+    Element Should Be Visible    //*[@id='approveReport']
+    Click Element    //*[@id='approveReport']
+    Element Should Be visible    //*[@id='approveSwiftProfileDialog']
+    Click Element    //*[@id='approveSwiftProfileDialog'] //*[@id='cancelDialog']
+    Element Should not Be visible    //*[@id='approveSwiftProfileDialog']
+    Element Should Be Visible    //*[@id='approveReport']
+
+Generate SWP
+    Element Should Be Visible    //*[@id='createSwiftProfile']
+    Click Element    //*[@id='createSwiftProfile']
+    Element Should Be visible    //*[@id='createSwiftProfileDialog']
+    Click Element    //*[@id='createSwiftProfileDialog'] //*[@id='sendDialog']
+    # should validate an event is created but it takes to long to get reports from MS
+    Element Should not Be visible    //*[@id='createSwiftProfileDialog']
+
+Submit pre-draft 2eyes
+    [Arguments]    ${comment}
+    Click Submit Pre-Draft
+    Comment in Submit Pre-Draft 2eyes dialog    ${comment}
+    Confirm pre-draft Submit
+    Element Should Not Be visible    //*[@id="submitPreDraftDialog"]
+    Reload Page
+
+Propose for submission pre-draft 4eyes
+    [Arguments]    ${comment}
+    Click Submit Pre-Draft for Approval
+    Comment in Submit Pre-Draft for Approval dialog    ${comment}
+    Confirm Submit Pre-Draft for Approval
+    Element Should not Be Visible    //*[@id='proposeForSubmissionPreDraftDialog']
+
+Approve pre-draft 4eyes
+    [Arguments]    ${comment}
+    Click Approve pre-draft
+    Comment in Approve pre-draft dialog    ${comment}
+    Confirm pre-draft Approve
+    Element Should Not Be visible    //*[@id='approvePreDraftDialog']
+    Reload Page

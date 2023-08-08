@@ -1,0 +1,214 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          entity_U2U_comm_unit.txt
+
+*** Keywords ***
+Request golden copy for document in language
+    [Arguments]    ${doc}    ${doc_language}    ${comment}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='GOLD_COPY']
+    Element Should Be Visible    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+    #Select From List By Index    //*[@id='requestDocumentGenericDialog']//*[@id='requestDocumentGenericEntity']    1
+    Select from List of Frame by Index    1    requestDocumentGenericEntity    requestDocumentGenericDialog
+    Input Text    //*[@id='requestDocumentGenericDialog']//textarea    ${comment}
+    Click Element    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+    Element Should Not Be visible    //*[@id='requestDocumentGenericDialog']
+
+Request translation in language for document in language
+    [Arguments]    ${request_translation_language}    ${doc}    ${doc_language}    ${comment}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='TRANSL']
+    Element Should Be Visible    //*[@id='requestDocumentTranslationDialog']//*[@id='sendDialog']
+    Select From List    //*[@id='requestDocumentTranslationDialog']//*[@id='language']    ${request_translation_language}
+    #Select From List By Index    //*[@id='requestDocumentTranslationDialog']//*[@id='requestDocumentTranslationEntity']    1
+    Select from List of Frame by Index    1    requestDocumentTranslationEntity    requestDocumentTranslationDialog
+    Input Text    //*[@id='requestDocumentTranslationDialog']//textarea    ${comment}
+    Click Element    //*[@id='requestDocumentTranslationDialog']//*[@id='sendDialog']
+    Element Should Not Be visible    //*[@id='requestDocumentTranslationDialog']
+
+Request content clarification for document in language
+    [Arguments]    ${doc}    ${doc_language}    ${comment}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='CONTENT_CLARIFICATION']
+    Element Should Be Visible    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+    #Select From List By Index    //*[@id='requestDocumentGenericDialog']//*[@id='requestDocumentGenericEntity']    1
+    Select from List of Frame by Index    1    requestDocumentGenericEntity    requestDocumentGenericDialog
+    Input Text    //*[@id='requestDocumentGenericDialog']//textarea    ${comment}
+    Capture Page Screenshot
+    Click Element    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+    Element Should Not Be visible    //*[@id='requestDocumentGenericDialog']
+
+Verify I cannot request document query
+    [Arguments]    ${doc}    ${doc_language}
+    Element Should Not Be visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+
+Verify I can request document query
+    [Arguments]    ${doc}    ${doc_language}
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+
+Verify I cannot request translation in document query
+    [Arguments]    ${doc}    ${doc_language}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Element Should Not Be visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='TRANSL']
+
+Verify I can request translation in document query
+    [Arguments]    ${doc}    ${doc_language}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='TRANSL']
+
+Verify I can request data and docs query
+    Element Should Be Visible    //*[@id='sendMessage']
+    Click Element    //*[@id='sendMessage']
+    Element Should Be Visible    //*[@id='sendMessageDialog']
+    #    Select From List    //*[@id="sendMessageDialog"]//*[@id='topic']    Send a data and documents query
+    ${select_topic_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="sendMessageDialog"]//*[@id='topic']
+    Run keyword if    ${select_topic_present}    Send message dialog - select Data and docs topic
+    Run Keyword Unless    ${select_topic_present}    Selenium2Library.Element Should Be Visible    //*[@id='sendMessageDialog']//*[text()[contains(.,"data")]]
+    Select from List of Frame by Index    1    sendMessageEntity    sendMessageDialog
+    Element Should Be Visible    //*[@id='sendMessageDialog']//*[@id='sendDialog']
+    Element Should Not Be visible    //*[@id='sendMessageDialog']//*[@id='sendDialog' and @disabled='disabled']
+
+Verify I cannot request data and docs query
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='sendMessage']
+    Run Keyword If    ${present}    Click Element    //*[@id='sendMessage']
+    Run Keyword If    ${present}    Element Should Be Visible    sendMessageDialog
+    Run Keyword If    ${present}    List Should Not Contain Value    //*[@id="sendMessageDialog"]//*[@id='topic']    DATA_AND_DOCUMENTS
+    ${entities_list}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="sendMessageDialog"]//*[@id='sendMessageEntity']
+    #Run Keyword If    ${entities_list}    Select From List By Index    //*[@id="sendMessageDialog"]//*[@id='sendMessageEntity']    1
+    Run Keyword If    ${entities_list}    Select from List of Frame by Index    1    sendMessageEntity    sendMessageDialog
+    Run Keyword If    ${present}    Element Should Be Visible    //*[@id='sendMessageDialog']//*[@id='sendDialog' and @disabled='disabled']
+
+Request data and docs query with comment
+    [Arguments]    ${comment_text}
+    Element Should Be Visible    //*[@id='sendMessage']
+    Click Element    //*[@id='sendMessage']
+    Element Should Be Visible    //*[@id="sendMessageDialog"]
+    #
+    ${select_topic_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="sendMessageDialog"]//*[@id='topic']
+    Run keyword if    ${select_topic_present}    Send message dialog - select Data and docs topic
+    Run Keyword Unless    ${select_topic_present}    Selenium2Library.Element Should Be Visible    //*[@id='sendMessageDialog']//*[text()[contains(.,"data")]]
+    #
+    Select from List of Frame by Index    1    sendMessageEntity    sendMessageDialog
+    #
+    Input Text    //*[@id='sendMessageDialog']//textarea    ${comment_text}
+    Click Element    //*[@id='sendMessageDialog']//*[@id='sendDialog']
+    Element Should Not Be visible    //*[@id="sendMessageDialog"]
+
+Send message with comment
+    [Arguments]    ${topic}    ${message}
+    Element Should Be Visible    //*[@id='sendMessage']
+    Click Element    //*[@id='sendMessage']
+    Element Should Be Visible    //*[@id="sendMessageDialog"]
+    #Selenium2Library.Select From List By Label    //*[@id="sendMessageDialog"]//*[@id='topic']    ${topic}
+    Select from List of Frame by Label    ${topic}    topic    sendMessageDialog
+    #Select From List By Index    //*[@id="sendMessageDialog"]//*[@id='sendMessageEntity']    1
+    Select from List of Frame by Index    1    sendMessageEntity    sendMessageDialog
+    Input Text    //*[@id='sendMessageDialog']//textarea    ${message}
+    Click Element    //*[@id='sendMessageDialog']//*[@id='sendDialog']
+    Element Should Not Be Visible    //*[@id="sendMessageDialog"]
+
+Verify I cannot send message
+    [Arguments]    ${topic}
+    ${present}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='sendMessage']
+    Run Keyword If    ${present}    Click Element    //*[@id='sendMessage']
+    Run Keyword If    ${present}    Element Should Be Visible    sendMessageDialog
+    ${topcs}=    Get List Items    //*[@id='topic']
+    BuiltIn.Log    ${topcs}
+    List Should Not Contain Value    ${topcs}    ${topic}
+
+Verify I can send message
+    [Arguments]    ${topic}
+    ${present}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='sendMessage']
+    Run Keyword If    ${present}    Click Element    //*[@id='sendMessage']
+    Run Keyword If    ${present}    Click Element    //*[@id='sendMessage']
+    Run Keyword If    ${present}    Wait Until Element Is Visible    sendMessageDialog
+    Selenium2Library.Select From List By Label    //*[@id="sendMessageDialog"]//*[@id='topic']    ${topic}
+
+Contact Swift with comment
+    [Arguments]    ${entity}    ${category_acronym}    ${message}
+    In Entity    ${entity}
+    In Category    ${category_acronym}
+    Element Should Be Visible    //*[@id='draftNotQualified']//*[@id='contactSwift']
+    #Click Element    //*[@id='draftNotQualified']//*[@id='contactSwift']
+    Execute Javascript    $('#draftNotQualified #contactSwift').click()
+    Element Should Be Visible    //*[@id='sendMessageDialog']
+    Input Text    //*[@id='sendMessageDialog']//textarea    ${message}
+    #Click Element    //*[@id='sendMessageDialog']//*[@id='sendDialog']
+    Execute Javascript    $('#sendMessageDialog #sendDialog').click()
+    Element Should Not Be Visible    //*[@id='sendMessageDialog']
+
+Send a message S2U message with comment
+    [Arguments]    ${target_entity}    ${topic}    ${message}
+    In Entity    ${target_entity}
+    Send message with comment for entity    SWHQBEBBXXX    ${topic}    ${message}
+
+User Query Request should be created waiting for a reply
+    [Arguments]    ${target_entity}    ${topic}    ${message}
+    Open Inbox
+    Open Outbox filter Pending Reply
+    Filter entries on BIC    ${target_entity}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()[contains(.,'Pending reply')]]/ancestor::*[@id='ROW' and @type='QUERY_REQUEST']//*[@id='requestTitle']/*[text()[contains(.,'${topic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${targetEntity}')]]/ancestor::*[@id='ROW']//*[@id='requestComments']//*[text()[contains(.,'${message}')]]/ancestor::*[@id='ROW']
+
+Send message with comment for entity
+    [Arguments]    ${requesting_entity}    ${topic}    ${message}
+    Element Should Be Visible    //*[@id='sendMessage']
+    Click Element    //*[@id='sendMessage']
+    Element Should Be Visible    sendMessageDialog
+    Selenium2Library.Select From List By Label    //*[@id="sendMessageDialog"]//*[@id='topic']    ${topic}
+    #Select from List of Frame by Label    ${topic}    topic    sendMessageDialog
+    ${entity_list_present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="sendMessageDialog"]//*[@id[contains(.,'sendMessageEntity')]]
+    Run Keyword If    ${entity_list_present}    Select From List By Value    //*[@id="sendMessageDialog"]//*[@id='sendMessageEntity']    ${requesting_entity}
+    #Run Keyword If    ${entity_list_present}    Select from List of Frame by Label    ${fromEntity}    sendMessageEntity    sendMessageDialog
+    Input Text    //*[@id='sendMessageDialog']//textarea    ${message}
+    #Click Element    //*[@id='sendMessageDialog']//*[@id='sendDialog']
+    Execute Javascript    $('#sendMessageDialog #sendDialog').click()
+    Element Should Not Be Visible    //*[@id='sendMessageDialog']
+
+Cancel Send message dialog
+    Element Should Be Visible    //*[@id='sendMessageDialog']
+    #Click Element    //*[@id='sendMessageDialog']//*[@id='cancelDialog']
+    Execute Javascript    $('#sendMessageDialog #cancelDialog').click()
+    Element Should Not Be visible    //*[@id='sendMessageDialog']
+
+Request translation in language for document in language specifying requesting Entity
+    [Arguments]    ${request_translation_language}    ${doc}    ${doc_language}    ${comment}    ${requesting_entity}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='TRANSL']
+    Element Should Be Visible    //*[@id='requestDocumentTranslationDialog']//*[@id='sendDialog']
+    Select From List    //*[@id='requestDocumentTranslationDialog']//*[@id='language']    ${request_translation_language}
+    #Select From List By Label    //*[@id='requestDocumentTranslationDialog']//*[@id='entity']
+    #Select From List By Value    //*[@id='requestDocumentTranslationDialog']//*[@id='requestDocumentTranslationEntity']    ${requesting_entity}
+    Select from List of Frame by Label    ${requesting_entity}    requestDocumentTranslationEntity    requestDocumentTranslationDialog
+    Input Text    //*[@id='requestDocumentTranslationDialog']//textarea    ${comment}
+    Click Element    //*[@id='requestDocumentTranslationDialog']//*[@id='sendDialog']
+    Element Should Not Be visible    //*[@id='requestDocumentTranslationDialog']
+
+Request content clarification for document in language specifying requesting entity
+    [Arguments]    ${doc}    ${doc_language}    ${Entity_bic}    ${requesting_entity}    ${user}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='CONTENT_CLARIFICATION']
+    Element Should Be Visible    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+    #Select From List By Value    //*[@id='requestDocumentGenericDialog']//*[@id='requestDocumentGenericEntity']    ${requesting_entity}
+    Select from List of Frame by Label    ${requesting_entity}    requestDocumentGenericEntity    requestDocumentGenericDialog
+    Input text    //*[@id='requestDocumentGenericDialog']//textarea    ${user} request content clarification of POI document of IOC of ${Entity_bic}
+    Click Send in request Document query dialog
+    Element Should Not Be visible    requestDocumentGenericDialog
+
+Request golden copy for document in language specifying requesting entity
+    [Arguments]    ${doc}    ${doc_language}    ${Entity_bic}    ${requesting_entity}    ${user}
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='requestActions']
+    Element Should Be Visible    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']
+    Click Element    //*[@id='${doc}']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doc_language}')]]/ancestor::*[@id='ROW']//*[@id='documentQueryMenu']//*[@id='GOLD_COPY']
+    Element Should Be Visible    //*[@id='requestDocumentGenericDialog']//*[@id='sendDialog']
+    #Select From List By Value    //*[@id='requestDocumentGenericDialog']//*[@id='requestDocumentGenericEntity']    ${requesting_entity}
+    Select from List of Frame by Label    ${requesting_entity}    requestDocumentGenericEntity    requestDocumentGenericDialog
+    Input text    //*[@id='requestDocumentGenericDialog']//textarea    ${user} request content clarification of POI document of IOC of ${Entity_bic}
+    Click Send in request Document query dialog

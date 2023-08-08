@@ -1,0 +1,52 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+Open Entity from Find
+    [Arguments]    ${bic_value}
+    Open Find
+    Open Entity    ${bic_value}
+
+Search Entity from Find
+    [Arguments]    ${bic_value}
+    Open Find
+    Input Text    inputSearch    ${bic_value}
+    Execute Javascript    $('#find').click()
+    #    Selenium2Library.Element Should Be Visible    //*[@id='searchResults']//*[text()[contains(.,'${bic_value}')]]
+    Load whole page
+
+Verify information panel Adverse Media is visible
+    Element Should Be Visible    //*[@id='helpAdverseMediaPromotion']
+
+Verify information panel Adverse Media is not visible
+    Element Should not Be Visible    //*[@id='helpAdverseMediaPromotion']
+
+Dismiss information panel Adverse Media
+    ${path}=    Set Variable    //*[@id='helpAdverseMediaPromotion']//*[@id='gotIt']
+    Element Should Be Visible    ${path}
+    Click Element    ${path}
+    Element Should Not Be visible    ${path}
+    Reload Page
+
+Verify AdverseMedia tab is visible in Find page
+    Element Should Be Visible    //*[@id='mediaList']
+
+Open Find
+    #Click Element    //*[@id="appNavigation"]//*[@id="findData"]
+    Element Should Be Visible    //*[@id="findData"]
+    Execute Javascript    $('#findData').click()
+    #Click Element    findData
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='findData']//ancestor::*[@class="nav-active"]
+    Run Keyword Unless    ${activated}    Execute Javascript    $('#findData').click()
+    Element Should Be Visible    //h2/*[text()[contains(.,'Find')]]
+    Sleep    3s
+    Page Should Contain Element    //*[@id='inputSearch']
+
+Open Find AdverseMedia
+    Open Find
+    Open AdverseMedia tab in Find page
+
+Search for AdverseMedia
+    [Arguments]    ${text}
+    Open Find AdverseMedia
+    Search for    ${text}

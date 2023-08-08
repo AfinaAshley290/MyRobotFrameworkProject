@@ -1,0 +1,31 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          user_mngm_detail_buss.txt
+
+*** Keywords ***
+Assign role
+    [Arguments]    ${role}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${role}')]]/ancestor::*[@id='ROW']//*[@id='assignRole']
+    Click Element    //*[@id='ROW']//*[text()[contains(.,'${role}')]]/ancestor::*[@id='ROW']//*[@id='assignRole']
+
+Remove role
+    [Arguments]    ${role}
+    Click Element    //*[@id='ROW']//*[text()[contains(.,'${role}')]]/ancestor::*[@id='ROW']//*[@id='removeRole']
+
+Assigned access to entities-select all
+    Comment    Click Element    //*[@id="assignedAccessToEntities"]//*[@id="selectAllEntities"]
+    Click Element    //*[@id='selectAllEntities']
+
+Assigned access to entities-clear all
+    Click Element    //*[@id="assignedAccessToEntities"]//*[@id="clearAllEntities"]
+    Capture Page Screenshot
+
+Assigned access to entities-filter entity from list
+    [Arguments]    ${bic}
+    Input text    //*[@id="assignedAccessToEntities"]//*[@id="filterEntities"]    ${bic}
+
+Click Cancel user
+    Click element    //*[@id='cancel']
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done

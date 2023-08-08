@@ -1,0 +1,165 @@
+*** Settings ***
+Resource          rpc_buss.txt
+Resource          ../apps_res.txt
+
+*** Keywords ***
+RPC Create Key Controller Dictionary
+    [Arguments]    ${id}    ${textFieldPrefix}
+    ${person}    Create Dictionary
+    ${name}    Create Dictionary
+    Set To Dictionary    ${name}    firstname    ${textFieldPrefix}KCTR${id}_FN_Latin
+    Set To Dictionary    ${name}    middlename    ${textFieldPrefix}KCTR${id}_MN_Latin
+    Set To Dictionary    ${name}    lastname    ${textFieldPrefix}KCTR${id}_LN_Latin
+    Set To Dictionary    ${name}    firstname-local    ${textFieldPrefix}KCTR${id}_FN_Local
+    Set To Dictionary    ${name}    middlename-local    ${textFieldPrefix}KCTR${id}_MN_Local
+    Set To Dictionary    ${name}    lastname-local    ${textFieldPrefix}KCTR${id}_LN_Local
+    Set To Dictionary    ${person}    name    ${name}
+    Set To Dictionary    ${person}    job-title    NOMINEE
+    Set To Dictionary    ${person}    gender    Male
+    Set To Dictionary    ${person}    date-of-birth    2020-04-30T00:00:00.000Z
+    Set To Dictionary    ${person}    appointment-date    2013-05-16T00:00:00.000Z
+    Set To Dictionary    ${person}    country-of-birth    GB
+    Set To Dictionary    ${person}    nationality    BE,FR
+    ${member_of}=    Create Dictionary
+    Set To Dictionary    ${member_of}    membership    BOARD_OF_DIRECTORS,EXECUTIVE_MANAGEMENT,OTHER
+    Set To Dictionary    ${member_of}    membership-which-other    ${textFieldPrefix}KCTR${id}_Membership_other
+    Set To Dictionary    ${person}    member-of    ${member_of}
+    ${address}    Create Dictionary
+    Set To Dictionary    ${address}    pobox    ${textFieldPrefix}KCTR${id}_PO_Box
+    Set To Dictionary    ${address}    street-address    ${textFieldPrefix}KCTR${id}_Street_Address
+    Set To Dictionary    ${address}    city    ${textFieldPrefix}KCTR${id}_City
+    Set To Dictionary    ${address}    country    BE
+    Set To Dictionary    ${person}    address-of-residence    ${address}
+    Add Int To Dictionary    ${person}    value-id    ${id}
+    [Return]    ${person}
+
+RPC Create Shareholder Dictionary
+    [Arguments]    ${id}    ${textFieldPrefix}
+    ${person}    Create Dictionary
+    ${name}    Create Dictionary
+    Set To Dictionary    ${name}    firstname    ${textFieldPrefix}UBO${id}_FN_Latin
+    Set To Dictionary    ${name}    middlename    ${textFieldPrefix}UBO${id}_MN_Latin
+    Set To Dictionary    ${name}    lastname    ${textFieldPrefix}UBO${id}_LN_Latin
+    Set To Dictionary    ${name}    firstname-local    ${textFieldPrefix}UBO${id}_FN_Local
+    Set To Dictionary    ${name}    middlename-local    ${textFieldPrefix}UBO${id}_MN_Local
+    Set To Dictionary    ${name}    lastname-local    ${textFieldPrefix}UBO${id}_LN_Local
+    Set To Dictionary    ${person}    name    ${name}
+    Set To Dictionary    ${person}    country-of-birth    AN
+    Set To Dictionary    ${person}    date-of-birth    2024-05-10T00:00:00.000Z
+    Set To Dictionary    ${person}    gender    Male
+    Set To Dictionary    ${person}    job-title    ${textFieldPrefix}UBO${id}_Job_Title
+    Set To Dictionary    ${person}    nationality    SN,SE
+    Add Int To Dictionary    ${person}    shares-percentage    24
+    Set To Dictionary    ${person}    ubo-level-of-ownership    DIRECT
+    Add Int To Dictionary    ${person}    value-id    ${id}
+    ${address}    Create Dictionary
+    Set To Dictionary    ${address}    pobox    ${textFieldPrefix}UBO${id}_PO_Box
+    Set To Dictionary    ${address}    street-address    ${textFieldPrefix}UBO${id}_Street_Address
+    Set To Dictionary    ${address}    city    ${textFieldPrefix}UBO${id}_City
+    Set To Dictionary    ${address}    country    BE
+    Set To Dictionary    ${person}    address-of-residence    ${address}
+    [Return]    ${person}
+
+RPC Create AML Person Dictionary
+    [Arguments]    ${id}    ${textFieldPrefix}
+    ${person}    Create Dictionary
+    Set To Dictionary    ${person}    firstname    ${textFieldPrefix}AMLPerson${id}_FN
+    Set To Dictionary    ${person}    lastname    ${textFieldPrefix}AMLPerson${id}_LN
+    Set To Dictionary    ${person}    job-title    ${textFieldPrefix}AMLPerson${id}_Job_Title
+    Set To Dictionary    ${person}    phone    0201591561
+    Set To Dictionary    ${person}    email    ${textFieldPrefix}AMLPerson${id}_Email@trappist.com
+    Add Int To Dictionary    ${person}    value-id    ${id}
+    [Return]    ${person}
+
+RPC Create Draft from JSON
+    [Arguments]    ${user}    ${bic}    ${category}    ${jsonData}
+    BuiltIn.Log    ${bic}
+    BuiltIn.Log    ${jsonData}
+    RPC.Create draft    ${${user}_user}    ${bic}    ${category}    ${jsonData}
+
+RPC Upload Document Type Add English Translation
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${original_desc}
+    RPC.Upload Document Add English Translation    ${${user}_user}    ${bic}    ${category}    ${doc_type}    ${original_desc}
+
+RPC Upload Document Type Add Another Language
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${language}    ${original_desc}
+    RPC.Upload Document Add Another Language    ${${user}_user}    ${bic}    ${category}    ${doc_type}    ${language}    ${original_desc}
+
+RPC Upload Document Type
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${language}    ${desc}
+    RPC.Upload Document    ${${user}_user}    ${bic}    ${category}    ${doc_type}    ${language}    ${desc}
+    ...    20200101
+
+RPC Upload Document Type with Validity Date
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${language}    ${desc}
+    ...    ${validity_date}
+    RPC.Upload Document    ${${user}_user}    ${bic}    ${category}    ${doc_type}    ${language}    ${desc}
+    ...    ${validity_date}
+
+RPC Upload Document Type in English
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}
+    RPC.Upload Document    ${${user}_user}    ${bic}    ${category}    ${doc_type}    English    Description
+    ...    20200101
+
+RPC Upload Document Type in Language
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${language}
+    RPC.Upload Document    ${${user}_user}    ${bic}    ${category}    ${doc_type}    ${language}    Description
+    ...    20200101
+
+RPC Upload Document Type in English with Description
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${description}
+    RPC.Upload Document    ${${user}_user}    ${bic}    ${category}    ${doc_type}    English    ${description}
+    ...    20200101
+
+RPC Upload Document Type in Language with Description
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}    ${language}    ${description}
+    RPC.Upload Document    ${${user}_user}    ${bic}    ${category}    ${doc_type}    ${language}    ${description}
+    ...    20200101
+
+RPC Delete Document
+    [Arguments]    ${user}    ${bic}    ${category}    ${acronym}    ${language}    ${description}
+    RPC.Delete Document    ${${user}_user}    ${bic}    ${category}    ${acronym}    ${language}    ${description}
+
+RPC Link Document Type
+    [Arguments]    ${user}    ${bic}    ${category}    ${doc_type}
+    BuiltIn.Log    ${bic}
+    RPC.Link Document Type    ${${user}_user}    ${bic}    ${category}    ${doc_type}
+
+RPC Update group - add BIC
+    [Arguments]    ${group_name}    ${bictoadd}
+    @{bicstoadd}=    Create List    ${bictoadd}
+    ${bicstoadd_list}=    Create List    @{bicstoadd}
+    #
+    RPC.Update Group    ${group_name}    ${bicstoadd_list}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Sleep    5s
+
+RPC Update group - remove BIC
+    [Arguments]    ${group_name}    ${bictoremove}
+    @{bicstoremove}=    Create List    ${bictoremove}
+    ${bicstoremove_list}=    Create List    @{bicstoremove}
+    #
+    RPC.Update Group    ${group_name}    ${EMPTY}    ${bicstoremove_list}    ${EMPTY}    ${EMPTY}
+
+RPC Update group - add Swift Profile subscription to BIC
+    [Arguments]    ${group_name}    ${SWPtoaddtobic}
+    @{SWPtoaddtobics}=    Create List    ${SWPtoaddtobic}
+    ${SWPtoaddtobics_list}=    Create List    @{SWPtoaddtobics}
+    #
+    RPC.Update Group    ${group_name}    ${EMPTY}    ${EMPTY}    ${SWPtoaddtobics_list}    ${EMPTY}
+
+RPC Update group - remove Swift Profile subscription to BIC
+    [Arguments]    ${group_name}    ${SWPtoremovetobic}
+    @{SWPtoremovetobics}=    Create List    ${SWPtoremovetobic}
+    ${SWPtoremovetobics_list}=    Create List    @{SWPtoremovetobics}
+    #
+    RPC.Update Group    ${group_name}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${SWPtoremovetobics_list}
+
+RPC Update configuration settings
+    [Arguments]    ${key}    ${value}
+    RPC.Update Configuration Setting    ${key}    ${value}
+    RPC.Reschedule All Jobs
+
+RPC Assign AM to Group
+    [Arguments]    ${group_head}
+    RPC.Update Preferences    ${group_head}    false    false    true    true    true
+    ...    true

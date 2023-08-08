@@ -1,0 +1,115 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          Selection_couterparties_int.txt
+
+*** Keywords ***
+Finding Left Panel Entities
+    [Arguments]    ${Text}
+    ${LENGTH}=    Execute Javascript    return $('#counterpartySelectionLeft').find('> .gui-nc-item-container > .gui-nc-item > div > .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartySelectionLeft']/div/div/div[3]/div[${INDEX}]/div/div[2]/label/small
+    \    Run Keyword If    '${Text}'=='${Value}'    Log    The Text is correct
+
+Finding Left Panel Entities Pac
+    [Arguments]    ${Text}
+    ${LENGTH}=    Execute Javascript    return $('#counterpartySelectionRight > :nth-child(2)').find('> .gui-nc-item > div > .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartySelectionLeft']/div[2]/div/div[3]/div[${INDEX}]/div/div[2]/label/small
+    \    Run Keyword If    '${Text}'=='${Value}'    Log    The Text is correct
+
+Finding Right Panel Entities
+    [Arguments]    ${Text}
+    [Tags]    PR6
+    ${LENGTH}=    Execute Javascript    return $('#counterpartySelectionLeft').find('> .gui-nc-item-container > .gui-nc-item > div > .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartySelectionRight']/div/div/div[3]/div[${INDEX}]/div/div[2]/label/small
+    \    Run Keyword If    '${Text}'=='${Value}'    Log    The Text is correct
+
+Finding Right Panel Entities Pac
+    [Arguments]    ${Text}
+    [Tags]    PR6
+    ${LENGTH}=    Execute Javascript    return $('#counterpartySelectionRight > :nth-child(2)').find('> .gui-nc-item > div > .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartySelectionRight']/div[2]/div/div[3]/div[${INDEX}]/div/div[2]/label/small
+    \    Run Keyword If    '${Text}'=='${Value}'    Log    The Text is correct
+
+Check List for Sorting
+    [Arguments]    @{List}    # The list whose sorting needs to be checked
+    [Tags]    PR6
+    Log    Checking List for Sorting
+    Log Many    @{List}
+    @{listSorted}=    Copy List    ${List}
+    Log Many    @{listSorted}
+    Sort List    ${listSorted}
+    Should be Equal    ${listSorted}    ${List}
+
+Check if Counterparty List With Children is Sorted
+    [Arguments]    ${parentDiv}    # The parent element which contains the list
+    [Tags]    PR6
+    #Parent List
+    @{List}=    Execute Javascript    return $('#${parentDiv}').find('> .gui-nc-item-container > .gui-nc-item > .gui-nc-content > .checkbox-inline > .gui-nc-label').map(function () { var clone = $(this).clone(); clone.find('small').remove(); return clone.text().trim(); });
+    Comment    Log Many    @{List}
+    Check List for Sorting    @{List}
+    #Obtaining Child Lists
+    ${LENGTH}=    Execute Javascript    return $('#${parentDiv}').find('> .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${INDEX}    IN RANGE    0    ${LENGTH}
+    \    Log    ${INDEX}
+    \    @{childList}=    Execute Javascript    return $('#counterpartySelectionLeft').find('> .gui-nc-item-container > .gui-nc-item').eq('${INDEX}').find('> div > .gui-nc-item-container > .gui-nc-item > .gui-nc-content > .checkbox-inline > .gui-nc-label').map(function () { var clone = $(this).clone(); clone.find('small').remove(); return clone.text().trim(); });
+    \    Check List for Sorting    @{childList}
+
+Finding By Country
+    [Arguments]    ${Text}
+    ${LENGTH}=    Execute Javascript    return $('#counterpartyFilterCountry').find('> .checkbox').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartyFilterCountry']/div[${INDEX}]/label
+    \    Run Keyword If    '${Text}'=='${Value}'    Click Element    //*[@id='counterpartyFilterCountry']/div[${INDEX}]/label
+
+Finding By Type of Entity
+    [Arguments]    ${Text}
+    ${LENGTH}=    Execute Javascript    return $('#counterpartyFilterCountry').find('> .checkbox').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartyFilterCountry']/div[${INDEX}]/label
+    \    Run Keyword If    '${Text}'=='${Value}'    Click Element    //*[@id='counterpartyFilterCountry']/div[${INDEX}]/label
+
+Search Left Panel Entities
+    [Arguments]    ${Text}    ${Parent_Index}
+    ${LENGTH}=    Execute Javascript    $('#counterpartySelectionLeft').find('> .gui-nc-item-container > .gui-nc-item').eq('${Parent_Index}').find('> div > .gui-nc-item-container > .gui-nc-item > .gui-nc-content > .checkbox-inline > .gui-nc-label').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartySelectionLeft']/div/div/div[3]/div[${INDEX}]/div/div[2]/label/small
+    \    Run Keyword If    '${Text}'=='${Value}'    Log    The Text is correct
+
+Select From More then one Group
+    [Arguments]    ${Text}
+    ${Group}=    Execute Javascript    return $('#counterpartySelectionLeft').find('> .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${Parent_Index}    IN RANGE    1    ${Group}
+    \    Children Entities    ${Text}    ${Parent_Index}
+
+Select From one Group
+    [Arguments]    ${Text}
+    ${LENGTH}=    Execute Javascript    return $('#counterpartySelectionLeft').find('> .gui-nc-item-container > .gui-nc-item > div > .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartySelectionLeft']/div/div/div[3]/div[${INDEX}]/div/div[2]/label/small
+    \    Run Keyword If    '${Text}'=='${Value}'    Click Element    //*[@id='counterpartySelectionLeft']/div/div/div[3]/div[${INDEX}]/div/div[2]/label/input
+
+Select From Group
+    [Arguments]    ${Text}
+    ${LENGTH}=    Execute Javascript    return $('#counterpartySelectionLeft > :nth-child(2)').find('> .gui-nc-item > div > .gui-nc-item-container > .gui-nc-item').length;
+    : FOR    ${INDEX}    IN RANGE    1    ${LENGTH}
+    \    Log    ${INDEX}
+    \    ${Value}=    Get Text    //*[@id='counterpartySelectionLeft']/div[2]/div/div[3]/div[${INDEX}]/div/div[2]/label/small
+    \    Run Keyword If    '${Text}'=='${Value}'    Click Element    //*[@id='counterpartySelectionLeft']/div[2]/div/div[3]/div[${INDEX}]/div/div[2]/label/input
+
+Leaving Entities
+    [Arguments]    ${BIC}    ${Group_Entity}    ${Grace_Period}
+    RPC.updateConfigurationSetting    ENTITY_LEAVING_GRACE_PERIOD_IN_DAYS    ${Grace_Period}
+    ${GH}=    Set Variable    ${Group_Entity}
+    RPC Update group - remove BIC    ${GH}    ${BIC}
+    RPC.rescheduleAllJobs

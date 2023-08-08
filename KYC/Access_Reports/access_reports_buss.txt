@@ -1,0 +1,123 @@
+*** Settings ***
+Resource          ../../../resources_res.txt
+
+*** Keywords ***
+Validate Number Of Records In The Report Is
+    [Arguments]    ${report}    ${nbr_recs}
+    ${count}=    REST.Count Filtered Report Records    ${report}
+    Run Keyword unless    ${count} == ${nbr_recs}    Fail    The number of records is ${count} instead of ${nbr_recs}
+
+Validate Access Grant Given Is In The Report
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${granter_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='GRANTED' and Granted_By= '${${granter_name}_name} (${${granter_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    #Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant given to ${granted_bic} is missing
+
+Validate Access Grant Received Is In The Report
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${Requester_Name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status ='GRANTED' and Requested_By= '${${Requester_Name}_name} (${${Requester_Name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    #Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant given to ${granted_bic} is missing
+
+Validate Access Grant In The Report Is Revoked
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${granter_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='REVOKED' and Granted_by= '${${granter_name}_name} (${${granter_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    #Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant revoked that was to ${granted_bic} is missing
+
+Validate Access Grant In The Report Is Surrendered
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${granter_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Cancel_Date !='' and Granted_by='${${granter_name}_name} (${${granter_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    #Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant revoked that was to ${granted_bic} is missing
+
+Validate Number Of Revoked Records In The Report Is
+    [Arguments]    ${report}    ${nbr_recs}
+    ${filter}=    Set Variable    Cancel_Date !=''
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword unless    ${count} == ${nbr_recs}    Fail    The number of records is ${count} instead of ${nbr_recs}
+
+Validate Number Of Surrendered Records In The Report Is
+    [Arguments]    ${report}    ${nbr_recs}
+    ${filter}=    Set Variable    Cancel_Date !=''
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword unless    ${count} == ${nbr_recs}    Fail    The number of records is ${count} instead of ${nbr_recs}
+
+Validate SWP Access Grant Given Is In The Report
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${category}    ${level}    ${granter_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='GRANTED' and Category='${category}' and Level='${level}' and Granted_By= '${${granter_name}_name} (${${granter_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    #Run Keyword unless    ${count} == 1    Fail    ${granting_bic} SWP access grant given to ${granted_bic} for category ${category} and level ${level} is missing
+
+Validate SWP Access Grant In The Report Is Revoked
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${category}    ${level}    ${granter_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='REVOKED' and Category ='${category}' and Level='${level}' and Granted_By= '${${granter_name}_name} (${${granter_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant revoked that was to ${granted_bic} is missing
+
+Validate SWP Access Grant In The Report Is Surrendered
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${category}    ${level}    ${granter_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='GRANTED' and Cancel_Date !='' and Category='${category}' and Level='${level}' and Granted_By= '${${granter_name}_name} (${${granter_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant revoked that was to ${granted_bic} is missing
+
+Validate Number Of SWP Surrendered Records In The Report Is
+    [Arguments]    ${report}    ${nbr_recs}
+    ${filter}=    Set Variable    Surrender_Date !=''
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword unless    ${count} == ${nbr_recs}    Fail    The number of records is ${count} instead of ${nbr_recs}
+
+Validate Number Of SWP Revoked Records In The Report Is
+    [Arguments]    ${report}    ${nbr_recs}
+    ${filter}=    Set Variable    Revocation_Date !=''
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword unless    ${count} == ${nbr_recs}    Fail    The number of records is ${count} instead of ${nbr_recs}
+
+Validate SWP Access Grant Received Is In The Report
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${category}    ${level}    ${Requester_Name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='GRANTED' and Category='${category}' and Level='${level}' and Requested_By= '${${Requester_Name}_name} (${${Requester_Name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Comment    Run Keyword unless    ${count} == 1    Fail    ${granting_bic} SWP access grant given to ${granted_bic} for category ${category} and level ${level} is missing
+
+Validate Data Cosumption Report
+    [Arguments]    ${report}    ${Entity_Bic}    ${requestor_name}
+    ${filter}=    Set Variable    Counterparty_Entity_BIC='${Entity_Bic}' and Requested_by= '${${requestor_name}_name} (${${requestor_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant given to ${granted_bic} is missing
+
+Validate Access Request In The Report Is Revoked
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${granter_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='REVOKED' and Requested_by= '${${granter_name}_name} (${${granter_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    #Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant revoked that was to ${granted_bic} is missing
+
+Validate Access Request In The Report Is Surrendered
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${granter_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Cancel_Date !='' and Requested_by='${${granter_name}_name} (${${granter_name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant revoked that was to ${granted_bic} is missing
+
+Validate SWP Access Grant Received In The Report Is Revoked
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${category}    ${level}    ${Requester_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='REVOKED' and Category='${category}' and Level='${level}' and Requested_By= '${${Requester_Name}_name} (${${Requester_Name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Comment    Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant revoked that was to ${granted_bic} is missing
+
+Validate SWP Access Grant Received In The Report Is Surrendered
+    [Arguments]    ${report}    ${granting_bic}    ${granted_bic}    ${category}    ${level}    ${Requester_name}
+    ${filter}=    Set Variable    Granting_Entity_BIC='${granting_bic}' and Requesting_Entity_BIC='${granted_bic}' and Access_Status='GRANTED' and Cancel_Date !='' and Category='${category}' and Level='${level}' and Requested_By= '${${Requester_Name}_name} (${${Requester_Name}_user})'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Comment    Run Keyword unless    ${count} == 1    Fail    ${granting_bic} access grant revoked that was to ${granted_bic} is missing
+
+Verify Missing Roles for SWPUser
+    [Arguments]    ${report}
+    ${filter}=    Set Variable    SWIFT_Profile_publisher='Y' and SWIFT_Profile_granter='Y'
+    ${count}=    REST.Count Filtered Report Records    ${report}    ${filter}
+    Run Keyword If    ${count} == 0    The Missing role for SWIFT Profile Publisher and SWIFT Profile Granter is missing
+
+Verify no Missing Roles for SWPUser
+    [Arguments]    ${report}
+    ${filter}=    Set Variable    SWIFT_Profile_publisher='Y' and SWIFT_Profile_granter='Y'
+    ${Status}=    REST.verify_report_exist    ${report}    ${filter}
+    Run Keyword IF    '${Status}' == 'Fail'    Log    There is no user with missing role for SWIFT Profile Publisher and SWIFT Profile Granter
+    Run Keyword IF    '${Status}' == 'Passed'    Verify Missing Roles for SWPUser    ${report}

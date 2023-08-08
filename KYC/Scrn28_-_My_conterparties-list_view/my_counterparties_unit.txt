@@ -1,0 +1,8 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          my_counterparties_buss.txt
+
+*** Keywords ***
+Select Search filter
+    [Arguments]    ${Value}
+    Execute Javascript    $('.hlp-margin-t-l').find('form[role= "form"] > div.form-group > div.checkbox > label > span:contains("${Value}")').click();

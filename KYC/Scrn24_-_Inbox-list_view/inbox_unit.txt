@@ -1,0 +1,23 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_buss.txt
+
+*** Keywords ***
+Filter entries on BIC
+    [Arguments]    ${bic}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="filtersForm"]//*[@id='textSearch']
+    Run Keyword If    ${present}    Input Text    //*[@id="filtersForm"]//*[@id='textSearch']    ${bic}
+    Run Keyword If    ${present}    Element Should Be Visible    //*[@id='clearFilters']    #//*[@id="filtersForm"]//*[text()[contains(.,'Clear filters')]]
+    Load page infinite scroll
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Confirm Takeover
+    Element Should Be Visible    //*[@id="takeoverDialog"]
+    Click Element    //*[@id="takeoverDialog"]//*[@id="takeover"]
+    Element Should Not Be visible    //*[@id="takeoverDialog"]
+
+Cancel Takeover
+    Element Should Be Visible    //*[@id="takeoverDialog"]
+    Click Element    //*[@id="takeoverDialog"]//*[@id="cancelDialog"]
+    Element Should Not Be visible    //*[@id="takeoverDialog"]

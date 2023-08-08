@@ -1,0 +1,29 @@
+*** Settings ***
+Library           Selenium2Library
+Library           LdapPythonLibrary
+Resource          webservices_unit.txt
+Library           SudsLibraryExtensions
+Resource          ../apps_res.txt
+
+*** Keywords ***
+User create KYC user with BIC and reset password using python library PAC
+    [Arguments]    ${Mail}    ${BIC}    ${FirstName}    ${LastName}    ${SoldTo}    ${InstitutionName}
+    WS_CreateUserWBICPAC    ${Mail}    ${SoldTo}    ${FirstName}    ${LastName}    ${BIC}    32
+    ...    488236098    ${InstitutionName}
+    SLEEP    1
+    Python Change Password To    ${Mail}    21Holea5!    PAC
+    SLEEP    1
+    Python Change Password To    ${Mail}    21Holea5!    PAC
+    SLEEP    1
+    Python Change Password To    ${Mail}    21Holea5!    PAC
+
+User create KYC user with BIC and reset password using python library SI
+    [Arguments]    ${Mail}    ${BIC}    ${FirstName}    ${LastName}    ${SoldTo}    ${InstitutionName}
+    WS_CreateUserWBICSI    ${Mail}    ${SoldTo}    ${FirstName}    ${LastName}    ${BIC}    32
+    ...    488236098    ${InstitutionName}
+    SLEEP    1
+    Python Change Password To    ${Mail}    Abcd1234-    SI
+    SLEEP    1
+    Python Change Password To    ${Mail}    Abcd1234-    SI
+    SLEEP    1
+    Python Change Password To    ${Mail}    Abcd1234-    SI

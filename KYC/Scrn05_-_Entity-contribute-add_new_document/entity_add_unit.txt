@@ -1,0 +1,156 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          entity_add_unit.txt
+
+*** Keywords ***
+Open single instance upload
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Sleep    5s
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addThisDocument']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addThisDocument']
+    Element Should Be Visible    //*[@id='uploadWizardDialog']
+
+Open single instance or translation upload
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    ${single_instance_not_uploaded_yet}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addThisDocument']
+    Run Keyword If    ${single_instance_not_uploaded_yet}    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addThisDocument']
+    Run Keyword Unless    ${single_instance_not_uploaded_yet}    Open translation or another language upload    ${doc}
+    Element Should Be Visible    //*[@id='uploadWizardDialog']
+
+Open single or multi instance upload
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    ${multi_instance}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addADocument']
+    Run Keyword If    ${multi_instance}    Open multiple instance upload    ${doc}
+    Run Keyword Unless    ${multi_instance}    Open single instance or translation upload    ${doc}
+    Element Should Be Visible    //*[@id='uploadWizardDialog']
+
+Open translation or another language upload
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    ${basic_path}=    Set Variable    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']
+    Click Element    ${basic_path}//*[@id='documentActionsLink']
+    Element Should Be Visible    ${basic_path}//*[@id='documentActionsMenu']
+    ${eng_translation_to_be_uploaded}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}//*[@id='addEnglishTranslation']
+    Run Keyword If    ${eng_translation_to_be_uploaded}    Click Element    ${basic_path}//*[@id='addEnglishTranslation']
+    Run Keyword Unless    ${eng_translation_to_be_uploaded}    Click Element    ${basic_path}//*[@id='addAnotherLanguage']
+
+Upload dialog - upload new document
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Choose File    //*[@id='uploadWizardDialog']//*[@id='browse']    ${EXECDIR}\\Resources\\tmp_upload_docs\\document.pdf
+    #Choose File    browse    ${WEBSERVER_PATH}document.pdf
+
+Upload dialog - upload translation document
+    [Arguments]    ${language}
+    Element Should Be Visible    //*[@id='uploadWizardDialog']
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Log    ${EXECDIR}
+    Choose File    browse    ${EXECDIR}\\Resources\\tmp_upload_docs\\document-${language}.pdf
+    #Choose File    browse    ${WEBSERVER_PATH}document-${language}.pdf
+    Select language in Upload dialog    ${language}    document-${language}
+
+Upload dialog - move to step upload translation
+    #Upload Step 2 of 3
+    #Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Execute Javascript    $('#uploadWizardDialog #nextDialog').click()
+    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'translation')]]
+
+Upload dialog - move to step upload preview
+    #Upload Step 2 of 3
+    #    Wait Until Element Is Visible    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    #Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Execute Javascript    $('#uploadWizardDialog #nextDialog').click()
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[text()[contains(.,'preview')]]
+
+Upload dialog - finish upload
+    #Upload Step 3 of 3
+    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='finishDialog']
+    #Click Element    //*[@id='uploadWizardDialog']//*[@id='finishDialog']
+    Execute Javascript    $('#uploadWizardDialog #finishDialog').click()
+    Element Should Not Be visible    //*[@id='uploadWizardDialog']
+    Page loading done
+
+Select language in Upload dialog
+    [Arguments]    ${language}    ${filename}
+    Selenium2Library.Select From List By Label    //*[@id='uploadWizardDialog']//*[text()[contains(.,'${filename}')]]//ancestor::*[@id='ROW']//*[@id='language']    ${language}
+
+Open multiple instance upload
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    #    Wait Until Element Is Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addADocument']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addADocument']
+
+Upload document in Word doc format step1
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='documentDescription']
+    #Wait Until Element Is Visible
+    Choose File    browse    ${EXECDIR}\\Resources\\tmp_upload_docs\\document.doc
+
+Cannot upload single instance document type
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addThisDocument']
+
+Cannot upload multi-instance document type
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addADocument']
+
+Cannot upload translation document
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Run Keyword Unless    ${present}    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Run Keyword If    ${present}    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Run Keyword If    ${present}    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    Run Keyword If    ${present}    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addEnglishTranslation']
+
+Cannot upload another language document
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    Element Should Not Be visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addAnotherLanguage']
+
+Add translation should not be visible
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    #    Selenium2Library.Element Should Not Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addTranslation']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    Selenium2Library.Element Should Not Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addTranslation']
+
+Upload Document from category page
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Click element    //*[@id="uploadDocument"]
+    Selenium2Library.Element Should Be Visible    //*[@id="uploadWizardDialog"]
+    Selenium2Library.Select From List By Label    //*[@id="documentType"]    ${doc}
+    Input Text    //*[@id="documentDescription"]    Document uploaded
+    Choose File    browse    ${EXECDIR}\\Resources\\tmp_upload_docs\\document.pdf
+
+Open translation upload
+    [Arguments]    ${doc}
+    [Documentation]    Keyword for old upload
+    ${folder}=    Get Folder
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addTranslation']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addTranslation']
+
+Open English translation upload
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addEnglishTranslation']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addEnglishTranslation']
+
+Open Another language upload
+    [Arguments]    ${doc}
+    ${folder}=    Get Folder
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsLink']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='documentActionsMenu']
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addAnotherLanguage']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']/ancestor::*[@id='ROW']//*[@id='addAnotherLanguage']

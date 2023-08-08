@@ -1,0 +1,150 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+Link document
+    [Arguments]    ${doc}
+    [Documentation]    Upload document for, specified type.
+    ...    It uploads for English language in case of single or multi instance, with expiration date or not.
+    ...
+    ...    folder = "draft" or "published"
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@id='${doc}']
+    Open single or multi instance upload    ${doc}
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='linkDocument']
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='linkDocument']/a
+    Element Should Not Be visible    browse
+    Upload dialog - move to step upload preview
+    Upload dialog - finish upload
+    #Verify linked document is present    ${doc}    ${language}
+
+Validate cannot Link document
+    [Arguments]    ${doc}
+    ${doc}=    Get doc title from code    ${doc}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@kyc-click='uploadDocument()']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@kyc-click='uploadDocument()']
+    ${status}=    Run Keyword And Return Status    Element Should Not Be Visible    //*[@id='uploadWizardDialog']//*[@id='linkDocument']
+    Pass Execution if    ${status}    OK, no way to link to doctype ${doc}
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='linkDocument']/a
+    ${docTypes}=    Get List Items    //*[@id='linkDocumentType']
+    ${status}=    Run Keyword And Return Status    List Should Not Contain Value    ${docTypes}    ${doc}
+    Run Keyword unless    ${status}    Selenium2Library.Select From List By Label    //*[@id='linkDocumentType']    ${doc}
+    Run Keyword unless    ${status}    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Run Keyword unless    ${status}    Element Should Be Disabled    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='cancelDialog']
+    Element Should Not Be visible    //*[@id='uploadWizardDialog']
+
+Link document from Add document button
+    [Arguments]    ${doc}
+    [Documentation]    Upload document for, specified type.
+    ...    It uploads for English language in case of single or multi instance, with expiration date or not.
+    ...
+    ...    folder = "draft" or "published"
+    ${doc}=    Get doc title from code    ${doc}
+    ${folder}=    Get Folder
+    Element Should Be Visible    //*[@id='${folder}FolderDocuments']//*[@kyc-click='uploadDocument()']
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@kyc-click='uploadDocument()']
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='linkDocument']/a
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='linkDocument']/a
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='linkDocumentType']
+    Run Keyword Unless    ${present}    Click Element    //*[@id='uploadWizardDialog']//*[@id='linkDocument']/a
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='linkDocumentType']
+    Run Keyword Unless    ${present}    Click Element    //*[@id='uploadWizardDialog']//*[@id='linkDocument']/a
+    Selenium2Library.Select From List By Label    //*[@id='uploadWizardDialog']//*[@id='linkDocumentType']    ${doc}
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@class='table']
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='nextDialog']
+    Element Should Be Visible    //*[@id='uploadWizardDialog']//*[@id='finishDialog']
+    Click Element    //*[@id='uploadWizardDialog']//*[@id='finishDialog']
+    Element Should Not Be visible    //*[@id='uploadWizardDialog']
+
+Unlink document type
+    [Arguments]    ${doctype}
+    [Documentation]    Removes specified document translation and returns number of documents of that document type that are still uploaded
+    ${folder}=    Get Folder
+    Click Element    //*[@id='${folder}FolderDocuments']//*[@id='documentType']/ancestor::*[@id='ROW']//*[text()[contains(.,'${doctype}')]]/ancestor::*[@id='ROW']//*[@id='unlinkDocumentSet']
+    Element Should Be Visible    //*[@id='unlinkDocumentDialog']//*[@id='unlinkDocument']
+    Click Element    //*[@id='unlinkDocumentDialog']//*[@id='unlinkDocument']
+
+Verify document type is mandatory
+    [Arguments]    ${doc}
+    Element Should Be Visible    //*[@id='${doc}']//*[@id='documentRequired']
+
+Verify document type is not mandatory
+    [Arguments]    ${doc}
+    Element Should Not Be Visible    //*[@id='${doc}']//*[@id='documentRequired']
+
+Verify field is mandatory
+    [Arguments]    ${field}
+    Element Should Be Visible    //*[@id='${field}_LABEL']//*[@class[contains(.,'msg-note')]]
+
+Verify field is not mandatory
+    [Arguments]    ${field}
+    Element Should Not Be Visible    //*[@id='${field}_LABEL']//*[@class[contains(.,'msg-note')]]
+
+Verify mandatory fields warning is present
+    Element Should Be Visible    //*[@id="folderMissingInfo"]
+
+Verify mandatory fields warning is not present
+    Element Should Not Be Visible    //*[@id="folderMissingInfo"]
+
+Verify evidenced document type is recommended
+    [Arguments]    ${doc}
+    Element Should Be Visible    //*[@id='${doc}']//*[@class="text-warning"]
+
+Verify evidenced document type is not recommended
+    [Arguments]    ${doc}
+    Element Should Be Visible    //*[@id='${doc}']
+    Element Should Not Be Visible    //*[@id='${doc}']//*[@class="text-warning"]
+
+Display evidence warning in field
+    [Arguments]    ${field}    ${doc}
+    ${doc_acr}=    Set Variable    ${doc}
+    ${idx}=    Get Index From List    ${docs_codes}    ${doc_acr}
+    ${doc}=    Set Variable    ${docs_titles[${idx}]}
+    Element Should Be Visible    //*[@id='${field}_EVIDENCE']//*[text()[contains(.,'${doc}')]]
+
+Do not display evidence warning in field
+    [Arguments]    ${field}
+    Element Should Not Be Visible    //*[@id='${field}_EVIDENCE']
+
+Display validation warning in field
+    [Arguments]    ${field}
+    Element Should Be Visible    //*[@id='${field}_VALIDATION']
+
+Do not display validation warning in field
+    [Arguments]    ${field}
+    Element Should Not Be Visible    //*[@id='${field}_VALIDATION']
+
+Set NotApplicable for document type
+    [Arguments]    ${acronym_doc_type}
+    Select Checkbox    //*[@id='${acronym_doc_type}']//ancestor::*[@id='ROW']//*[@id='NA_${acronym_doc_type}']
+
+Set NotDisclosed for document type
+    [Arguments]    ${acronym_doc_type}
+    Select Checkbox    //*[@id='${acronym_doc_type}']//ancestor::*[@id='ROW']//*[@id='ND_${acronym_doc_type}']
+
+Verify NotApplicable is selectable for document type
+    [Arguments]    ${acronym_doc_type}
+    ${field}=    Set Variable    //*[@id='${acronym_doc_type}']//ancestor::*[@id='ROW']//*[@id='NA_${acronym_doc_type}']
+    Element Should Be Enabled    ${field}
+    Run Keyword And Expect Error    *    Element Should Be Disabled    ${field}
+
+Verify NotApplicable is not selectable for document type
+    [Arguments]    ${acronym_doc_type}
+    ${field}=    Set Variable    //*[@id='${acronym_doc_type}']//ancestor::*[@id='ROW']//*[@id='NA_${acronym_doc_type}']
+    Element Should Be Disabled    ${field}
+    Run Keyword And Expect Error    *    Element Should Be Enabled    ${field}
+
+Verify NotDisclosed is selectable for document type
+    [Arguments]    ${acronym_doc_type}
+    ${field}=    Set Variable    //*[@id='${acronym_doc_type}']//ancestor::*[@id='ROW']//*[@id='ND_${acronym_doc_type}']
+    Element Should Be Enabled    ${field}
+    Run Keyword And Expect Error    *    Element Should Be Disabled    ${field}
+
+Verify NotDisclosed is not selectable for document type
+    [Arguments]    ${acronym_doc_type}
+    ${field}=    Set Variable    //*[@id='${acronym_doc_type}']//ancestor::*[@id='ROW']//*[@id='ND_${acronym_doc_type}']
+    Element Should Be Disabled    ${field}
+    Run Keyword And Expect Error    *    Element Should Be Enabled    ${field}

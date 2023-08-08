@@ -1,0 +1,7 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+Open AdverseMedia tab in Find page
+    Verify AdverseMedia tab is visible in Find page
+    Click Element    //*[@id='mediaList']

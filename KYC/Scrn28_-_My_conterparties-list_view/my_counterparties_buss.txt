@@ -1,0 +1,46 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          my_counterparties_unit.txt
+
+*** Keywords ***
+Verify Completeness score of Entity Category is green
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="folderInfoName" and text()[contains(.,"${${category}}")]]
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="folderInfoName" and text()[contains(.,"${${category}}")] and @class[contains(.,"text-success")]]
+
+Verify Completeness score of Entity Category is amber
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="folderInfoName" and text()[contains(.,"${${category}}")]]
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="folderInfoName" and text()[contains(.,"${${category}}")] and @class[contains(.,"text-warning")]]
+
+Verify Completeness score of Entity Category is grey
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="folderInfoName" and text()[contains(.,"${${category}}")]]
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="folderInfoName" and text()[contains(.,"${${category}}")] and @class[contains(.,"text-light")]]
+
+Verify Completeness score of Entity Category is blue
+    [Arguments]    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="folderInfoName" and text()[contains(.,"${${category}}")]]
+    Element Should Be Visible    //*[@id='ROW']//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id="folderInfoName" and text()[contains(.,"${${category}}")] and @class[contains(.,"text-info")]]
+
+Access received reports should be clickable
+    Access Reports Should Be Visible
+    Click Element    //*[@id="accessReports"]
+    Element Should Be Visible    //*[@id="counterpartyDataAccessReport"]    #previously : //*[@id="accessReceivedReport"]
+    Click Element    //*[@id="counterpartyDataAccessReport"]    #previously : //*[@id="accessReceivedReport"]
+
+Access received reports should not be visible
+    Access Reports Should Be Visible
+    Click Element    //*[@id="accessReports"]
+    Element Should Not Be Visible    //*[@id="counterpartyDataAccessReport"]    # previously : //*[@id="accessReceivedReport"]
+
+Access received reports should be clickable - Swift Profile
+    Access Reports Should Be Visible
+    Click Element    //*[@id="accessReports"]
+    Element Should Be Visible    //*[@id="swiftProfileReceivedReport"]
+    Click Element    //*[@id="swiftProfileReceivedReport"]
+
+Access received reports should not be visible - Swift Profile
+    Access Reports Should Be Visible
+    Click Element    //*[@id="accessReports"]
+    Element Should Not Be Visible    //*[@id="swiftProfileReceivedReport"]

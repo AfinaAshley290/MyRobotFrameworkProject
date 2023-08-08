@@ -1,0 +1,184 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          manage_access_to_data_doc_SWP_entity_unit.txt
+Resource          manage_access_to_data_doc_SWP_dialog_unit.txt
+
+*** Keywords ***
+Verify user has access granted to data and document
+    Entity - Validate folder categories are visible
+
+Verify user do not has access granted to data and document
+    Element Should Be Visible    //*[@id='noAccess']
+
+Verify user can manage access to data and document
+    # if access is not yet granted, a buuton is present to request first access
+    ${status}=    Run Keyword And Return Status    Entity - Validate View and Manage Access Button is visible
+    #Run Keyword If    ${status}=='True'    Entity - Open Access Management Dialog
+    Run Keyword If    ${status}    Entity - Open Access Management Dialog
+    # access already granted, a link is present in the action menu to open the access management screen
+    #Run Keyword If    ${status}=='False'    Entity - Validate View and Manage access link is visible
+    #Run Keyword If    ${status}=='False'    Entity - Open Access Management Dialog from Action Menu
+    Run Keyword Unless    ${status}    Entity - Validate View and Manage access link is visible
+    Run Keyword Unless    ${status}    Entity - Open Access Management Dialog from Action Menu
+    Access Management Dialog - user can manage access to data and document
+
+Verify user cannot manage access to data and document
+    Entity - Validate View and Manage Access Button is not visible
+    Entity - Validate View and Manage access link is not visible
+
+Request access to data and documents for all entities
+    [Arguments]    ${comment}
+    Entity - Open Access Management Dialog
+    Access Management Dialog - Request access for all
+    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm
+
+Request access to data and documents for given entities
+    [Arguments]    ${entity_list}    ${comment}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    log    ${entity}
+    \    Access Management Dialog - Request access for a given entity    ${entity}
+    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm
+
+Verify access request to data and document is pending for all entities
+    Entity - Open Access Management Dialog
+    Access Management Dialog - Validate access request to data and document is pending for all entities
+    Access Management Dialog - Click Cancel
+
+Verify access request to data and document is pending for given entities
+    [Arguments]    ${entity_list}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity access to data and document is pending    ${entity}
+    Access Management Dialog - Click Cancel
+
+Verify access to data and document is granted for all entities
+    Entity - Open Access Management Dialog
+    Access Management Dialog - Validate access is granted for all entities
+    Access Management Dialog - Click Cancel
+
+Verify access to data and document is granted for given entities
+    [Arguments]    ${entity_list}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate access is granted for given entities    ${entity}
+    Access Management Dialog - Click Cancel
+
+Verify access to data and document is not granted for given entities
+    [Arguments]    ${entity_list}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity has not access    ${entity}
+    Access Management Dialog - Click Cancel
+
+Surrend access to data and documents for all entities
+    [Arguments]    ${comment}
+    Entity - Open Access Management Dialog
+    Access Management Dialog - Surrender access for all
+    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm
+
+Surrend access to data and documents for given entities
+    [Arguments]    ${entity_list}    ${comment}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Surrender access for a given entity    ${entity}
+    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm
+
+Verify access to data and document is surrended for all entities
+    Entity - Open Access Management Dialog
+    Access Management Dialog - Validate access is surrendered for all entities
+    Access Management Dialog - Click Cancel
+
+Verify access to data and document is surrended for given entities
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate access is surrendered for given entities    ${entity}
+    Access Management Dialog - Click Cancel
+
+Verify user cannot manage access to data and documents
+    ${manage_access_button_visible}=    Run Keyword And Return Status    Entity - Validate View and Manage Access Button is visible
+    Run Keyword If    ${manage_access_button_visible}=='True'    Entity - Open Access Management Dialog
+    ${manage_access_link_visible}=    Run Keyword And Return Status    Entity - Validate View and Manage access link is visible
+    Run Keyword If    ${manage_access_link_visible}=='True'    Entity - Open Access Management Dialog from Action Menu
+    ${AMD_is_opened}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id="manageAccessManagementDialog"]
+    Run Keyword If    ${AMD_is_opened}=='True'    Access Management Dialog - user cannot manage access to data and document
+
+Grant access to data and documents for all requesting entities
+    [Arguments]    ${entity_group}    ${bic}    ${comment}
+    Click on Grant task    Awaiting action    ${bic}    ${entity_group}
+    Access Management Dialog - Grant Data and Documents access for all
+    Access Management Dialog - Note    ${comment}
+    Grant Access Management Dialog - 2 X Confirm
+
+Grant access to data and documents for given requesting entities
+    [Arguments]    ${entity_group}    ${bic}    ${requesting_entities}    ${comment}
+    Click on Grant task    Awaiting action    ${bic}    ${entity_group}
+    @{entities}=    Split String    ${requesting_entities}    ,
+    Access Management Dialog - Reject Data and Documents access for all
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Grant Data and Documents access for given entity    ${entity}
+    Access Management Dialog - Note    ${comment}
+    Grant Access Management Dialog - 2 X Confirm
+
+Verify access request to data and document cannot be requested for given entities
+    [Arguments]    ${entity_list}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Validate entity access to data and document cannot be requested    ${entity}
+    Access Management Dialog - Click Cancel
+
+Reject access to data and documents for all requesting entities
+    [Arguments]    ${entity_group}    ${bic}    ${comment}
+    Click on Grant task    Awaiting action    ${bic}    ${entity_group}
+    Access Management Dialog - Reject Data and Documents access for all
+    Access Management Dialog - Note    ${comment}
+    Grant Access Management Dialog - 2 X Confirm
+
+Reject access to data and documents for given requesting entities
+    [Arguments]    ${entity_group}    ${bic}    ${requesting_entities}    ${comment}
+    Click on Grant task    Awaiting action    ${bic}    ${entity_group}
+    @{entities}=    Split String    ${requesting_entities}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    Access Management Dialog - Reject Data and Documents access for given entity    ${entity}
+    Access Management Dialog - Note    ${comment}
+    Grant Access Management Dialog - 2 X Confirm
+
+Request access to SWP for given entities
+    [Arguments]    ${bic}    ${entity_list}    ${comment}
+    In Entity    ${bic}
+    Entity - Open Access Management Dialog
+    @{entities}=    Split String    ${entity_list}    ,
+    : FOR    ${entity}    IN    @{entities}
+    \    log    ${entity}
+    \    Access Management Dialog - Request SWP Payment access for a given entity    ${entity}
+    \    Access Management Dialog - Request SWP Trade and Finance access for a given entity    ${entity}
+    Run Keyword If    '${comment}'!=''    Access Management Dialog - Note    ${comment}
+    Access Management Dialog - Click Confirm
+    Access Management Confirmation Dialog - Click Confirm
+
+Grant access to SWP for given entities
+    [Arguments]    ${bic}    ${requesting_group}    ${entities_grants}    ${comment}
+    Click on SWP Grant task    Awaiting action    ${bic}    ${requesting_group}
+    @{grants}=    Split String    ${entities_grants}    ,
+    : FOR    ${grant}    IN    @{grants}
+    \    log    ${grants}
+    \    @{entity_grant}=    Split String    ${grant}    |
+    \    Access Management Dialog - Grant SWP Access for given entity    ${entity_grant[0]}    ${entity_grant[1]}
+    Access Management Dialog - Note    ${comment}
+    Grant Access Management Dialog - 2 X Confirm

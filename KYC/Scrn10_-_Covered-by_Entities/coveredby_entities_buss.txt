@@ -1,0 +1,3 @@
+*** Settings ***
+Resource          coveredby_entities_unit.txt
+Resource          ../kyc_res.txt

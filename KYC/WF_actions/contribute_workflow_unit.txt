@@ -1,0 +1,5 @@
+*** Settings ***
+Resource          contribute_workflow_buss.txt
+Resource          ../kyc_res.txt
+
+*** Keywords ***

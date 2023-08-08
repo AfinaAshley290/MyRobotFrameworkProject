@@ -1,0 +1,32 @@
+*** Settings ***
+Resource          op_panel_buss.txt
+Resource          ../kyc_res.txt
+
+*** Keywords ***
+Open Notes View all dialog
+    Element Should Be Visible    //*[@id='qualificationAssistance']//*[@id="folderNotes"]//parent::div//*[@id='viewAll']//*[text()[contains(.,'all')]]
+    Click Element    //*[@id='qualificationAssistance']//*[@id="folderNotes"]//parent::div//*[@id='viewAll']//*[text()[contains(.,'all')]]
+    Element Should Be Visible    //*[@id="viewFolderNotesDialog"]
+
+Close Notes View all dialog
+    Click Element    //*[@id="viewFolderNotesDialog"]//*[@id='closeDialog']
+    Element Should Not Be Visible    //*[@id="viewFolderNotesDialog"]
+
+Open Qualification history View all dialog
+    Click Element    //*[@id='qualificationAssistance']//*[text()[contains(.,'Qualification')]]//parent::div//*[@id='viewAll']//*[text()[contains(.,'all')]]
+    Element Should Be Visible    //*[@id="viewQualificationHistoryDialog"]
+
+Close Qualification history View all dialog
+    Click Element    //*[@id="viewQualificationHistoryDialog"]//*[@id='closeDialog']
+    Element Should Not Be Visible    //*[@id="viewQualificationHistoryDialog"]
+
+Open Communication history View all dialog
+    Element Should Be Visible    //*[@id='qualificationAssistance']//*[text()[contains(.,'Communication')]]//parent::div//*[@id='viewAll']//*[text()[contains(.,'all')]]
+    Click Element    //*[@id='qualificationAssistance']//*[text()[contains(.,'Communication')]]//parent::div//*[@id='viewAll']
+    ${present}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id="viewCommunicationHistoryDialog"]
+    Run Keyword Unless    ${present}    Click Element    //*[@id='qualificationAssistance']//*[text()[contains(.,'Communication')]]//parent::div//*[@id='viewAll']
+    Element Should Be Visible    //*[@id="viewCommunicationHistoryDialog"]
+
+Close Communication history View all dialog
+    Click Element    //*[@id="viewCommunicationHistoryDialog"]//*[@id='closeDialog']
+    Element Should Not Be Visible    //*[@id="viewCommunicationHistoryDialog"]

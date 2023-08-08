@@ -1,0 +1,141 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_buss.txt
+
+*** Keywords ***
+Verify can view task of given type
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}
+    [Documentation]    ***Afina 12 Oct****
+    ...    Fixed on Element should contain
+    Filter entries on BIC    ${bic}
+    Sleep    10s
+    #Comment    ${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='tasks_row_0' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]//ancestor::*[@id='tasks_row_0' ]//*[text()[contains(.,'${requesting_entities}')]]//ancestor::*[@id='tasks_row_0']
+    #
+    #${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    #Run Keyword Unless    ${present}    Reload Page
+    #Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_entities}
+    #
+    #    Run Keyword If    '${type}'!='REQUEST_ACCESS' and '${type}'!='REPLY_QUERY'    Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    #    Run Keyword If    '${type}'=='REQUEST_ACCESS'    Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    #    Run Keyword If    '${type}'=='REPLY_QUERY'    Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    #
+    #${swt}=    Run Keyword And Return Status    Element Should Be Visible    ${basic_path}
+    #Filter entries on BIC    ${bic}
+    ${taskId}=    Return Id of Task By Type,Status,Bic and Category Name    ${status}    ${bic}    ${category_title}    ${type}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${task_id}']//*[@id='taskStatus']/em    ${status}
+    Element Should Contain    //*[@id='${task_id}_taskBody']/div//span[@id='entityBic']    [${bic}]
+
+Verify can view event of given type
+    [Arguments]    ${status}    ${bic}    ${event_outcome_or_category}    ${type}
+    Filter entries on BIC    ${bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']//*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${event_outcome_or_category}')]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status, Bic, Message and Type    ${status}    ${bic}    ${event_outcome_or_category}    ${type}
+    Element Should Be Visible    ${basic_path}
+    ${path_Without_Bic}=    Return Id of Task By Status, Message and Type    ${status}    ${event_outcome_or_category}    ${type}
+    Run Keyword If    '${type}'!='ACCESS_ABORTED' and '${type}'!='DOCUMENT_EXPIRED_ALERT' and '${type}'!='FOLDER_RECONFIRMATION_WARNING' and '${type}'!='QUERY'    Element Should Be Visible    ${basic_path}
+    #Run Keyword If    '${type}'=='ACCESS_ABORTED'    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[text()[contains(.,'${event_outcome_or_category}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='ACCESS_ABORTED'    Element Should Be Visible    ${path_Without_Bic}
+    Run Keyword If    '${type}'=='DOCUMENT_EXPIRED_ALERT'    Element Should Be Visible    ${basic_path}
+    Run Keyword If    '${type}'=='FOLDER_RECONFIRMATION_WARNING'    Element Should Be Visible    ${basic_path}
+    Run Keyword If    '${type}'=='QUERY'    Element Should Be Visible    ${basic_path}
+
+Verify can view task of given type with message
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}
+    [Documentation]    ***Afina 12 Oct****
+    ...    Fixed on Element should contain
+    Filter entries on BIC    ${bic}
+    Sleep    10s
+    ${taskId}=    Return Id of Task By Status, Bic, Message and Type    ${status}    ${bic}    ${category_title}    ${type}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${task_id}']//*[@id='taskStatus']/em    ${status}
+    Element Should Contain    //*[@id='${task_id}_taskBody']/div//span[@id='entityBic']    [${bic}]
+
+Verify can view request of given type
+    [Arguments]    ${status}    ${bic}    ${category}    ${type}
+    Filter entries on BIC    ${bic}
+    ${basic_path}=    Set Variable    //*[@id='requestStatus']//*[text()='${status}']//ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+    #
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${bic}
+    Run Keyword If    '${type}'!='DATA_AND_DOCUMENTS' and '${type}'!='QUERY_REQUEST' and '${type}'!='ACCESS_REQUEST'    Element Should Be Visible    ${basic_path}//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='DATA_AND_DOCUMENTS' or '${type}'=='QUERY_REQUEST' or '${type}'=='ACCESS_REQUEST'    Element Should Be Visible    ${basic_path}
+    #Run Keyword If    '${type}'=='QUERY_REQUEST'    Element Should Be Visible    ${basic_path}
+    #Run Keyword If    '${type}'=='ACCESS_REQUEST'    Element Should Be Visible    ${basic_path}
+
+Count view task of given type
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}    ${count}
+    Filter entries on BIC    ${bic}
+    Run Keyword If    '${type}'!='ACCESS_ABORTED' and '${type}'!='DOCUMENT_EXPIRED_ALERT' and '${type}'!='FOLDER_RECONFIRMATION_WARNING' and '${type}'!='QUERY'    Xpath Should Match X Times    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+    Run Keyword If    '${type}'=='REQUEST_ACCESS'    Xpath Should Match X Times    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='categories' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+    Run Keyword If    '${type}'=='QUERY_REQUEST'    Xpath Should Match X Times    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+
+Count view event of given type
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}    ${count}
+    Filter entries on BIC    ${bic}
+    Run Keyword If    '${type}'!='ACCESS_ABORTED' and '${type}'!='DOCUMENT_EXPIRED_ALERT' and '${type}'!='FOLDER_RECONFIRMATION_WARNING'    Xpath Should Match X Times    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+    Run Keyword If    '${type}'=='ACCESS_ABORTED'    Xpath Should Match X Times    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='taskTitle' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']    ${count}
+    Run Keyword If    '${type}'=='DOCUMENT_EXPIRED_ALERT'    Xpath Should Match X Times    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+    Run Keyword If    '${type}'=='FOLDER_RECONFIRMATION_WARNING'    Xpath Should Match X Times    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+    Run Keyword If    '${type}'=='QUERY'    Xpath Should Match X Times    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+
+Click on task of given type
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}
+    Filter entries on BIC    ${bic}
+    Run Keyword If    '${type}'!='REQUEST_ACCESS' and '${type}'!='REPLY_QUERY'    Execute Javascript    $('#tasks').find('tr #taskStatus:contains("${status}")').closest('tr[type="${type}"]').find('#entityBic:contains("[${bic}]")').closest('tr').find('#taskTitle:contains("${category_title}")').click()    #click element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='REQUEST_ACCESS'    Execute Javascript    $('#tasks').find('tr #taskStatus:contains("${status}")').closest('tr[type="${type}"]').find('#entityBic:contains("[${bic}]")').closest('tr').find('#taskTitle:contains("${category_title}")').click()    #click element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='categories' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='REPLY_QUERY'    Execute Javascript    $('#tasks').find('tr #taskStatus:contains("${status}")').closest('tr[type="${type}"]').find('#entityBic:contains("[${bic}]")').closest('tr').find('#taskTitle:contains("${category_title}")').click()    #click element    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='REPLY_QUERY']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+
+Verify task of given type is assigned to
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}    ${assigned_to}
+    Filter entries on BIC    ${bic}
+    ${path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']//*[@id='taskAssignedTo']
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${bic}
+    Element Text Should Be    ${path}    ${assigned_to}
+
+Count view request of given type
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}    ${count}
+    Filter entries on BIC    ${bic}
+    Run Keyword If    '${type}'!='DATA_AND_DOCUMENTS' and '${type}'!='QUERY_REQUEST'    Xpath Should Match X Times    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+    Run Keyword If    '${type}'=='DATA_AND_DOCUMENTS'    Xpath Should Match X Times    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='categories' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+    Run Keyword If    '${type}'=='QUERY_REQUEST'    Xpath Should Match X Times    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']    ${count}
+
+Verify can view task of given type by Group
+    [Arguments]    ${status}    ${bic}    ${category_title}    ${type}
+    Filter entries on BIC    ${bic}
+    Run Keyword If    '${type}'!='REQUEST_ACCESS' and '${type}'!='REPLY_QUERY'    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='REQUEST_ACCESS'    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='categories' and text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='REPLY_QUERY'    Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='REPLY_QUERY']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,'${category_title}')]]/ancestor::*[@id='ROW']
+
+Verify cannot view task of given type
+    [Arguments]    ${status}    ${bic}    ${requesting_entities}    ${type}
+    Filter entries on BIC    ${bic}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Not Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_entities}
+    Run Keyword If    '${type}'!='REQUEST_ACCESS' and '${type}'!='REPLY_QUERY'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='REQUEST_ACCESS'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='REPLY_QUERY'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${requesting_entities}')]]/ancestor::*[@id='ROW']
+
+Verify cannot view event of given type
+    [Arguments]    ${status}    ${bic}    ${event_outcome_or_category}    ${type}
+    Filter entries on BIC    ${bic}
+    Run Keyword If    '${type}'!='ACCESS_ABORTED' and '${type}'!='DOCUMENT_EXPIRED_ALERT' and '${type}'!='FOLDER_RECONFIRMATION_WARNING' and '${type}'!='QUERY'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${event_outcome_or_category}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='ACCESS_ABORTED'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[text()[contains(.,'${event_outcome_or_category}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='DOCUMENT_EXPIRED_ALERT'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${event_outcome_or_category}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='FOLDER_RECONFIRMATION_WARNING'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${event_outcome_or_category}')]]/ancestor::*[@id='ROW']
+    Run Keyword If    '${type}'=='QUERY'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='${type}']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${event_outcome_or_category}')]]/ancestor::*[@id='ROW']
+
+Verify can view task done in Information
+    [Arguments]    ${BIC}    ${Type}    ${Status}
+    Filter entries on BIC    ${BIC}
+    ${taskId}=    Return Id of Task By BIC, Type, Status    ${BIC}    ${Type}    ${Status}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${task_id}']//*[@id='taskStatus']/em    ${Status}
+    #Element Should Contain    //*[@id='${task_id}_taskBody']/div//span[@id='entityBic']    [${bic}]
+    Element Should Contain    //*[@id='${task_id}_taskBody']    ${bic}
+    Click Link    //*[@id='dismissTask']

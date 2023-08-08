@@ -1,0 +1,104 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          ../categories_details.txt
+Resource          entity_request_access_buss.txt
+
+*** Keywords ***
+Request Access dialog Select all Entities
+    Click Element    //*[@id="manageAccessManagementDialog"]//*[@id='manageAccessDetails']//*[@id='DATAANDDOCUMENTS_ALL']
+    Click Element    //*[@id="manageAccessManagementDialog"]//*[@id='manageAccessDetails']//*[@id='DATAANDDOCUMENTS_ALL']//*[@id='requestAllAccess']
+
+Request Access dialog Clear all Entities
+    Click Element    //*[@id="requestAccessDialog"]//*[@id='clearAllEntities']
+
+Request Access dialog select the entity with BIC
+    [Arguments]    ${bic}
+    Select Checkbox    //*[@id="requestingEntities"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//input
+
+Request Access dialog select BIC is visible
+    [Arguments]    ${bic}
+    Selenium2Library.Element Should Be Visible    //*[@id="requestingEntities"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+
+Request Access dialog deselect the entity with BIC
+    [Arguments]    ${bic}
+    Unselect Checkbox    //*[@id="requestingEntities"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//input
+
+Request Access dialog click Send
+    Click Element    //*[@id="requestAccessDialog"]//*[@id='sendDialog']
+    Element Should Not Be visible    //*[@id="requestAccessDialog"]
+
+Open Modify access to data and documents dialog
+    Element Should Be Visible    //*[@id='actionMenu']//*[@id='modifyAccessDataAndDocuments']
+    Click Element    //*[@id='actionMenu']//*[@id='modifyAccessDataAndDocuments']
+    Element Should Be Visible    //*[@id="modifyAccessDialog"]
+    Sleep    1s
+
+Modify Access dialog Click Next
+    Click Element    //*[@id="modifyAccessDialog"]//*[@id='nextDialog']
+    Element Should Be Visible    //*[@id="modifyAccessDialog"]//*[text()[contains(.,'Review')]]
+
+Modify Access dialog select BIC is visible in Entities surrending access
+    [Arguments]    ${bic}
+    Selenium2Library.Element Should Be Visible    //*[@id="surrenderingAccessEntities"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+
+Modify Access dialog select BIC is visible in Additional Entities requesting access
+    [Arguments]    ${bic}
+    Selenium2Library.Element Should Be Visible    //*[@id="requestingAccessEntities"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']
+
+Modify Access dialog click Send
+    Click Element    //*[@id="modifyAccessDialog"]//*[@id='sendDialog']
+    #    Element Should Not Be visible    //*[@id="modifyAccessDialog"]
+    Element Should Be Visible    //*[@id="surrenderAccessDialog"]
+
+Modify Access dialog Clear all Entities
+    Click Element    //*[@id="modifyAccessDialog"]//*[@id='clearAllEntities']
+
+Modify Access dialog Select all Entities
+    Click Element    //*[@id="modifyAccessDialog"]//*[@id='selectAllEntities']
+
+Modify Access dialog deselect the entity with BIC
+    [Arguments]    ${bic}
+    Unselect Checkbox    //*[@id="requestingEntities"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//input
+
+Modify Access dialog select the entity with BIC
+    [Arguments]    ${bic}
+    Select Checkbox    //*[@id="requestingEntities"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//input
+
+Open Request access to data and documents dialog
+    #Element Should Be Visible    //*[@id='actionMenu']//*[@id='requestAccessDataAndDocuments']
+    #Click Element    //*[@id='actionMenu']//*[@id='requestAccessDataAndDocuments']
+    #Element Should Be Visible    //*[@id="requestAccessDialog"]
+    Element Should Be Visible    //*[@id='noAccess']//*[@id='manageAccess']
+    Click Element    //*[@id='noAccess']//*[@id='manageAccess']
+    Element Should Be Visible    //*[@id="manageAccessManagementDialog"]
+
+Open Request access to SWIFT Profile
+    Element Should Be Visible    //*[@id='actionMenu']//*[@id='requestAccessSWIFTProfile']
+    Click Element    //*[@id='actionMenu']//*[@id='requestAccessSWIFTProfile']
+    Element Should Be Visible    //*[@id="requestAccessDialog"]
+    Sleep    1s
+
+Modify Access dialog Confirm
+    Element Should Be Visible    //*[@id="surrenderAccessDialog"]
+    Click Element    //*[@id="surrenderAccessDialog"]//*[@id='surrenderAccess']
+    Element Should Not Be Visible    //*[@id="surrenderAccessDialog"]
+    Element Should Not Be visible    //*[@id="modifyAccessDialog"]
+
+Open Request access to SWP reports dialog
+    Element Should Be Visible    //*[@id='swiftProfileNoAccess']//*[@id='requestSwiftProfile']
+    Click Element    //*[@id='swiftProfileNoAccess']//*[@id='requestSwiftProfile']
+    Element Should Be Visible    //*[@id="requestSwiftProfileDialog"]
+
+Request SWP Access dialog Select all Entities
+    Click Element    //*[@id="requestSwiftProfileDialog"]//*[@id='selectAllEntities']
+
+SWP Request Access dialog click Send
+    Click Element    //*[@id="requestSwiftProfileDialog"]//*[@id='sendDialog']
+    Element Should Not Be visible    //*[@id="requestSwiftProfileDialog"]
+
+SWP Request Access dialog select the entity with BIC
+    [Arguments]    ${bic}
+    Select Checkbox    //*[@id="requestingEntities"]//*[text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//input
+
+Request SWP Access dialog Deselect all Entities
+    Click Element    //*[@id="requestSwiftProfileDialog"]//*[@id='clearAllEntities']

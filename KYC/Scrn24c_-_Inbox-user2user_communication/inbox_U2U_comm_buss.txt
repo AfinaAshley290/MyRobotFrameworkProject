@@ -1,0 +1,739 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          inbox_U2U_comm_unit.txt
+
+*** Keywords ***
+Verify I can view Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    [Documentation]    missing to specify category
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]
+    #${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]
+    #Run Keyword Unless    ${present}    Reload Page
+    #Run Keyword Unless    ${present}    Filter entries on BIC    ${target_bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Element Should Be visible    ${taskId}
+
+Verify I cannot view Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    [Documentation]    missing to specify category
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Should Be Equal    ${taskId}    ${None}
+
+Verify Document reply task is assigned to
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ...    ${assignee_name}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskAssignedTo']//*[text()[contains(.,"${assignee_name}")]]
+    #${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${path}
+    #Run Keyword Unless    ${present}    Reload Page
+    #Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    #Element Should Be Visible    ${path}
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Element Should Be Visible    ${taskId}
+    ${assignee}=    Get Task Assignee    ${taskId}
+    Should be True    '${assignee}'=='${assignee_name}'
+
+Verify I can see completion date for Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='completionDate']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Element Should Be Visible    ${taskId}
+    Element Should Be Visible    //*[@id='${taskId}']//*[@id='taskStatus']//*[@id='completionDate']
+
+Verify I can see Received date for Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    #comment    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    Element Should Be Visible    ${taskId}
+    Element Should Be Visible    //*[@id='${taskId}_taskReceivedDate']
+
+Verify note for Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ...    ${text}
+    Filter entries on BIC    ${target_bic}
+    Show comment for Document reply task    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskNote']//*[text()[contains(.,"${text}")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskNote']    ${text}
+
+Verify feedback for Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ...    ${text}
+    Filter entries on BIC    ${target_bic}
+    Show comment for Document reply task    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']//*[text()[contains(.,"${text}")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskFeedback']    ${text}
+
+Reserve Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    #Run Keyword Unless    ${present}    Reload Page
+    #Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='assignTaskToMe']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Click Element    ${taskId}_taskActions
+    Element Should Be Visible    ${taskId}_taskActionsMenu
+    Click Element    //*[@id='${taskId}_taskActionsMenu']//*[@id="assignTaskToMe"]
+    #Reload Page
+    #Load whole page
+
+Unreserve Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='unreserveTask']
+    #
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    ${status}=    Run Keyword And Return Status    Click Element    ${taskId}_taskActions
+    Run Keyword If    ${status} == True    Element Should Be Visible    ${taskId}_taskActionsMenu
+    Run Keyword If    ${status} == True    Click Element    //*[@id='${taskId}_taskActionsMenu']//*[@id='unreserveTask']
+    Reload Page
+    Load whole page
+
+Verify I cannot reserve unreserve Document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Element Should Not Be visible    ${taskId}_taskActionsMenu
+
+Verify I can view Document query request
+    [Arguments]    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    [Documentation]    missing to specify category
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${doc}')]]
+
+Verify completion date is displayed for Document query request
+    [Arguments]    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='completionDate']
+
+Verify I can see Sent date for Document query request
+    [Arguments]    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='requestSentDate']
+
+Verify note for Document query request
+    [Arguments]    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}    ${text}
+    Filter entries on BIC    ${target_bic}
+    Show comment for Document query request    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ${doc}=    Get doc title from code    ${doc}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']//*[text()[contains(.,'${text}')]]
+
+Verify feedback for Document query request
+    [Arguments]    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}    ${text}
+    Filter entries on BIC    ${target_bic}
+    Show comment for Document query request    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ${doc}=    Get doc title from code    ${doc}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${request_type}')]]/ancestor::*[@id='ROW']//*[@id='requestTitle']//*[text()[contains(.,'${doc}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']//*[text()[contains(.,'${text}')]]
+
+Verify I can view Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    [Documentation]    Currently used for Message query
+    ...
+    ...    msg type: message query
+    Filter entries on BIC    ${target_bic}
+    #${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]
+    #Run Keyword Unless    ${present}    Reload Page
+    #Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+
+Verify I cannot view Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    [Documentation]    Currently used for Message query
+    ...
+    ...    msg type: message query
+    Filter entries on BIC    ${target_bic}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Should Be Equal    ${taskId}    ${None}
+
+Verify Message reply task is assigned to
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}    ${assignee_name}
+    [Documentation]    Currently used for Message query
+    ...
+    ...    msg type:
+    Filter entries on BIC    ${target_bic}
+    #${path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskAssignedTo']//*[text()[contains(.,"${assignee_name}")]]
+    #${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${path}
+    #Run Keyword Unless    ${present}    Reload Page
+    #Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    #Element Should Be Visible    ${path}
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+    ${assignee}=    Get Task Assignee    ${taskId}
+    Should be True    '${assignee}'=='${assignee_name}'
+
+Verify I can see completion date for Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='completionDate']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+    Element Should Be Visible    //*[@id='${taskId}']//*[@id='taskStatus']//*[@id='completionDate']
+
+Verify I can see Received date for Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskReceivedDate']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+    Element Should Be Visible    //*[@id='${taskId}_taskReceivedDate']
+
+Verify note for Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}    ${text}
+    Filter entries on BIC    ${target_bic}
+    Show comment for Message reply task    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskNote']//*[text()[contains(.,"${text}")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskNote']    ${text}
+
+Verify feedback for Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}    ${text}
+    Filter entries on BIC    ${target_bic}
+    Show comment for Message reply task    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskFeedback']//*[text()[contains(.,"${text}")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    //*[@id='${taskId}']//*[@id='${taskId}_taskBody']//*[@id='taskFeedback']    ${text}
+
+Reserve Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    [Documentation]    Currently used for Message query
+    ...
+    ...    msg type:
+    Filter entries on BIC    ${target_bic}
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='assignTaskToMe']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Click Element    ${taskId}_taskActions
+    Element Should Be Visible    ${taskId}_taskActionsMenu
+    Click Element    //*[@id='${taskId}_taskActionsMenu']//*[@id="assignTaskToMe"]
+    #Reload Page
+    #Load whole page
+
+Unreserve Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    [Documentation]    Currently used for Message query
+    ...
+    ...    msg type:
+    Filter entries on BIC    ${target_bic}
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskActions']
+    # Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    #Click Element    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='unreserveTask']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    ${status}=    Run Keyword And Return Status    Click Element    ${taskId}_taskActions
+    Run Keyword If    ${status} == True    Element Should Be Visible    ${taskId}_taskActionsMenu
+    Run Keyword If    ${status} == True    Click Element    //*[@id='${taskId}_taskActionsMenu']//*[@id='unreserveTask']
+    Reload Page
+    Load whole page
+
+Verify I cannot reserve unreserve Message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[@id='taskActionsMenu']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Not Be Visible    ${taskId}_taskActionsMenu
+
+Verify I can view Message query request
+    [Arguments]    ${status}    ${target_bic}    ${msg_type}
+    [Documentation]    Currently used for Message query
+    ...
+    ...    msg type: message query
+    Filter entries on BIC    ${target_bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]
+
+Verify completion date is displayed for Message query request
+    [Arguments]    ${status}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='completionDate']
+
+Verify I can see Sent date for Message query request
+    [Arguments]    ${status}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='requestSentDate']
+
+Verify note for Message query request
+    [Arguments]    ${status}    ${target_bic}    ${msg_type}    ${text}
+    Filter entries on BIC    ${target_bic}
+    Show comment for Message request    ${status}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='requestNote']//*[text()[contains(.,'${text}')]]
+
+Verify feedback for Message query request
+    [Arguments]    ${status}    ${target_bic}    ${msg_type}    ${text}
+    Filter entries on BIC    ${target_bic}
+    Show comment for Message request    ${status}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,'${msg_type}')]]/ancestor::*[@id='ROW']//*[@id='requestFeedback']//*[text()[contains(.,'${text}')]]
+
+Verify I can view Document query event
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"requests")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    ${taskId}    requests
+
+Verify I cannot view Document query event
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"requests")]]
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Should Be Equal    ${taskId}    ${None}
+
+Verify I can view Document query reply event
+    [Arguments]    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskSubtitle']//*[text()[contains(.,"${target_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"reply")]]
+    ${taskId}=    Return Id of Task By Status,TargetBic,Category,RequestType and Doc    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    ${taskId}    reply
+
+Verify I cannot view Document query reply event
+    [Arguments]    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${target_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"replied")]]
+    ${taskId}=    Return Id of Task By Status,TargetBic,Category,RequestType and Doc    ${status}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Element Should Not Contain    ${taskId}    replied
+
+Verify I can view Message query event
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='QUERY']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    #Run Keyword Unless    ${present}    Reload Page
+    #Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='QUERY']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    ${taskId}
+
+Verify I cannot view Message query event
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW' and @type='QUERY']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    ${taskId}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Should Be Equal    ${taskId}    ${None}
+
+Verify I can view Message query reply event
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #Run Keyword If    '${msg_type}'!='access'    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskSubtitle']//*[text()[contains(.,"${target_bic}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"reply")]]
+    #Run Keyword If    '${msg_type}'=='access'    Element Should Be Visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskSubtitle']//*[text()[contains(.,"${target_bic}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"reply")]]
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${target_bic}
+    Element Should Be Visible    ${taskId}
+    Element Should Contain    ${taskId}    reply
+    Element Should Contain    ${taskId}    ${msg_type}
+
+Verify I cannot view Message query reply event
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #Run Keyword If    '${msg_type}'!='access'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskSubtitle']//*[text()[contains(.,"${target_bic}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"reply")]]
+    #Run Keyword If    '${msg_type}'=='access'    Element Should Not Be visible    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskSubtitle']//*[text()[contains(.,"${target_bic}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"reply")]]
+    ${taskId}=    Return Id of Task By Status and Bic    ${status}    ${target_bic}
+    Element Should Not Contain    ${taskId}    reply
+
+Reply to U2S Query
+    [Arguments]    ${bic}    ${category}    ${comment}
+    Open Inbox
+    Open Inbox filter Awaiting Action
+    Click on U2S reply task    ${bic}    ${category}
+    Element Should Be Visible    //*[@id='replyQueryDialog']
+    Input Text    //*[@id='replyQueryDialog']//textarea    ${comment}
+    click element    //*[@id='replyQuery']
+    Element Should Not Be visible    //*[@id='replyQueryDialog']
+
+Reply to U2U-S2U Query
+    [Arguments]    ${bic}    ${topic}    ${comment}
+    [Documentation]    topic: label of messagetopics in database
+    Open Inbox
+    Open Inbox filter Awaiting Action
+    Click on U2U-S2U reply task    ${bic}    ${topic}
+    Wait Until Page Contains Element    //*[@id='replyQueryDialog']    25sec
+    Element Should Be Visible    //*[@id='replyQueryDialog']
+    Input Text    //*[@id='replyQueryDialog']//textarea    ${comment}
+    Click Element    //*[@id='replyQuery']
+    Element Should Not Be visible    //*[@id='replyQueryDialog']
+
+Verify I can view SWIFT message task
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Verify can view task of given type    ${status}    ${bic}    ${topic}    REPLY_QUERY
+
+Verify I can view SWIFT message event
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Verify can view event of given type    ${status}    ${bic}    ${topic}    QUERY
+
+Verify I can view SWIFT message request
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Verify can view request of given type    ${status}    ${bic}    ${topic}    QUERY_REQUEST
+
+Verify I cannot view SWIFT message task
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Count view task of given type    ${status}    ${bic}    ${topic}    REPLY_QUERY    0
+
+Verify I cannot view SWIFT message request
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Count view request of given type    ${status}    ${bic}    ${topic}    REPLY_QUERY    0
+
+Verify I cannot view SWIFT message event
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Count view event of given type    ${status}    ${bic}    ${topic}    REPLY_QUERY    0
+
+Verify I can view SWIFT Reply task
+    [Arguments]    ${status}    ${bic}    ${category}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='REPLY_QUERY']//*[@id='entityBic' and text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='taskBody']//*[text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']
+
+Verify I can view SWIFT Reply event
+    [Arguments]    ${status}    ${bic}    ${category}
+    Filter entries on BIC    ${bic}
+    Element Should Be Visible    //*[@id='taskStatus']//*[text()[contains(.,'${status}')]]/ancestor::*[@id='ROW' and @type='QUERY']//*[@id='entityBic' and [text()[contains(.,'${bic}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and [text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']
+
+Verify I can view SWIFT Reply request
+    [Arguments]    ${status}    ${bic}    ${category}
+    Verify can view request of given type    ${status}    ${bic}    ${category}    QUERY_REQUEST
+
+Verify I cannot view SWIFT Reply task
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Count view task of given type    ${status}    ${bic}    ${topic}    REPLY_QUERY    0
+
+Verify I cannot view SWIFT Reply request
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Count view request of given type    ${status}    ${bic}    ${topic}    REPLY_QUERY    0
+
+Verify I cannot view SWIFT Reply event
+    [Arguments]    ${status}    ${bic}    ${topic}
+    Count view event of given type    ${status}    ${bic}    ${topic}    REPLY_QUERY    0
+
+SWIFT Query Request should be created waiting for a reply
+    [Arguments]    ${entity}    ${category}
+    Open Inbox
+    Open Outbox filter Pending Reply
+    Filter entries on BIC    ${entity}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()[contains(.,'Pending reply')]]/ancestor::*[@id='ROW' and @type='QUERY_REQUEST']//*[@id='entityBic' and text()[contains(.,'${entity}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']
+
+SWIFT Query Task should be created and awaiting action
+    [Arguments]    ${entity}    ${category}
+    Open Inbox
+    Open Inbox filter Awaiting Action
+    Filter entries on BIC    ${entity}
+    ${task_id}=    Return Id of Task By Status,Bic, Category Name and Status    REPLY_QUERY    ${entity}    ${category}    Awaiting action
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'Awaiting action')]]/ancestor::*[@id='ROW' and @type='REPLY_QUERY']//*[@id='entityBic' and text()[contains(.,'${entity}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']
+    Element Should Be Visible    //*[@id='${task_id}_taskBody']//*[@id='taskTitle']
+
+SWIFT Query Event should be created
+    [Arguments]    ${entity}    ${category}
+    Open Inbox
+    Open Inbox filter Events
+    Filter entries on BIC    ${entity}
+    ${task_id}=    Return Id of Task By Status,Bic, Category Name and Status    QUERY    ${entity}    ${category}    Informative
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'Informative')]]/ancestor::*[@id='ROW' and @type='QUERY']//*[@id='entityBic' and text()[contains(.,'${entity}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']
+    Element Should Be Visible    //*[@id='${task_id}_taskBody']//*[@id='taskTitle']
+
+SWIFT Query Request should be replied and closed
+    [Arguments]    ${entity}    ${category}
+    Open Inbox
+    Open Outbox filter Show all
+    Filter entries on BIC    ${entity}
+    Element Should Be Visible    //*[@id='requestStatus']/*[text()[contains(.,'Replied')]]/ancestor::*[@id='ROW' and @type='QUERY_REQUEST']//*[@id='entityBic' and text()[contains(.,'${entity}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']
+
+SWIFT Query Task should be replied and closed
+    [Arguments]    ${entity}    ${category}
+    Open Inbox
+    Open Inbox filter Show all
+    Filter entries on BIC    ${entity}
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'Replied')]]/ancestor::*[@id='ROW' and @type='REPLY_QUERY']//*[@id='entityBic' and text()[contains(.,'${entity}')]]/ancestor::*[@id='ROW']//*[@id='entityFolder' and text()[contains(.,'${category}')]]/ancestor::*[@id='ROW']
+    ${task_id}=    Return Id of Task By Type,Status,Bic and Category Name    Replied    ${entity}    ${category}    REPLY_QUERY
+    Element Should Be Visible    ${task_id}
+
+User Query Task should be created and awaiting action
+    [Arguments]    ${targetEntity}    ${topic}    ${message}
+    Open Inbox
+    Open Inbox filter Awaiting Action
+    Filter entries on BIC    ${targetEntity}
+    ${task_id}=    Return Id of Task By Status, Bic, Message and Type    Awaiting action    ${targetEntity}    ${topic}    REPLY_QUERY
+    Comment    Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'Awaiting action')]]/ancestor::*[@id='ROW' and @type='REPLY_QUERY']//*[@id='taskTitle']/*[text()[contains(.,'${topic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${targetEntity}')]]/ancestor::*[@id='ROW']//*[@id='taskComments']//*[text()[contains(.,'${message}')]]/ancestor::*[@id='ROW']
+    Element Should Be Visible    //*[@id='${task_id}_taskBody']//*[@id='taskComments']//*[text()[contains(.,'${message}')]]
+
+User Query Event should be created
+    [Arguments]    ${targetEntity}    ${topic}
+    Open Inbox
+    Open Inbox filter Events
+    Filter entries on BIC    ${targetEntity}
+    ${task_id}=    Return Id of Task By Status, Bic, Message and Type    Informative    ${targetEntity}    ${topic}    QUERY
+    #Element Should Be Visible    //*[@id='taskStatus']/*[text()[contains(.,'Informative')]]/ancestor::*[@id='ROW' and @type='QUERY']//*[@id='taskTitle']/*[text()[contains(.,'${topic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${targetEntity}')]]/ancestor::*[@id='ROW']
+    Element Should be Visible    //*[@id='${task_id}_taskBody']//*[@id='taskTitle']//*[text()[contains(.,'${topic}')]]
+
+User Query Task should not be visible
+    [Arguments]    ${targetEntity}    ${topic}    ${message}
+    Open Inbox
+    Open Inbox filter Awaiting Action
+    Filter entries on BIC    ${targetEntity}
+    ${task_id}=    Return Id of Task By Status, Bic, Message and Type    Awaiting action    ${targetEntity}    ${topic}    REPLY_QUERY
+    #Element Should Not Be visible    //*[@id='taskStatus']/*[text()[contains(.,'Awaiting action')]]/ancestor::*[@id='ROW' and @type='REPLY_QUERY']//*[@id='taskTitle']/*[text()[contains(.,'${topic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${targetEntity}')]]/ancestor::*[@id='ROW']//*[@id='taskComments']//*[text()[contains(.,'${message}')]]/ancestor::*[@id='ROW']
+    Comment    Element Should Not Be Visible    //*[@id='${task_id}_taskBody']//*[@id='taskComments']//*[text()[contains(.,'${message}')]]
+    Should Be Equal    ${task_id}    ${None}
+
+User Query Event should not be visible
+    [Arguments]    ${targetEntity}    ${topic}
+    Open Inbox
+    Open Inbox filter Events
+    Filter entries on BIC    ${targetEntity}
+    ${task_id}=    Return Id of Task By Status, Bic, Message and Type    Informative    ${targetEntity}    ${topic}    QUERY
+    Comment    Element Should Not Be visible    //*[@id='taskStatus']/*[text()[contains(.,'Informative')]]/ancestor::*[@id='ROW' and @type='QUERY']//*[@id='taskTitle']/*[text()[contains(.,'${topic}')]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${targetEntity}')]]/ancestor::*[@id='ROW']
+    Should Be Equal    ${task_id}    ${None}
+
+Verify Document reply task is assignable to all users entity role
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ...    ${role}    ${current_user}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task is assignable to all users entity role    ${target_bic}    ${role}    ${current_user}    ${basic_path}
+
+Verify document reply task is assignable to all users entity role except user
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ...    ${role}    ${assignee}    ${current_user}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task is assignable to all users entity role except user    ${target_bic}    ${role}    ${assignee}    ${current_user}    ${basic_path}
+
+Assign document reply task to user
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ...    ${user}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Assign task to user    ${basic_path}    ${user}
+
+Verify document reply task shows assigner
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    ...    ${assigner}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task shows assigner    ${basic_path}    ${assigner}
+
+Verify document reply task does not show assigner
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${target_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task does not show assigner    ${basic_path}
+
+Verify document reply task can be unreserved
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Verify task can be unreserved    ${basic_path}
+
+Verify document reply task cannot be unreserved
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Filter entries on BIC    ${target_bic}
+    ${doc}=    Get doc title from code    ${doc}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${request_type}")]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${doc}")]]/ancestor::*[@id='ROW']
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,Category,RequestType and Doc    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}
+    ...    ${doc}
+    Verify task cannot be unreserved    ${basic_path}
+
+Take over document reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Reserve Document Reply Task    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Confirm Takeover
+    Open Document reply task    ${status}    ${requesting_bic}    ${target_bic}    ${category}    ${request_type}    ${doc}
+    Element Should Be Visible    //*[@id='replyDocumentQueryDialog']
+    Click Element    //*[@id='replyDocumentQueryDialog']//*[@id='cancelDialog']
+    Element Should Not Be visible    //*[@id='replyDocumentQueryDialog']
+
+Verify message reply task is assignable to all users entity role
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}    ${role}    ${current_user}
+    Filter entries on BIC    ${target_bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task is assignable to all users entity role    ${target_bic}    ${role}    ${current_user}    ${basic_path}
+
+Verify message reply task is assignable to all users entity role except user
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}    ${role}    ${assignee}
+    ...    ${current_user}
+    Filter entries on BIC    ${target_bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task is assignable to all users entity role except user    ${target_bic}    ${role}    ${assignee}    ${current_user}    ${basic_path}
+
+Assign message reply task to user
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}    ${user}
+    Filter entries on BIC    ${target_bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Assign task to user    ${basic_path}    ${user}
+
+Verify message reply task shows assigner
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}    ${assigner}
+    Filter entries on BIC    ${target_bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task shows assigner    ${basic_path}    ${assigner}
+
+Verify message reply task does not show assigner
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task does not show assigner    ${basic_path}
+
+Verify message reply task can be unreserved
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task can be unreserved    ${basic_path}
+
+Verify message reply task cannot be unreserved
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Filter entries on BIC    ${target_bic}
+    #${basic_path}=    Set Variable    //*[@id='taskStatus']/*[text()='${status}']/ancestor::*[@id='ROW']//*[@id='taskTitle']//*[text()[contains(.,"${requesting_bic}")]]/ancestor::*[@id='ROW']//*[@id='entityBic' and text()[contains(.,'${target_bic}')]]/ancestor::*[@id='ROW']//*[text()[contains(.,"${msg_type}")]]/ancestor::*[@id='ROW']
+    #
+    ${basic_path}=    Return Id of Task By Status,RequestingBic,TargetBic,MessageType    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    ${present}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    ${basic_path}
+    Run Keyword Unless    ${present}    Reload Page
+    Run Keyword Unless    ${present}    Filter entries on BIC    ${requesting_bic}
+    Element Should Be Visible    ${basic_path}
+    #
+    Verify task cannot be unreserved    ${basic_path}
+
+Take over message reply task
+    [Arguments]    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Reserve Message Reply Task    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Confirm Takeover
+    Open Message reply task    ${status}    ${requesting_bic}    ${target_bic}    ${msg_type}
+    Element Should Be Visible    //*[@id='replyQueryDialog']
+    Click Element    //*[@id='replyQueryDialog']//*[@id='cancelDialog']
+    Element Should Not Be visible    //*[@id='replyQueryDialog']

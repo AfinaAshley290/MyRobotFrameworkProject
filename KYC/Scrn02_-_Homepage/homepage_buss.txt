@@ -1,0 +1,208 @@
+*** Settings ***
+Resource          ../kyc_res.txt
+Resource          homepage_unit.txt
+
+*** Keywords ***
+Open Inbox
+    [Documentation]    Open the Inbox page
+    #Click Element    //*[@id="appNavigation"]//*[@id="inbox"]
+    Element Should Be Visible    //*[@id='inbox']
+    Execute Javascript    $('#inbox').click()
+    #Click Element    //*[@id='inbox']
+    Element Should Be Visible    //h2/*[text()[contains(.,'Inbox')]]
+    Element Should Be Visible    //*[@id='tasksNavigation']
+    Element Should Be Visible    //*[@id='requestsNavigation']
+
+Open My entities
+    #Click Element    //*[@id="appNavigation"]//*[@id="myEntities"]
+    Element Should Be Visible    //*[@id="myEntities"]
+    Execute Javascript    $('#myEntities').click()
+    #Click Element    myEntities
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id='myEntities']//ancestor::*[@class="nav-active"]
+    #Run Keyword Unless    ${activated}    Click Element    myEntities
+    Run Keyword Unless    ${activated}    Execute Javascript    $('#myEntities').click()
+    Element Should Be Visible    //h2/*[text()[contains(.,'My entities')]]
+    #Load whole page
+
+Open My counterparties
+    #Click Element    //*[@id="appNavigation"]//*[@id="myCounterparties"]
+    Element Should Be Visible    //*[@id="myCounterparties"]
+    Execute Javascript    $('#myCounterparties').click()
+    #Click Element    myCounterparties
+    ${activated}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='myCounterparties']//ancestor::*[@class="nav-active"]
+    #Run Keyword Unless    ${activated}    Click Element    myCounterparties
+    Run Keyword Unless    ${activated}    Execute Javascript    $('#myCounterparties').click()
+    #Selenium2Library.Element Should Be Visible    //h2/*[text()[contains(.,'counter')]]    error=Could not open My counterparties
+    Element Should Be Visible    //h2/*[text()[contains(.,'counter')]]
+    Load whole page
+
+Open My preferences
+    #Click Element    //*[@id="appNavigation"]//*[@id="myFavourites"]
+    Element Should Be Visible    //*[@id="myFavourites"]
+    #Click Element    myFavourites
+    Execute Javascript    $('#myFavourites').click()
+    ${activated}=    Run Keyword And Return Status    Element Should Be Visible    //*[@id='myFavourites']//ancestor::*[@class=contains(.,"nav-active")]
+    #Run Keyword Unless    ${activated}    Click Element    myFavourites
+    Run Keyword Unless    ${activated}    Click Element    myFavourites
+    Element Should Be Visible    //*[@id='myFavourites']//ancestor::*[@class=contains(.,"nav-active")]
+
+Open Entity
+    [Arguments]    ${bic_value}
+    BuiltIn.Log    ${bic_value}
+    Input Text    //*[@id='inputSearch']    ${bic_value}
+    Execute Javascript    $('#find').click()
+    #
+    Sleep    5s
+    Element Should Be Visible    //*[@id='entities']//*[text()[contains(.,'${bic_value}')]]    #//*[@id='searchResults']//*[text()[contains(.,'${bic_value}')]]
+    Click Element    //*[@id='entities']//*[text()[contains(.,'${bic_value}')]]    #//*[@id='searchResults']//*[text()[contains(.,'${bic_value}')]]
+    #
+    Page loading done
+    Run Keyword And Ignore Error    Wait Until Page Contains Element    id=entityHeader    15s
+    Wait Until Page Contains Element    id=entityType    15s    #make sure entityType is there before getting it's value
+    ${entityType}=    Get Text    entityType
+    #    Run Keyword If    '${entityType}'=='Group Head'    Element Should Contain    entityHeader    ${bic_value}    message=Could not open Entity page
+    #    Run Keyword Unless    '${entityType}'=='Group Head'    Element Should Contain    entityBic    ${bic_value}    message=Could not open Entity page
+    Element Should Contain    entityHeader    ${bic_value}    message=Could not open Entity page
+
+Open User Management
+    #Click Element    //*[@id="appNavigation"]//*[@id="userAdministration"]
+    Element Should Be Visible    //*[@id='administration']
+    #    Mouse Over    //*[@id='administration']
+    #    Element Should Be Visible    //*[@id="userAdministration"]
+    #    Click Element    //*[@id="userAdministration"]
+    Execute Javascript    $('#userAdministration').click()
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Be Visible    //h2/*[text()[contains(.,'User')]]
+    Load whole page
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Open Administration Preferences
+    #Click Element    //*[@id="appNavigation"]//*[@id="userAdministration"]
+    #Mouse Over    administration
+    #Click Element    //*[@id="preferences"]
+    Execute Javascript    $('#preferences').click()
+    ${activated}=    Run Keyword And Return Status    Element Should Be Visible    SUB_2_EYES
+    #Run Keyword Unless    ${activated}    Click Element    administration
+    Run Keyword Unless    ${activated}    Execute Javascript    $('#preferences').click()
+    Selenium2Library.Element Should Be Visible    SUB_2_EYES    error=Could not open Users Management page
+    Page loading done
+
+Open Covered-by Entities page
+    #Click Element    //*[@id="appNavigation"]//*[@id="userAdministration"]
+    #Mouse Over    administration
+    #Click Element    administration
+    #Element Should Be Visible    //*[@id="coveredByEntitiesAdministration"]
+    #Click Element    //*[@id="coveredByEntitiesAdministration"]
+    Execute Javascript    $('#coveredByEntitiesAdministration').click()
+    ${activated}=    Run Keyword And Return Status    Selenium2Library.Element Should Not Be Visible    //h2/*[text()[contains(.,'covered')]]
+    #Run Keyword Unless    ${activated}    Click Element    administration
+    Run Keyword Unless    ${activated}    Execute Javascript    $('#coveredByEntitiesAdministration').click()
+    #Element Should Be Visible    //h2/*[text()[contains(.,'covered')]]
+    Page Should Contain    Covered-by entities
+
+Open User simulation
+    Execute Javascript    $('#swiftAdminActions').click()
+    ${shown}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[@id="swiftAdminMenu"]
+    Run Keyword Unless    ${shown}    Execute Javascript    $('#swiftAdminActions').click()
+    Element Should Be Visible    //*[@id="swiftAdminMenu"]
+    Execute Javascript    $('#swiftAdminMenu #simulateUser').click()
+    Element Should Be Visible    //*[@id="simulateUserDialog"]
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+Cannot open User Management
+    Element Should Not Be Visible    administration
+    #    Click Element    administration
+    #    Element Should Not Be Visible    //*[@id="userAdministration"]
+
+Open Home
+    Execute Javascript    $('#home').click()
+    #Click Element    //*[@id='home']
+    Element Should Be Visible    //*[@id='appSearch']
+
+Open Administration Reporting
+    Execute Javascript    $('#reports').click()
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+
+In Entity
+    [Arguments]    ${bic_value}
+    [Documentation]    From Homepage, opens the My entities page and then the Entity page of the specified BIC
+    BuiltIn.Log    ${bic_value}
+    ${find_page}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    inputSearch    error=Could not open Find page
+    Run Keyword If    ${find_page}    Open Entity    ${bic_value}
+    Run Keyword Unless    ${find_page}    Open Entity from Find    ${bic_value}
+    Page loading done
+
+In Entity and Category
+    [Arguments]    ${bic_value}    ${category_acronym}
+    [Documentation]    From Homepage, opens the My entities page and then the Entity page of the specified BIC
+    In Entity    ${bic_value}
+    In Category    ${category_acronym}
+
+Homepage - Verify list of KYC administrators for the group is displayed
+    Element Should Be Visible    //*[@class[contains(.,'entities')]]//*[@id='administrators']
+    ${#entries}=    Get Matching Xpath Count    //*[@class[contains(.,'entities')]]//*[@id='administrators']//*[@id[contains(.,'ROW')]]
+    Run Keyword If    ${#entries}<1    Fail    Error=list of administrators is not visible
+    [Return]    ${#entries}
+
+Homepage - Verify this KYC administrator is displayed
+    [Arguments]    ${administrator_user}
+    Element Should Be Visible    //*[@class[contains(.,'entities')]]//*[@id='administrators']//*[@id[contains(.,'ROW')]]//*[text()='${${administrator_user}_firstname}']/ancestor::*[@id[contains(.,'ROW')]]//*[text()='${${administrator_user}_lastname}']
+
+Homepage - Verify following list of administrators is displayed in specified order
+    [Arguments]    @{administrators_users}
+    Log Many    ${administrators_users}
+    ${size}=    Get Length    ${administrators_users}
+    #
+    Run Keyword If    ${size}>3    Homepage - Expand administrators list
+    #
+    : FOR    ${idx}    IN RANGE    ${size}
+    \    Log    ${idx}
+    \    Log    ${${administrators_users[${idx}]}_firstname}
+    \    Log    ${${administrators_users[${idx}]}_lastname}
+    \    Element Should Be Visible    //*[@class[contains(.,'entities')]]//*[@id='administrators']//*[@id='ROW_${idx}']//*[text()='${${administrators_users[${idx}]}_firstname}']/ancestor::*[@id='ROW_${idx}']//*[text()='${${administrators_users[${idx}]}_lastname}']
+
+Homepage - Expand administrators list and check list matches
+    [Arguments]    @{administrators_users}
+    ${xpath}=    Set Variable    //*[@id='administrators']
+    #
+    Log Many    ${administrators_users[0][0]}
+    ${entries_per_row}=    Get Length    ${administrators_users[0][0]}
+    ${manual_list}=    Evaluate    0<${entries_per_row}<2
+    #
+    Homepage - Expand administrators list
+    Sort List    ${administrators_users}
+    ${size}=    Get Length    ${administrators_users}
+    : FOR    ${idx}    IN RANGE    ${size}
+    \    Run Keyword If    ${manual_list}    Element Should Be Visible    ${xpath}//*[@id='ROW_${idx}']//*[text()='${${administrators_users[${idx}]}_firstname}']/ancestor::*[@id='ROW_${idx}']//*[text()='${${administrators_users[${idx}]}_lastname}']
+    \    Run Keyword Unless    ${manual_list}    Element Should Be Visible    ${xpath}//*[@id='ROW_${idx}']//*[text()='${administrators_users[0][${idx}][0]}']/ancestor::*[@id='ROW_${idx}']//*[text()='${administrators_users[0][${idx}][1]}']
+
+Homepage - Expand administrators list
+    ${xpath}=    Set Variable    //*[@id='administrators']
+    #
+    ${present}=    Run Keyword And Return Status    Element Should Be Visible    ${xpath}//*[@id='showMoreAdministrators']
+    Run Keyword If    ${present}    Click Element    ${xpath}//*[@id='showMoreAdministrators']
+    Element Should Be Visible    ${xpath}//*[@id='showLessAdministrators']
+
+Go Home
+    ${home_btn}=    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    //*[text()='Home']
+    Run Keyword If    ${home_btn}    Click Element    //*[text()='Home']
+    Run Keyword Unless    ${home_btn}    Click Element    //*[@id='appHeader']//*[text()[contains(.,'KYC')]]
+    Page loading done
+
+Open Reporting
+    #Click Element    //*[@id="appNavigation"]//*[@id="userAdministration"]
+    Element Should Be Visible    //*[@id='administration']
+    #    Mouse Over    //*[@id='administration']
+    #    Element Should Be Visible    //*[@id="userAdministration"]
+    #    Click Element    //*[@id="userAdministration"]
+    Execute Javascript    $('#userAdministration').click()
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
+    Element Should Be Visible    //h2/*[text()[contains(.,'User')]]
+    Load whole page
+    Run Keyword And Ignore Error    Page loading done
+    Page loading done
