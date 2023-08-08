@@ -1,0 +1,37 @@
+<project name="KYC" basedir="." default="main">
+
+  <property name="res.dir"     value="results"/>
+
+<target name="check-dir">
+  <available property="no.res.dir" file="${res.dir}" type="dir"/>
+</target>
+ 
+
+<target name="create-res-dir" depends="check-dir" unless="no.res.dir">
+  <mkdir dir="${res.dir}"/>
+</target>
+
+
+	<target name="clean" depends="create-res-dir">
+
+	        <retry retrycount="10" retrydelay="1000">
+
+			<delete includeemptydirs="true">
+    				<fileset dir="${res.dir}" includes="**" defaultexcludes="false"/>
+  			</delete>
+		</retry>
+	
+  		<delete includeemptydirs="true" failonerror="false">
+    			<fileset dir="C:\Documents and Settings\SDC\Local Settings\Temp" includes="**/*" />
+  		</delete>
+
+	</target>
+
+ 	<target name="run" depends="clean">
+   		<exec executable="cmd">
+    			<arg value="/c"/>
+    			<arg value=".\runme_parallel.bat"/>
+  		</exec>
+	  </target>
+  <target name="main" depends="run"/>
+</project>
